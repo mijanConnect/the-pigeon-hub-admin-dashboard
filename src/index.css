@@ -1,0 +1,548 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  font-family: "Poppins", sans-serif;
+  padding: 0;
+  margin: 0;
+}
+
+/* Ant Design modal footer top margin remove */
+.ant-modal-footer {
+  margin-top: 0 !important;
+}
+
+/* Ensure selected route icon is white */
+.ant-menu-item-selected .ant-menu-item-icon {
+  color: white !important;
+}
+
+/* Ant Design menu item text color - default */
+.ant-menu-item {
+  color: black !important;
+}
+
+/* Hover effect - change text color to white and background gradient */
+.ant-menu-item:hover {
+  background: #071952 !important;
+  color: white !important; /* Text color to white */
+}
+
+.ant-menu-item-selected {
+  background: #071952 !important;
+  color: white !important;
+  font-weight: bold;
+  border-radius: 8px 0 0 8px !important;
+}
+
+.ant-menu-item-selected:hover {
+  border-radius: 8px 0 0 8px !important;
+}
+
+/* Icon color change on hover */
+.ant-menu-item:hover .ant-menu-item-icon {
+  color: white !important;
+}
+
+/* Ant Design Badge */
+.ant-badge .ant-badge-count {
+  background: #071952 !important;
+  color: white !important;
+}
+
+/* Jodit Editor Height */
+.jodit-workplace {
+  height: 500px !important;
+}
+
+/* Add this to your CSS */
+.custom-row {
+  margin-bottom: 10px !important;
+}
+
+/* Optional: To add padding to the rows */
+.custom-row .ant-table-cell {
+  padding: 12px 20px;
+}
+
+/* Custom table styling */
+.custom-table {
+  border: 1px solid #071952;
+  border-radius: 10px;
+}
+.custom-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #ddd;
+  padding: 12px 16px !important;
+  text-align: center !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+}
+
+.custom-table .ant-table-thead > tr > th {
+  border-bottom: 2px solid #071952;
+}
+
+.custom-table .ant-table-thead > tr > th {
+  background-color: #071952 !important;
+  color: white !important;
+  border-bottom: 2px solid #ddd;
+}
+
+/* Hide number input arrows in WebKit browsers */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Selected menu item image color change to white */
+.ant-menu-item-selected .icon-image {
+  filter: invert(1) grayscale(0) brightness(100%) !important;
+}
+
+/* Add margin bottom to each row in the table body */
+.ant-table-tbody > tr {
+  margin-bottom: 5px;
+}
+/* Add space between rows */
+.ant-table {
+  border-spacing: 0 5px; /* Adds 5px space between rows */
+}
+
+.custom-tooltip .ant-tooltip-inner {
+  background: #071952 !important;
+  color: white;
+}
+
+/* Ensure SVG icons in selected menu items are white */
+.ant-menu-item-selected .menu-icon {
+  color: white !important;
+  fill: white !important;
+}
+
+/* Hover effect for SVG icons */
+.ant-menu-item:hover .menu-icon {
+  color: white !important;
+  fill: white !important;
+}
+
+/* Target SVG paths directly if needed */
+.ant-menu-item-selected .menu-icon path,
+.ant-menu-item-selected .menu-icon svg path {
+  fill: white !important;
+}
+
+.ant-menu-item:hover .menu-icon path,
+.ant-menu-item:hover .menu-icon svg path {
+  fill: white !important;
+}
+
+/* Add this class to handle special SVG components */
+.svg-active svg {
+  fill: white !important;
+}
+
+.svg-active svg path {
+  fill: white !important;
+}
+/* Prevent hover color change */
+.ant-table-row:hover {
+  background-color: transparent !important;
+}
+
+.red-row {
+  background-color: #f8d7da;
+}
+
+/* Add these styles to your global CSS file or in the relevant component style file */
+
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 95vh;
+}
+
+.logo-container {
+  flex-shrink: 0;
+}
+
+.menu-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 0 0 0 5px;
+  /* border-radius: 5%; */
+  border-top: 1px solid #071952;
+}
+
+.sidebar-menu {
+  padding: 0;
+  background: #fff !important;
+}
+
+.sidebar-menu .ant-menu-item {
+  padding-left: 20px;
+  /* transition: background-color 0.0s ease, color 0.0s ease; */
+}
+
+.sidebar-menu .ant-menu-item:hover {
+  background-color: #071952 !important; /* Hover effect */
+}
+
+.sidebar-menu .ant-menu-item-selected {
+  /* background-color: #007bff !important; Active item background */
+  color: white; /* Active item text color */
+}
+
+.sidebar-menu .ant-menu-submenu-title {
+  padding-left: 20px;
+}
+
+.sidebar-menu .ant-menu-submenu-selected {
+  /* background-color: #007bff !important; Active submenu */
+  color: white;
+}
+
+/* Custom Scrollbar */
+.menu-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.menu-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.menu-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.menu-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Add this to your global CSS file */
+
+/* Ensure the root container is responsive */
+#root,
+html,
+body {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Media queries for responsive components */
+@media (max-width: 640px) {
+  .responsive-table .ant-table {
+    font-size: 12px;
+  }
+
+  .responsive-table .ant-table-thead > tr > th,
+  .responsive-table .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+  }
+}
+
+/* Improve chart responsiveness */
+canvas {
+  max-width: 100%;
+}
+
+/* Fix gradient backgrounds for better mobile compatibility */
+.bg-gradient-to-r {
+  background-size: 200% 100%;
+}
+
+/* Improved padding for containers on mobile */
+@media (max-width: 768px) {
+  .p-4 {
+    padding: 0.75rem;
+  }
+  .gap-6 {
+    gap: 0.75rem;
+  }
+  .rounded-lg {
+    border-radius: 0.5rem;
+  }
+}
+
+/* Fix select dropdown appearance on mobile */
+select {
+  appearance: none;
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5em;
+}
+
+/* Improve container sizing */
+.container,
+.w-full {
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Custom css MR */
+
+/* Select */
+/* Base Select styling */
+.custom-select-ant .ant-select-selector {
+  padding: 8px 12px !important; /* inner padding */
+  background: transparent !important; /* transparent background */
+  height: 40px !important; /* fixed height */
+  line-height: 40px !important; /* vertically center text */
+  border: 1px solid #ffffff !important; /* border color */
+  box-shadow: none !important; /* remove default shadow */
+}
+
+/* Selected text & placeholder color */
+.custom-select-ant .ant-select-selection-item,
+.custom-select-ant .ant-select-selection-item span,
+.custom-select-ant .ant-select-selection-placeholder {
+  color: #ffffff !important;
+}
+
+/* Arrow icon styling */
+.custom-select-ant .ant-select-arrow {
+  top: 60% !important; /* vertically center arrow */
+  transform: translateY(-50%) !important;
+  margin-top: 0 !important;
+  color: #ffffff !important;
+}
+
+/* Remove focus styles */
+.custom-select-ant.ant-select-focused .ant-select-selector {
+  border-color: #ffffff !important; /* keep same border on focus */
+  box-shadow: none !important; /* remove blue focus shadow */
+}
+
+/* Select White bg*/
+/* Base Select styling */
+.custom-select-ant-white .ant-select-selector {
+  padding: 8px 12px !important; /* inner padding */
+  background: transparent !important; /* transparent background */
+  height: 40px !important; /* fixed height */
+  line-height: 40px !important; /* vertically center text */
+  border: 1px solid #088395 !important; /* border color */
+  box-shadow: none !important; /* remove default shadow */
+}
+
+/* Selected text & placeholder color */
+.custom-select-ant-white .ant-select-selection-item,
+.custom-select-ant-white .ant-select-selection-item span,
+.custom-select-ant-white .ant-select-selection-placeholder {
+  color: #18191b !important;
+}
+
+/* Keep default border visible */
+.custom-select-ant-white .ant-select-selector {
+  border: 1px solid #9ca3af !important;  /* default gray border */
+}
+
+/* Change border color when active/focused */
+.custom-select-ant-white.ant-select-focused .ant-select-selector {
+  border-color: #181818 !important;      /* yellow border on focus */
+  box-shadow: none !important;           /* optional: remove shadow */
+}
+
+
+/* Arrow icon styling */
+.custom-select-ant-white .ant-select-arrow {
+  top: 60% !important; /* vertically center arrow */
+  transform: translateY(-50%) !important;
+  margin-top: 0 !important;
+  color: #18191b !important;
+}
+
+/* Remove focus styles */
+/* .custom-select-ant-white.ant-select-focused .ant-select-selector {
+  border-color: #ffffff !important;
+  box-shadow: none !important;
+} */
+
+/* Search bar */
+.custom-input-ant {
+  padding: 8px 12px !important; /* inner padding */
+  height: 40px !important; /* fixed height */
+  line-height: 40px !important; /* vertically center text */
+  border: 1px solid #ffffff !important; /* border color */
+  background: transparent !important; /* transparent background */
+  color: #ffffff !important; /* text color */
+  box-shadow: none !important; /* remove focus shadow */
+}
+
+.custom-input-ant:focus {
+  border-color: #ffffff !important; /* same border on focus */
+  box-shadow: none !important; /* remove blue focus shadow */
+}
+
+.custom-input-ant::placeholder {
+  color: #ffffff !important; /* placeholder color */
+  opacity: 1; /* ensure full opacity in some browsers */
+}
+
+/* Tab */
+/* Selected tab */
+.custom-tabs .ant-tabs-tab-active {
+  color: #fff !important; /* text color of active tab */
+  /* background-color: #ffffff !important;  */
+  border-radius: 4px 4px 0 0 !important;
+}
+
+/* Inactive tabs */
+.custom-tabs .ant-tabs-tab {
+  color: #ccc !important; /* text color of inactive tabs */
+  /* background-color: #333d49 !important; */
+  border-radius: 4px 4px 0 0 !important;
+}
+
+/* Tab hover */
+.custom-tabs .ant-tabs-tab:hover {
+  color: #fff !important;
+  /* background-color: #1e1e1e !important; */
+}
+
+/* Reduce spacing below selected tab */
+.custom-tabs .ant-tabs-ink-bar {
+  height: 12px; /* thickness of the bottom line */
+  bottom: 10px !important; /* distance from the tab content bottom */
+  background-color: #ffffff; /* color of the bottom line */
+  border-radius: 1px; /* optional rounded ends */
+}
+
+/* Change selected tab text color */
+.custom-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #ffffff !important; /* your desired color */
+}
+
+/* Optional: change unselected tab text color */
+.custom-tabs .ant-tabs-tab .ant-tabs-tab-btn {
+  color: #ffffff; /* color for inactive tabs */
+}
+
+.custom-tabs .ant-tabs-nav::before {
+  border-bottom: none !important; /* removes the bottom border line */
+}
+
+/* Modal */
+/* Input field styling */
+.custom-input-ant-modal {
+  padding: 8px 12px !important;
+  background: transparent !important;
+  color: #071952 !important;
+  border: 1px solid #071952 !important;
+  border-radius: 6px !important;
+  height: 40px !important;
+}
+
+.custom-input-ant-modal::placeholder {
+  color: #9d9ea1 !important;
+}
+
+/* Select field styling */
+.custom-select-ant-modal .ant-select-selector {
+  padding: 8px 12px !important;
+  background: transparent !important;
+  height: 40px !important;
+  line-height: 40px !important;
+  border: 1px solid #071952 !important;
+  box-shadow: none !important;
+  border-radius: 6px !important;
+}
+
+/* Selected text & placeholder color */
+.custom-select-ant-modal .ant-select-selection-item,
+.custom-select-ant-modal .ant-select-selection-item span,
+.custom-select-ant-modal .ant-select-selection-placeholder {
+  color: #9d9ea1 !important;
+}
+
+/* Arrow icon styling */
+.custom-select-ant-modal .ant-select-arrow {
+  top: 80% !important;
+  transform: translateY(-50%) !important;
+  color: #071952 !important;
+}
+
+/* Remove focus styles */
+.custom-select-ant-modal.ant-select-focused .ant-select-selector {
+  border-color: #071952 !important;
+  box-shadow: none !important;
+}
+
+/* Reduce bottom margin */
+.custom-form-item-ant {
+  margin-bottom: 0px !important; /* adjust as needed */
+}
+.custom-form-item-ant-select {
+  margin-bottom: 8px !important; /* adjust as needed */
+}
+
+/* Image upload */
+/* Make the upload list flex and wrap images */
+.ant-upload-list-picture-card {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px; /* spacing between images */
+}
+
+/* Keep each image card default size */
+.ant-upload-list-picture-card .ant-upload-list-item {
+  width: auto !important; /* default width */
+  height: auto !important; /* default height */
+}
+
+/* Ensure image fits the card */
+.ant-upload-list-picture-card img {
+  object-fit: cover;
+}
+
+/* Text area */
+.custom-input-ant-modal {
+  padding: 12px 16px; /* top-bottom 12px, left-right 16px */
+  background-color: #071952; /* optional background */
+  color: #ffffff; /* text color */
+  border: 1px solid #071952; /* border color */
+  border-radius: 4px; /* optional rounding */
+  line-height: 1.5; /* optional line height */
+}
+
+.ant-modal .ant-form-item-label > label {
+  color: #18191b;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Pagination */
+/* default arrow (previous / next) */
+.ant-pagination-item-link {
+  color: #ffff !important; /* your arrow color */
+}
+/* on hover */
+.ant-pagination-item-link:hover {
+  color: #fff !important;
+}
+/* disabled arrow */
+.ant-pagination-disabled .ant-pagination-item-link {
+  color: #999;
+  border-color: #999;
+  cursor: not-allowed;
+}
+.ant-pagination-item a {
+  color: #ffff !important; /* your custom color */
+}
+.ant-pagination {
+  margin: 16px;
+}
+.ant-pagination-item-active {
+  background: #ffffff !important; /* your brand color */
+  border-color: #212b35 !important;
+}
+.ant-pagination-item-active a {
+  color: #212b35 !important;
+}

@@ -1,0 +1,46 @@
+{
+  "header": {
+    "title": "Panel"
+  },
+  "dashboard": "Panel",
+  "setting": {
+    "title": "Ajustes"
+  },
+  "kyc": {
+    "title": "KYC",
+    "subTitle1": "Kyc Anfitriona",
+    "subTitle2": "Usuario KYC",
+    "subTitle3": " Coche KYC",
+    "subTitle4": "Formulario KYC"
+  },
+  "carInfo": "Información Del Auto",
+  "rentInfo": "Información De Alquiler",
+  "userInfo": "Informationen zum Künstler",
+  "subscription": "Abonnement",
+  "category": {
+    "title": "Kategorie",
+    "subTitle1": "Kategorie",
+    "subTitle2": "Unterkategorie"
+  },
+  "addSlider": "Schieberegler hinzufügen",
+  "events": "Veranstaltungen",
+  "hostInfo": {
+    "title": "información del anfitrión",
+    "subTitle1": "Todo anfitrión",
+    "subTitle2": "Solicitud de anfitrión"
+  },
+  "payment": {
+    "title": "Pagos",
+    "subTitle1": "Pagos de usuario",
+    "subTitle2": "Pagos de anfitrión",
+    "subTitle3": "Tirar billetes",
+    "subTitle4": "Ingresos de Renti",
+    "subTitle5": "Monedero"
+  },
+  "earning": {
+    "title": "Ganancias",
+    "subTitle1": "Ingresos De Hoy",
+    "subTitle2": "Ingresos Semanales",
+    "subTitle3": "Ingresos Mensuales"
+  }
+}

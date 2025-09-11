@@ -1,0 +1,46 @@
+{
+  "header": {
+    "title": "Dashboard"
+  },
+  "dashboard": "Dashboard",
+  "setting": {
+    "title": "Settings"
+  },
+  "kyc": {
+    "title": "KYC",
+    "subTitle1": "Host KYC",
+    "subTitle2": "User KYC",
+    "subTitle3": "Car KYC",
+    "subTitle4": "Form KYC"
+  },
+  "carInfo": "Car Information",
+  "rentInfo": "Rent Information",
+  "userInfo": "Artist's Information",
+  "subscription": "Subscription",
+  "addSlider": "Add Slider",
+  "events": "Events",
+  "hostInfo": {
+    "title": "Host Information",
+    "subTitle1": "All Host",
+    "subTitle2": "Host Request"
+  },
+  "payment": {
+    "title": "Payments",
+    "subTitle1": "User Payments",
+    "subTitle2": "Host Payments",
+    "subTitle3": "Strip Bills",
+    "subTitle4": "Renti's Income",
+    "subTitle5": "Wallet"
+  },
+  "earning": {
+    "title": "Earning",
+    "subTitle1": "Today's income",
+    "subTitle2": "Weekly income",
+    "subTitle3": "Monthly income"
+  },
+  "category": {
+    "title": "Category",
+    "subTitle1": "Category",
+    "subTitle2": "Sub Category"
+  }
+}
