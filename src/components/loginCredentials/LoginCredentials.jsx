@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Button,
@@ -10,72 +10,43 @@ import {
   Select,
   Row,
   Col,
+  Checkbox,
 } from "antd";
 import { useNavigate } from "react-router-dom";
-import { EditOutlined } from "@ant-design/icons";
+import { FaTrash, FaEdit } from "react-icons/fa";
 import Swal from "sweetalert2";
 import {
-  FaTrash,
-  FaEye,
-  FaEdit,
-  FaToggleOn,
-  FaToggleOff,
-} from "react-icons/fa";
+  useGetUsersQuery,
+  useAddUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
+  useAddRoleMutation,
+  useGetRolesQuery,
+  useToggleUserStatusMutation,
+} from "../../redux/apiSlices/usermanageSlice";
 
 const { Option } = Select;
 
-const components = {
-  header: {
-    row: (props) => (
-      <tr
-        {...props}
-        style={{
-          backgroundColor: "#f0f5f9",
-          height: "50px",
-          color: "secondary",
-          fontSize: "18px",
-          textAlign: "center",
-          padding: "12px",
-        }}
-      />
-    ),
-    cell: (props) => (
-      <th
-        {...props}
-        style={{
-          color: "secondary",
-          fontWeight: "bold",
-          fontSize: "18px",
-          textAlign: "center",
-          padding: "12px",
-        }}
-      />
-    ),
-  },
-};
-
 const LoginCredentials = () => {
-  const [data, setData] = useState([
-    {
-      id: 1,
-      name: "Alice Johnson",
-      email: "example@email.com",
-      role: "Admin",
-      phone: "+1234567890",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      email: "john@email.com",
-      role: "User",
-      phone: "+9876543210",
-      status: "Inactive",
-    },
-  ]);
+  // API hooks
+  const {
+    data: apiUsers = [],
+    isLoading: isUsersLoading,
+    isError: isUsersError,
+    refetch: refetchUsers,
+  } = useGetUsersQuery();
 
-  const [roles, setRoles] = useState(["Admin", "User"]); // Default roles
+  const { data: apiRoles = [] } = useGetRolesQuery();
 
+  const [addUser, { isLoading: isAdding }] = useAddUserMutation();
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+  const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
+  const [addRoleApi, { isLoading: isAddingRole }] = useAddRoleMutation();
+  const [toggleUserStatus] = useToggleUserStatusMutation();
+
+  // Local UI / form state
+  const [data, setData] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [viewForm] = Form.useForm();
@@ -86,72 +57,183 @@ const LoginCredentials = () => {
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
   const [userForm] = Form.useForm();
 
+  const pageAccessOptions = [
+    "analytics",
+    "breeder",
+    "overview",
+    "package",
+    "userManagement",
+  ];
+
   const navigate = useNavigate();
 
-  // View/Edit User Modal
+  // Sync users
+  useEffect(() => {
+    if (Array.isArray(apiUsers) && apiUsers.length) {
+      const mapped = apiUsers.map((u) => ({
+        _id: u._id, // ✅ keep original MongoDB _id for API
+        id: u._id, // ✅ alias for AntD rowKey
+        name: u.name || u.profile || u.name,
+        email: u.email,
+        role: u.customeRole || u.role,
+        phone: u.phone || u.contact || "N/A",
+        status: u.status ?? false, // boolean
+        __raw: u,
+      }));
+      setData(mapped);
+    } else if (Array.isArray(apiUsers) && apiUsers.length === 0) {
+      setData([]);
+    }
+  }, [apiUsers]);
+
+  // Sync roles from API
+  useEffect(() => {
+    if (Array.isArray(apiRoles)) {
+      setRoles(apiRoles.map((r) => r.roleName));
+    }
+  }, [apiRoles]);
+
+  // Show / Edit modal
   const showViewModal = (record) => {
     setSelectedRecord(record);
-    viewForm.setFieldsValue(record);
+    viewForm.setFieldsValue({
+      name: record.name,
+      email: record.email,
+      role: record.role,
+      phone: record.phone,
+      pageAccess: record.pages || [],
+    });
     setIsViewModalVisible(true);
   };
 
   const handleCloseViewModal = () => {
     setIsViewModalVisible(false);
     setSelectedRecord(null);
+    viewForm.resetFields();
   };
 
   const handleUpdateRecord = () => {
-    viewForm.validateFields().then((values) => {
-      setData((prev) =>
-        prev.map((item) =>
-          item.id === selectedRecord.id ? { ...item, ...values } : item
-        )
-      );
-      Swal.fire({
-        title: "Updated!",
-        text: "User details have been updated successfully.",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      setIsViewModalVisible(false);
+    viewForm.validateFields().then(async (values) => {
+      const payload = {
+        name: values.name,
+        email: values.email,
+        role: values.role,
+        contact: values.phone,
+        pages: values.pageAccess || [],
+      };
+
+      try {
+        await updateUser({ _id: selectedRecord._id, body: payload }).unwrap();
+        Swal.fire({
+          title: "Updated!",
+          text: "User details have been updated successfully.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        handleCloseViewModal();
+        refetchUsers();
+      } catch (err) {
+        Swal.fire({
+          title: "Error",
+          text: err?.data?.message || "Failed to update user.",
+          icon: "error",
+        });
+      }
     });
   };
 
   // Add Role
-  const handleAddRole = () => {
-    roleForm.validateFields().then((values) => {
-      setRoles((prev) => [...prev, values.roleName]); // Add role to dropdown
-      Swal.fire({
-        title: "Role Added!",
-        text: `Role "${values.roleName}" has been successfully added.`,
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      roleForm.resetFields();
-      setIsRoleModalVisible(false);
+  const handleAddRole = async () => {
+    roleForm.validateFields().then(async (values) => {
+      const roleName = values.roleName;
+      try {
+        await addRoleApi({ roleName }).unwrap();
+        setRoles((prev) => [...prev, roleName]);
+        Swal.fire({
+          title: "Role Added!",
+          text: `Role "${roleName}" has been successfully added.`,
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        roleForm.resetFields();
+        setIsRoleModalVisible(false);
+        refetchUsers();
+      } catch (err) {
+        Swal.fire({
+          title: "Error",
+          text: err?.data?.message || "Failed to add role.",
+          icon: "error",
+        });
+      }
     });
   };
 
-  // Add New User
+  // Add User
   const handleAddUser = () => {
-    userForm.validateFields().then((values) => {
-      const newUser = {
-        id: data.length + 1,
-        ...values,
-        status: "Active",
+    userForm.validateFields().then(async (values) => {
+      const payload = {
+        userName: values.name,
+        email: values.email,
+        password: values.password,
+        customeRole: values.role,
+        contact: values.phone,
+        pages: values.pageAccess || [],
       };
-      setData((prev) => [...prev, newUser]);
-      Swal.fire({
-        title: "User Added!",
-        text: `${values.name} has been added successfully.`,
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      userForm.resetFields();
-      setIsUserModalVisible(false);
+
+      console.log(payload);
+
+      try {
+        await addUser(payload).unwrap();
+        Swal.fire({
+          title: "User Added!",
+          text: `${values.name} has been added successfully.`,
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        userForm.resetFields();
+        setIsUserModalVisible(false);
+        refetchUsers();
+      } catch (err) {
+        Swal.fire({
+          title: "Error",
+          text: err?.data?.message || "Failed to add user.",
+          icon: "error",
+        });
+      }
+    });
+  };
+
+  // Delete User
+  const handleDelete = (record) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteUser({ _id: record._id }).unwrap();
+          Swal.fire({
+            title: "Deleted!",
+            text: "User has been deleted.",
+            icon: "success",
+          });
+          refetchUsers();
+        } catch (err) {
+          Swal.fire({
+            title: "Error",
+            text: err?.data?.message || "Failed to delete user.",
+            icon: "error",
+          });
+        }
+      }
     });
   };
 
@@ -191,26 +273,7 @@ const LoginCredentials = () => {
 
             <Tooltip title="Delete">
               <button
-                onClick={() => {
-                  Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!",
-                  }).then((result) => {
-                    if (result.isConfirmed) {
-                      setData(data.filter((item) => item.id !== record.id));
-                      Swal.fire({
-                        title: "Deleted!",
-                        text: "User has been deleted.",
-                        icon: "success",
-                      });
-                    }
-                  });
-                }}
+                onClick={() => handleDelete(record)}
                 className="text-red-500 hover:text-red-700 text-md"
               >
                 <FaTrash
@@ -242,27 +305,32 @@ const LoginCredentials = () => {
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
                     confirmButtonText: "Yes, change it!",
-                  }).then((result) => {
+                  }).then(async (result) => {
                     if (result.isConfirmed) {
-                      setData((prev) =>
-                        prev.map((item) =>
-                          item.id === record.id
-                            ? {
-                                ...item,
-                                status: checked ? "Active" : "Inactive",
-                              }
-                            : item
-                        )
-                      );
-                      Swal.fire({
-                        title: "Updated!",
-                        text: `Status has been changed to ${
-                          checked ? "Active" : "Inactive"
-                        }.`,
-                        icon: "success",
-                        timer: 1500,
-                        showConfirmButton: false,
-                      });
+                      try {
+                        await toggleUserStatus({
+                          _id: record._id, // ✅ backend expects MongoDB _id
+                          status: checked,
+                        }).unwrap();
+
+                        Swal.fire({
+                          title: "Updated!",
+                          text: `Status has been changed to ${
+                            checked ? "Active" : "Inactive"
+                          }.`,
+                          icon: "success",
+                          timer: 1500,
+                          showConfirmButton: false,
+                        });
+                        refetchUsers();
+                      } catch (err) {
+                        Swal.fire({
+                          title: "Error",
+                          text:
+                            err?.data?.message || "Failed to update status.",
+                          icon: "error",
+                        });
+                      }
                     }
                   });
                 }}
@@ -288,6 +356,7 @@ const LoginCredentials = () => {
             type="primary"
             onClick={() => setIsUserModalVisible(true)}
             className="bg-[#37B7C3] py-5 px-7 font-semibold text-[16px]"
+            loading={isAdding}
           >
             Add New User
           </Button>
@@ -295,6 +364,7 @@ const LoginCredentials = () => {
             type="primary"
             onClick={() => setIsRoleModalVisible(true)}
             className="py-5 px-7 font-semibold text-[16px]"
+            loading={isAddingRole}
           >
             Add New Role
           </Button>
@@ -347,7 +417,7 @@ const LoginCredentials = () => {
               pagination={false}
               size="small"
               scroll={{ x: "max-content" }}
-              rowKey="id"
+              rowKey="_id"
             />
           </div>
         </div>
@@ -363,7 +433,12 @@ const LoginCredentials = () => {
           <Button key="cancel" onClick={handleCloseViewModal}>
             Cancel
           </Button>,
-          <Button key="save" type="primary" onClick={handleUpdateRecord}>
+          <Button
+            key="save"
+            type="primary"
+            onClick={handleUpdateRecord}
+            loading={isUpdating}
+          >
             Save Changes
           </Button>,
         ]}
@@ -389,6 +464,7 @@ const LoginCredentials = () => {
                   />
                 </Form.Item>
               </Col>
+
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="email"
@@ -405,6 +481,7 @@ const LoginCredentials = () => {
                   />
                 </Form.Item>
               </Col>
+
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="role"
@@ -424,6 +501,7 @@ const LoginCredentials = () => {
                   </Select>
                 </Form.Item>
               </Col>
+
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="phone"
@@ -437,12 +515,40 @@ const LoginCredentials = () => {
                   />
                 </Form.Item>
               </Col>
+
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="password"
+                  label="Password"
+                  className="custom-form-item-ant"
+                  rules={[{ required: true, message: "Please enter password" }]}
+                >
+                  <Input.Password
+                    placeholder="Enter Password"
+                    className="custom-input-ant-modal"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} sm={24}>
+                <Form.Item name="pageAccess" label="Page Access Control">
+                  <Checkbox.Group className="custom-checkbox-ant-modal">
+                    <Row>
+                      {pageAccessOptions.map((page) => (
+                        <Col span={8} key={page}>
+                          <Checkbox value={page}>{page}</Checkbox>
+                        </Col>
+                      ))}
+                    </Row>
+                  </Checkbox.Group>
+                </Form.Item>
+              </Col>
             </Row>
           </Form>
         )}
       </Modal>
 
-      {/* Add New Role Modal */}
+      {/* Add Role Modal */}
       <Modal
         title="Add New Role"
         open={isRoleModalVisible}
@@ -472,7 +578,7 @@ const LoginCredentials = () => {
         </Form>
       </Modal>
 
-      {/* Add New User Modal */}
+      {/* Add User Modal */}
       <Modal
         title="Add New User"
         open={isUserModalVisible}
@@ -482,7 +588,12 @@ const LoginCredentials = () => {
           <Button key="cancel" onClick={() => setIsUserModalVisible(false)}>
             Cancel
           </Button>,
-          <Button key="add" type="primary" onClick={handleAddUser}>
+          <Button
+            key="add"
+            type="primary"
+            onClick={handleAddUser}
+            loading={isAdding}
+          >
             Add User
           </Button>,
         ]}
@@ -545,6 +656,42 @@ const LoginCredentials = () => {
                   placeholder="Enter Phone"
                   className="custom-input-ant-modal"
                 />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="password"
+                label="Password"
+                rules={[{ required: true, message: "Please enter password" }]}
+                className="custom-form-item-ant"
+              >
+                <Input.Password
+                  placeholder="Enter Password"
+                  className="custom-input-ant-modal"
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="pageAccess"
+                label="Page Access Control"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select at least one page",
+                  },
+                ]}
+                className="custom-form-item-ant-select"
+              >
+                <Checkbox.Group className="custom-checkbox-ant-modal">
+                  <Row>
+                    {pageAccessOptions.map((page) => (
+                      <Col span={24} key={page}>
+                        <Checkbox value={page}>{page}</Checkbox>
+                      </Col>
+                    ))}
+                  </Row>
+                </Checkbox.Group>
               </Form.Item>
             </Col>
           </Row>

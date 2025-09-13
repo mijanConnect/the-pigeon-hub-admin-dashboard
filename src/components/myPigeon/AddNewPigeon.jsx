@@ -133,8 +133,10 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
         results: values.results || "",
         verified: values.verification === "verified",
         iconic: values.iconic === "yes",
-        iconicScore: values.iconicScore || 0,
+        iconicScore: values.iconicScore ? parseInt(values.iconicScore, 10) : 0,
       };
+
+      console.log(dataToSend);
 
       // Replace YOUR_TOKEN with actual token or get from store
       const token = localStorage.getItem("token");
