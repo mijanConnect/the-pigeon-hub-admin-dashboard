@@ -1,10 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Modal, Form, Input, Select, Row, Col, Button } from "antd";
 
 const { Option } = Select;
 
-const AddVerifiedBadge = ({ visible, onCancel, onSave }) => {
+const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
   const [form] = Form.useForm();
+
+  // Set form values when editing
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue(initialValues);
+    } else {
+      form.resetFields();
+    }
+  }, [initialValues, form]);
 
   const handleSave = () => {
     form
@@ -18,7 +27,7 @@ const AddVerifiedBadge = ({ visible, onCancel, onSave }) => {
 
   return (
     <Modal
-      title="Add Verified Breeder"
+      title={initialValues ? "Edit Verified Breeder" : "Add Verified Breeder"}
       open={visible}
       onCancel={onCancel}
       width={800}
@@ -27,7 +36,7 @@ const AddVerifiedBadge = ({ visible, onCancel, onSave }) => {
           Cancel
         </Button>,
         <Button key="save" type="primary" onClick={handleSave}>
-          Add Verified Breeder
+          {initialValues ? "Save Changes" : "Add Verified Breeder"}
         </Button>,
       ]}
     >
@@ -139,9 +148,7 @@ const AddVerifiedBadge = ({ visible, onCancel, onSave }) => {
             <Form.Item
               label="Experience Level"
               name="experienceLevel"
-              rules={[
-                { required: true, message: "Please select experience level" },
-              ]}
+              rules={[{ required: true, message: "Please select experience level" }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -179,4 +186,4 @@ const AddVerifiedBadge = ({ visible, onCancel, onSave }) => {
   );
 };
 
-export default AddVerifiedBadge;
+export default AddVerifyBreeder;

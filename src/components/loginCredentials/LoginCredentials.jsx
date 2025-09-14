@@ -30,11 +30,11 @@ const { Option } = Select;
 const LoginCredentials = () => {
   // API hooks
   const {
-    data: apiUsers = [],
+    data: apiUsers = { users: [], pagination: null },
     isLoading: isUsersLoading,
     isError: isUsersError,
     refetch: refetchUsers,
-  } = useGetUsersQuery();
+  } = useGetUsersQuery({ page: 1, limit: 10 });
 
   const { data: apiRoles = [] } = useGetRolesQuery();
 
@@ -70,33 +70,8 @@ const LoginCredentials = () => {
 
   // Sync users (ensure pages is included so edit modal receives pages)
   useEffect(() => {
-    if (Array.isArray(apiUsers) && apiUsers.length) {
-      const mapped = apiUsers.map((u) => ({
-        _id: u._id, // keep original id
-        id: u._id,
-        name: u.name || u.email || "N/A",
-        email: u.email,
-        role: u.customeRole || u.role || "N/A",
-        // preserve phone from different possible keys
-        phone:
-          u.contact ||
-          u.phone ||
-          (u.accountInformation && u.accountInformation.phone) ||
-          "N/A",
-        // normalize status to "Active"/"Inactive" (supports both boolean or string from API)
-        status:
-          typeof u.status === "boolean"
-            ? u.status
-              ? "Active"
-              : "Inactive"
-            : u.status || "Inactive",
-        pages: Array.isArray(u.pages) ? u.pages : [],
-        password: u.password || "",
-        __raw: u,
-      }));
-      setData(mapped);
-    } else if (Array.isArray(apiUsers) && apiUsers.length === 0) {
-      setData([]);
+    if (Array.isArray(apiUsers.users)) {
+      setData(apiUsers.users);
     }
   }, [apiUsers]);
 
@@ -364,7 +339,7 @@ const LoginCredentials = () => {
   };
 
   return (
-    <div>
+    <div className="mt-4">
       <div className="flex justify-end items-center mb-4 ">
         <div className="flex gap-5">
           <Button
@@ -429,9 +404,10 @@ const LoginCredentials = () => {
                 },
               }}
               bordered={false}
-              pagination={false}
+              pagination={true}
               size="small"
-              scroll={{ x: "max-content" }}
+              // scroll={{ x: "max-content" }}
+              scroll={data.length > 0 ? { x: "max-content" } : undefined}
               rowKey="_id"
             />
           </div>

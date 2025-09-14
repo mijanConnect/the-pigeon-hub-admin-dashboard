@@ -1,33 +1,45 @@
+// src/redux/apiSlices/usermanageSlice.js
 import { api } from "../api/baseApi";
 
 const usermanageSlice = api.injectEndpoints({
   endpoints: (builder) => ({
-    // ✅ GET all users
+    // ✅ GET all users (now with pagination)
     getUsers: builder.query({
-      query: () => ({
-        url: "/usermanage",
+      query: ({ page = 1, limit = 10 } = {}) => ({
+        url: `/usermanage?page=${page}&limit=${limit}`,
         method: "GET",
       }),
       transformResponse: (response) => {
-        if (!response || !response.success || !Array.isArray(response.data))
-          return [];
-        return response.data.map((user) => ({
-          _id: user._id, // real MongoDB id
-          id: user._id, // alias for AntD rowKey
-          name: user.name || user.email,
-          email: user.email,
-          role: user.customeRole || user.role,
-          phone: user.contact || user.accountInformation?.phone || "N/A",
-          status: user.status ? "Active" : "Inactive",
-          pages: user.pages || [],
-          raw: user,
-        }));
-      },
+        if (
+          !response ||
+          !response.success ||
+          !response.data ||
+          !Array.isArray(response.data.users)
+        ) {
+          return { users: [], pagination: null };
+        }
 
+        return {
+          users: response.data.users.map((user) => ({
+            _id: user._id,
+            id: user._id, // alias for AntD rowKey
+            name: user.name || user.email,
+            email: user.email,
+            role: user.customeRole || user.role,
+            phone: user.contact || user.accountInformation?.phone || "N/A",
+            status: user.status ? "Active" : "Inactive",
+            pages: user.pages || [],
+            profile: user.profile || null,
+            verified: user.verified || false,
+            raw: user,
+          })),
+          pagination: response.data.pagination,
+        };
+      },
       providesTags: (result) =>
-        result
+        result && result.users
           ? [
-              ...result.map(({ _id }) => ({ type: "Users", id: _id })),
+              ...result.users.map(({ _id }) => ({ type: "Users", id: _id })),
               { type: "Users", id: "LIST" },
             ]
           : [{ type: "Users", id: "LIST" }],
@@ -38,7 +50,7 @@ const usermanageSlice = api.injectEndpoints({
       query: (body) => ({
         url: "/usermanage",
         method: "POST",
-        body, // { userName, email, contact, password, customeRole, pages, name }
+        body,
       }),
       invalidatesTags: [{ type: "Users", id: "LIST" }],
     }),
@@ -73,7 +85,7 @@ const usermanageSlice = api.injectEndpoints({
       query: ({ _id, status }) => ({
         url: `/usermanage/active-inactive/${_id}`,
         method: "PATCH",
-        body: { status }, // backend expects { status: true/false }
+        body: { status },
       }),
       invalidatesTags: (result, error, { _id }) => [
         { type: "Users", id: _id },
@@ -103,7 +115,7 @@ const usermanageSlice = api.injectEndpoints({
       query: (body) => ({
         url: "/role",
         method: "POST",
-        body, // expects { "roleName": "Provider" }
+        body,
       }),
       invalidatesTags: [{ type: "Roles", id: "LIST" }],
     }),
