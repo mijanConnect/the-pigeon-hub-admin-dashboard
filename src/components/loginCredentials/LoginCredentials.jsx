@@ -57,6 +57,7 @@ const LoginCredentials = () => {
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
   const [userForm] = Form.useForm();
 
+  // pageAccess options (include options observed in API samples so edit modal can pre-select)
   const pageAccessOptions = [
     "analytics",
     "breeder",
@@ -67,17 +68,30 @@ const LoginCredentials = () => {
 
   const navigate = useNavigate();
 
-  // Sync users
+  // Sync users (ensure pages is included so edit modal receives pages)
   useEffect(() => {
     if (Array.isArray(apiUsers) && apiUsers.length) {
       const mapped = apiUsers.map((u) => ({
-        _id: u._id, // ✅ keep original MongoDB _id for API
-        id: u._id, // ✅ alias for AntD rowKey
-        name: u.name || u.profile || u.name,
+        _id: u._id, // keep original id
+        id: u._id,
+        name: u.name || u.email || "N/A",
         email: u.email,
-        role: u.customeRole || u.role,
-        phone: u.phone || u.contact || "N/A",
-        status: u.status ?? false, // boolean
+        role: u.customeRole || u.role || "N/A",
+        // preserve phone from different possible keys
+        phone:
+          u.contact ||
+          u.phone ||
+          (u.accountInformation && u.accountInformation.phone) ||
+          "N/A",
+        // normalize status to "Active"/"Inactive" (supports both boolean or string from API)
+        status:
+          typeof u.status === "boolean"
+            ? u.status
+              ? "Active"
+              : "Inactive"
+            : u.status || "Inactive",
+        pages: Array.isArray(u.pages) ? u.pages : [],
+        password: u.password || "",
         __raw: u,
       }));
       setData(mapped);
@@ -96,12 +110,13 @@ const LoginCredentials = () => {
   // Show / Edit modal
   const showViewModal = (record) => {
     setSelectedRecord(record);
+    // set fields explicitly (ensures Checkbox.Group receives values)
     viewForm.setFieldsValue({
       name: record.name,
       email: record.email,
       role: record.role,
       phone: record.phone,
-      pageAccess: record.pages || [],
+      pageAccess: record.pages || [], // IMPORTANT: pre-select checkboxes from API pages
     });
     setIsViewModalVisible(true);
   };
@@ -117,10 +132,12 @@ const LoginCredentials = () => {
       const payload = {
         name: values.name,
         email: values.email,
-        role: values.role,
+        customeRole: values.role,
         contact: values.phone,
-        pages: values.pageAccess || [],
+        pages: values.pageAccess || [], // send updated pages from checkbox selection
       };
+
+      console.log("updateUser", payload);
 
       try {
         await updateUser({ _id: selectedRecord._id, body: payload }).unwrap();
@@ -174,15 +191,13 @@ const LoginCredentials = () => {
   const handleAddUser = () => {
     userForm.validateFields().then(async (values) => {
       const payload = {
-        userName: values.name,
+        name: values.name,
         email: values.email,
         password: values.password,
         customeRole: values.role,
         contact: values.phone,
         pages: values.pageAccess || [],
       };
-
-      console.log(payload);
 
       try {
         await addUser(payload).unwrap();
@@ -309,7 +324,7 @@ const LoginCredentials = () => {
                     if (result.isConfirmed) {
                       try {
                         await toggleUserStatus({
-                          _id: record._id, // ✅ backend expects MongoDB _id
+                          _id: record._id,
                           status: checked,
                         }).unwrap();
 
@@ -511,20 +526,6 @@ const LoginCredentials = () => {
                 >
                   <Input
                     placeholder="Enter Phone Number"
-                    className="custom-input-ant-modal"
-                  />
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  name="password"
-                  label="Password"
-                  className="custom-form-item-ant"
-                  rules={[{ required: true, message: "Please enter password" }]}
-                >
-                  <Input.Password
-                    placeholder="Enter Password"
                     className="custom-input-ant-modal"
                   />
                 </Form.Item>

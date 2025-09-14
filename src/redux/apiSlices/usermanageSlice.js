@@ -1,4 +1,3 @@
-// src/redux/apiSlices/usermanageSlice.js
 import { api } from "../api/baseApi";
 
 const usermanageSlice = api.injectEndpoints({
@@ -48,7 +47,7 @@ const usermanageSlice = api.injectEndpoints({
     updateUser: builder.mutation({
       query: ({ _id, body }) => ({
         url: `/usermanage/${_id}`,
-        method: "PUT",
+        method: "PATCH",
         body,
       }),
       invalidatesTags: (result, error, { _id }) => [
