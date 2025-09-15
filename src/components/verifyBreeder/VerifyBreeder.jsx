@@ -1,5 +1,4 @@
-// src/pages/VerifyBreeder.jsx
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Button, Table, Input, Select, Row, Col, Tooltip } from "antd";
 import { FaTrash, FaEye } from "react-icons/fa";
 import Swal from "sweetalert2";
@@ -18,14 +17,14 @@ const VerifyBreeder = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingData, setEditingData] = useState(null);
 
-  // filters
+  // Filters
   const [searchText, setSearchText] = useState("");
   const [filterCountry, setFilterCountry] = useState("all");
   const [filterGender, setFilterGender] = useState("all");
   const [filterExperience, setFilterExperience] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
 
-  // pagination
+  // Pagination
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
@@ -33,17 +32,18 @@ const VerifyBreeder = () => {
   const { data: apiData, isLoading } = useGetBreedersQuery({
     page,
     limit,
-    search: searchText,
-    country: filterCountry,
-    gender: filterGender,
-    status: filterStatus,
+    search: searchText || undefined,
+    country: filterCountry !== "all" ? filterCountry : undefined,
+    gender: filterGender !== "all" ? filterGender : undefined,
+    status: filterStatus !== "all" ? filterStatus : undefined,
+    experience: filterExperience !== "all" ? filterExperience : undefined,
   });
 
   const [addBreeder] = useAddBreederMutation();
   const [updateBreeder] = useUpdateBreederMutation();
   const [deleteBreeder] = useDeleteBreederMutation();
 
-  // load breeders when API updates
+  // Load breeders when API updates
   useEffect(() => {
     if (apiData?.breeders) {
       setData(apiData.breeders);
@@ -62,18 +62,27 @@ const VerifyBreeder = () => {
 
   const handleSave = async (values) => {
     try {
+      const payload = {
+        loftName: values.loftName,
+        breederName: values.breederName,
+        country: values.country,
+        email: values.email,
+        phone: values.phoneNumber,
+        status: values.status === "Active" || values.status === true,
+        score: Number(values.pigeonScore),
+        experience: values.experienceLevel,
+        gender: values.gender,
+      };
+
       if (editingData) {
         await updateBreeder({
-          id: editingData.key,
-          data: values,
+          id: editingData._id,
+          data: payload,
           token: "your-auth-token",
         }).unwrap();
         Swal.fire("Updated!", "Breeder updated successfully!", "success");
       } else {
-        await addBreeder({
-          data: values,
-          token: "your-auth-token",
-        }).unwrap();
+        await addBreeder({ data: payload, token: "your-auth-token" }).unwrap();
         Swal.fire("Added!", "Breeder added successfully!", "success");
       }
       setIsModalVisible(false);
@@ -95,7 +104,7 @@ const VerifyBreeder = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await deleteBreeder(record.key).unwrap();
+          await deleteBreeder(record._id).unwrap();
           Swal.fire("Deleted!", "Breeder has been deleted.", "success");
         } catch (error) {
           console.error(error);
@@ -107,6 +116,7 @@ const VerifyBreeder = () => {
 
   const getColumns = () => [
     { title: "Breeder Name", dataIndex: "breederName", key: "breederName" },
+    { title: "Loft Name", dataIndex: "loftName", key: "loftName" },
     { title: "Pigeon Score", dataIndex: "pigeonScore", key: "pigeonScore" },
     { title: "Country", dataIndex: "country", key: "country" },
     { title: "E-mail", dataIndex: "email", key: "email" },
@@ -117,7 +127,12 @@ const VerifyBreeder = () => {
       dataIndex: "experienceLevel",
       key: "experienceLevel",
     },
-    { title: "Status", dataIndex: "status", key: "status" },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (value) => (value ? "Verified" : "Not Verified"),
+    },
     {
       title: "Actions",
       key: "actions",
@@ -131,7 +146,6 @@ const VerifyBreeder = () => {
                 onClick={() => openEditModal(record)}
               />
             </Tooltip>
-
             <Tooltip title="Delete">
               <FaTrash
                 style={{
@@ -148,20 +162,17 @@ const VerifyBreeder = () => {
     },
   ];
 
-  // local filter (for client-side refinements in addition to API)
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       const experienceMatch =
         filterExperience === "all" ||
         item.experienceLevel.toLowerCase() === filterExperience.toLowerCase();
-
       return experienceMatch;
     });
   }, [data, filterExperience]);
 
   return (
     <div className="w-full">
-      {/* Add Button */}
       <div className="flex justify-end mb-4 mt-4">
         <Button
           type="primary"
@@ -175,7 +186,6 @@ const VerifyBreeder = () => {
       {/* Filters */}
       <div className="bg-[#333D49] rounded-lg shadow-lg border border-gray-200 mb-2">
         <Row gutter={[16, 16]} className="flex flex-wrap px-4 mb-4 mt-4">
-          {/* Search */}
           <Col xs={24} sm={12} md={6} lg={5}>
             <div className="flex flex-col">
               <label className="mb-1 text-gray-300">Search</label>
@@ -183,12 +193,14 @@ const VerifyBreeder = () => {
                 placeholder="Search..."
                 className="custom-input-ant"
                 value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                onChange={(e) => {
+                  setSearchText(e.target.value);
+                  setPage(1);
+                }}
               />
             </div>
           </Col>
 
-          {/* Country */}
           <Col xs={24} sm={12} md={6} lg={4}>
             <div className="flex flex-col">
               <label className="mb-1 text-gray-300">Country</label>
@@ -196,7 +208,10 @@ const VerifyBreeder = () => {
                 placeholder="Select Country"
                 className="custom-select-ant"
                 value={filterCountry}
-                onChange={setFilterCountry}
+                onChange={(value) => {
+                  setFilterCountry(value);
+                  setPage(1);
+                }}
               >
                 <Option value="all">All</Option>
                 <Option value="USA">USA</Option>
@@ -207,7 +222,6 @@ const VerifyBreeder = () => {
             </div>
           </Col>
 
-          {/* Gender */}
           <Col xs={24} sm={12} md={6} lg={4}>
             <div className="flex flex-col">
               <label className="mb-1 text-gray-300">Gender</label>
@@ -215,16 +229,18 @@ const VerifyBreeder = () => {
                 placeholder="Select Gender"
                 className="custom-select-ant"
                 value={filterGender}
-                onChange={setFilterGender}
+                onChange={(value) => {
+                  setFilterGender(value);
+                  setPage(1);
+                }}
               >
                 <Option value="all">All</Option>
-                <Option value="Male">Male</Option>
-                <Option value="Female">Female</Option>
+                <Option value="Hen">Hen</Option>
+                <Option value="Cock">Cock</Option>
               </Select>
             </div>
           </Col>
 
-          {/* Experience */}
           <Col xs={24} sm={12} md={6} lg={4}>
             <div className="flex flex-col">
               <label className="mb-1 text-gray-300">Experience Level</label>
@@ -232,7 +248,10 @@ const VerifyBreeder = () => {
                 placeholder="Select Level"
                 className="custom-select-ant"
                 value={filterExperience}
-                onChange={setFilterExperience}
+                onChange={(value) => {
+                  setFilterExperience(value);
+                  setPage(1);
+                }}
               >
                 <Option value="all">All</Option>
                 <Option value="Beginner">Beginner</Option>
@@ -242,7 +261,6 @@ const VerifyBreeder = () => {
             </div>
           </Col>
 
-          {/* Status */}
           <Col xs={24} sm={12} md={6} lg={4}>
             <div className="flex flex-col">
               <label className="mb-1 text-gray-300">Status</label>
@@ -250,7 +268,10 @@ const VerifyBreeder = () => {
                 placeholder="Select Status"
                 className="custom-select-ant"
                 value={filterStatus}
-                onChange={setFilterStatus}
+                onChange={(value) => {
+                  setFilterStatus(value);
+                  setPage(1);
+                }}
               >
                 <Option value="all">All</Option>
                 <Option value="Active">Active</Option>
@@ -314,18 +335,16 @@ const VerifyBreeder = () => {
               },
             }}
             size="small"
-            scroll={apiData?.length > 0 ? { x: "max-content" } : undefined}
-            rowKey="key"
+            rowKey="_id"
           />
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       <AddVerifyBreeder
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onSave={handleSave}
-        initialValues={editingData}
+        breederData={editingData}
       />
     </div>
   );

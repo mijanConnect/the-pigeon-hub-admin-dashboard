@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Modal, Form, Input, Select, Row, Col, Button } from "antd";
+import { Modal, Form, Input, Select, Row, Col, Button, Checkbox } from "antd";
 
 const { Option } = Select;
 
@@ -57,6 +57,21 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             </Form.Item>
           </Col>
 
+          {/* Loft Name */}
+          <Col xs={24} sm={12} md={12}>
+            <Form.Item
+              label="Loft Name"
+              name="loftName"
+              rules={[{ required: true, message: "Please enter loft name" }]}
+              className="custom-form-item-ant"
+            >
+              <Input
+                placeholder="Enter Loft Name"
+                className="custom-input-ant-modal"
+              />
+            </Form.Item>
+          </Col>
+
           {/* Pigeon Score */}
           <Col xs={24} sm={12} md={12}>
             <Form.Item
@@ -84,10 +99,10 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
                 placeholder="Select Country"
                 className="custom-select-ant-modal"
               >
-                <Option value="usa">USA</Option>
-                <Option value="uk">UK</Option>
-                <Option value="canada">Canada</Option>
-                <Option value="germany">Germany</Option>
+                <Option value="USA">USA</Option>
+                <Option value="UK">UK</Option>
+                <Option value="Canada">Canada</Option>
+                <Option value="Germany">Germany</Option>
               </Select>
             </Form.Item>
           </Col>
@@ -137,8 +152,8 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
                 placeholder="Select Gender"
                 className="custom-select-ant-modal"
               >
-                <Option value="male">Male</Option>
-                <Option value="female">Female</Option>
+                <Option value="Hen">Hen</Option>
+                <Option value="Cock">Cock</Option>
               </Select>
             </Form.Item>
           </Col>
@@ -148,36 +163,32 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             <Form.Item
               label="Experience Level"
               name="experienceLevel"
-              rules={[{ required: true, message: "Please select experience level" }]}
+              rules={[
+                { required: true, message: "Please select experience level" },
+              ]}
               className="custom-form-item-ant-select"
             >
               <Select
                 placeholder="Select Experience Level"
                 className="custom-select-ant-modal"
               >
-                <Option value="beginner">Beginner</Option>
-                <Option value="intermediate">Intermediate</Option>
-                <Option value="expert">Expert</Option>
+                <Option value="Beginner">Beginner</Option>
+                <Option value="Intermediate">Intermediate</Option>
+                <Option value="Expert">Expert</Option>
               </Select>
             </Form.Item>
           </Col>
 
-          {/* Status */}
+          {/* Verified Breeder (Lock Data) */}
           <Col xs={24} sm={12} md={12}>
             <Form.Item
-              label="Status"
               name="status"
-              rules={[{ required: true, message: "Please select status" }]}
-              className="custom-form-item-ant-select"
+              valuePropName="checked"
+              className="custom-form-item-ant"
             >
-              <Select
-                placeholder="Select Status"
-                className="custom-select-ant-modal"
-              >
-                <Option value="active">Active</Option>
-                <Option value="inactive">Inactive</Option>
-                <Option value="pending">Pending</Option>
-              </Select>
+              <Checkbox className="custom-checkbox-ant-modal">
+                Verified Breeder (Lock Data)
+              </Checkbox>
             </Form.Item>
           </Col>
         </Row>
