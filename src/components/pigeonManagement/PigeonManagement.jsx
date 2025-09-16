@@ -198,29 +198,29 @@ const PigeonManagement = () => {
           "-"
         ),
     },
-    {
-      title: "Actions",
-      key: "actions",
-      width: 120,
-      render: (_, record) => (
-        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-          <div className="flex gap-5 border px-4 py-2 rounded">
-            <Tooltip title="View & Update Details">
-              <FaEdit
-                style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
-                onClick={() => showViewModal(record)}
-              />
-            </Tooltip>
-            <Tooltip title="Delete">
-              <FaTrash
-                style={{ color: "#ff4d4f", fontSize: 16, cursor: "pointer" }}
-                onClick={() => handleDelete(record)}
-              />
-            </Tooltip>
-          </div>
-        </div>
-      ),
-    },
+    // {
+    //   title: "Actions",
+    //   key: "actions",
+    //   width: 120,
+    //   render: (_, record) => (
+    //     <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+    //       <div className="flex gap-5 border px-4 py-2 rounded">
+    //         <Tooltip title="View & Update Details">
+    //           <FaEdit
+    //             style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
+    //             onClick={() => showViewModal(record)}
+    //           />
+    //         </Tooltip>
+    //         <Tooltip title="Delete">
+    //           <FaTrash
+    //             style={{ color: "#ff4d4f", fontSize: 16, cursor: "pointer" }}
+    //             onClick={() => handleDelete(record)}
+    //           />
+    //         </Tooltip>
+    //       </div>
+    //     </div>
+    //   ),
+    // },
   ];
 
   return (

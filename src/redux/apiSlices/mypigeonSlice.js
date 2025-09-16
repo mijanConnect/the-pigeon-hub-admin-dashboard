@@ -80,7 +80,7 @@ const mypigeonSlice = api.injectEndpoints({
           method: "POST",
           body: formData,
           headers: {
-            Authorization: `Bearer ${token}`, // Include auth token
+            Authorization: `Bearer ${token}`,
           },
         };
       },

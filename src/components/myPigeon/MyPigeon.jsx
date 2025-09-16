@@ -177,7 +177,7 @@ const MyPigeon = () => {
           type="primary"
           className="py-5 px-7 font-semibold text-[16px]"
           onClick={() => {
-            setEditingPigeon(null); // Reset for new pigeon
+            setEditingPigeon(null);
             setIsModalVisible(true);
           }}
         >
