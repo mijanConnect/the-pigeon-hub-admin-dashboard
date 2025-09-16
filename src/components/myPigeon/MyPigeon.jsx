@@ -14,6 +14,7 @@ import AddNewPigeon from "./AddNewPigeon";
 import {
   useDeletePigeonMutation,
   useGetMyPigeonsQuery,
+  useGetSinglePigeonQuery,
 } from "../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../common/imageUrl";
 import VerifyIcon from "../../assets/verify.png";
@@ -37,6 +38,16 @@ const MyPigeon = () => {
 
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
+
+  const [editingPigeonId, setEditingPigeonId] = useState(null); // ✅ store ID
+  const { data: editingPigeonData } = useGetSinglePigeonQuery(editingPigeonId, {
+    skip: !editingPigeonId, // don't fetch until ID is set
+  });
+
+  const showEditModal = (record) => {
+    setEditingPigeonId(record._id); // ✅ set the ID to fetch
+    setIsModalVisible(true);
+  };
 
   const { data, isLoading } = useGetMyPigeonsQuery({
     page,
@@ -74,7 +85,7 @@ const MyPigeon = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await deletePigeon(record.key).unwrap();
+          await deletePigeon(record._id).unwrap();
           Swal.fire("Deleted!", "Pigeon has been deleted.", "success");
         } catch (err) {
           Swal.fire("Error", err?.data?.message || "Failed to delete", "error");
@@ -82,10 +93,10 @@ const MyPigeon = () => {
       }
     });
   };
-  const showEditModal = (record) => {
-    setEditingPigeon(record);
-    setIsModalVisible(true);
-  };
+  // const showEditModal = (record) => {
+  //   setEditingPigeon(record);
+  //   setIsModalVisible(true);
+  // };
 
   const columns = [
     {
@@ -315,7 +326,7 @@ const MyPigeon = () => {
                 rowClassName={() => "hover-row"}
                 bordered={false}
                 size="small"
-                rowKey="key"
+                rowKey="_id"
                 scroll={pigeons.length > 0 ? { x: "max-content" } : undefined}
                 pagination={{
                   current: page,
@@ -373,12 +384,15 @@ const MyPigeon = () => {
 
       <AddNewPigeon
         visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setEditingPigeonId(null); // reset after closing
+        }}
         onSave={(values) => {
-          console.log(editingPigeon ? "Edit Pigeon:" : "Add Pigeon:", values);
+          console.log(editingPigeonId ? "Edit Pigeon:" : "Add Pigeon:", values);
           setIsModalVisible(false);
         }}
-        pigeonData={editingPigeon} // ✅ Pass selected pigeon to edit
+        pigeonData={editingPigeonData?.data} // ✅ pass fetched data
       />
     </div>
   );

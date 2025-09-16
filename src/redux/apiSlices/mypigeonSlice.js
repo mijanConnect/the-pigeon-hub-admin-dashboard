@@ -1,8 +1,9 @@
+// src/redux/apiSlices/mypigeonSlice.js
 import { api } from "../api/baseApi";
 
 const mypigeonSlice = api.injectEndpoints({
   endpoints: (builder) => ({
-    // ---------- GET ----------
+    // ---------- GET ALL ----------
     getMyPigeons: builder.query({
       query: ({
         page = 1,
@@ -32,7 +33,7 @@ const mypigeonSlice = api.injectEndpoints({
       },
       transformResponse: (response) => {
         const pigeons = response?.data?.data?.map((pigeon) => ({
-          key: pigeon._id,
+          _id: pigeon._id,
           image: pigeon.photos?.[0] || "",
           name: pigeon.name,
           country: { name: pigeon.country, icon: "" },
@@ -56,25 +57,29 @@ const mypigeonSlice = api.injectEndpoints({
       providesTags: (result) =>
         result?.pigeons
           ? [
-              ...result.pigeons.map((p) => ({ type: "Pigeon", id: p.key })),
+              ...result.pigeons.map((p) => ({ type: "Pigeon", id: p._id })),
               { type: "Pigeon", id: "LIST" },
             ]
           : [{ type: "Pigeon", id: "LIST" }],
+    }),
+
+    // ---------- GET SINGLE PIGEON ----------
+    getSinglePigeon: builder.query({
+      query: (id) => ({
+        url: `/pigeon/${id}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, id) => [{ type: "Pigeon", id }],
     }),
 
     // ---------- POST ----------
     addPigeon: builder.mutation({
       query: ({ data, imageFile, token }) => {
         const formData = new FormData();
-
-        // Append JSON fields as 'data'
         formData.append("data", JSON.stringify(data));
-
-        // Append image file
         if (imageFile) {
           formData.append("image", imageFile);
         }
-
         return {
           url: "/pigeon",
           method: "POST",
@@ -85,6 +90,29 @@ const mypigeonSlice = api.injectEndpoints({
         };
       },
       invalidatesTags: [{ type: "Pigeon", id: "LIST" }],
+    }),
+
+    // ---------- UPDATE ----------
+    updatePigeon: builder.mutation({
+      query: ({ id, data, imageFile, token }) => {
+        const formData = new FormData();
+        formData.append("data", JSON.stringify(data));
+        if (imageFile) {
+          formData.append("image", imageFile);
+        }
+        return {
+          url: `/pigeon/${id}`,
+          method: "PATCH", // Use PUT or PATCH according to your API
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+      },
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Pigeon", id },
+        { type: "Pigeon", id: "LIST" },
+      ],
     }),
 
     // ---------- DELETE ----------
@@ -103,6 +131,8 @@ const mypigeonSlice = api.injectEndpoints({
 
 export const {
   useGetMyPigeonsQuery,
+  useGetSinglePigeonQuery, // ✅ New hook
   useAddPigeonMutation,
+  useUpdatePigeonMutation, // ✅
   useDeletePigeonMutation,
 } = mypigeonSlice;

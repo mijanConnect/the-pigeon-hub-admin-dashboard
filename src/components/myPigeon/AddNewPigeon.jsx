@@ -14,8 +14,10 @@ import {
   Switch,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import VerifyIcon from "../../../src/assets/verify.png";
-import { useAddPigeonMutation } from "../../redux/apiSlices/mypigeonSlice";
+import {
+  useAddPigeonMutation,
+  useUpdatePigeonMutation,
+} from "../../redux/apiSlices/mypigeonSlice";
 
 const { Option } = Select;
 
@@ -37,21 +39,27 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
 
   useEffect(() => {
     if (pigeonData) {
-      // Fill form with existing data
+      // Split combined color & pattern
+      const [color, pattern] = pigeonData.color?.includes("&")
+        ? pigeonData.color.split(" & ").map((v) => v.trim())
+        : [pigeonData.color, null];
+
+      setSelected({ color, pattern });
+      setShowResults(Boolean(pigeonData.results));
+
+      // Prefill form with pigeonData
       form.setFieldsValue({
         ...pigeonData,
-        colorPattern: {
-          color: pigeonData.color || null,
-          pattern: pigeonData.pattern || null,
-        },
-        photos: pigeonData.image
-          ? [{ url: pigeonData.image, thumbUrl: pigeonData.image }]
-          : [],
+        fatherRingId: pigeonData.fatherRingId?.ringNumber || "",
+        motherRingId: pigeonData.motherRingId?.ringNumber || "",
+        colorPattern: { color, pattern },
+        verification: pigeonData.verified ? "verified" : "notverified",
+        iconic: pigeonData.iconic ? "yes" : "no",
       });
-      setSelected({ color: pigeonData.color, pattern: pigeonData.pattern });
     } else {
-      form.resetFields();
       setSelected({ color: null, pattern: null });
+      setShowResults(false);
+      form.resetFields();
     }
   }, [pigeonData, form]);
 
@@ -77,15 +85,14 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
     </Menu>
   );
 
+  const [updatePigeon] = useUpdatePigeonMutation(); // ✅ New
+
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-
-      // Grab first image
       const fileList = values.photos || [];
       const imageFile = fileList[0]?.originFileObj;
 
-      // Combine color & pattern into a single string
       const combinedColor =
         values.colorPattern?.color && values.colorPattern?.pattern
           ? `${values.colorPattern.color} & ${values.colorPattern.pattern}`
@@ -97,11 +104,13 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
         racherRating: values.racerRating || 0,
         country: values.country,
         birthYear: values.birthYear,
+        story: values.story || "",
         shortInfo: values.shortInfo || "",
         breeder: values.breeder,
-        color: combinedColor, // ✅ send combined value here
+        color: combinedColor,
         racingRating: values.racingRating,
         breederRating: values.breederRating,
+        iconicScore: values.iconicScore,
         gender: values.gender,
         status: values.status,
         location: values.location,
@@ -109,15 +118,27 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
         results: values.results || "",
         verified: values.verification === "verified",
         iconic: values.iconic === "yes",
-        iconicScore: values.iconicScore,
-        fatherRingId: values.fatherRingId || "",
-        motherRingId: values.motherRingId || "",
+        fatherRingId: values.fatherRingId ? values.fatherRingId : "", // ✅ send empty string if empty
+        motherRingId: values.motherRingId ? values.motherRingId : "", // ✅ same here
       };
 
-      console.log(dataToSend);
       const token = localStorage.getItem("token");
-      await addPigeon({ data: dataToSend, imageFile, token }).unwrap();
-      message.success("Pigeon saved successfully!");
+
+      if (pigeonData?._id) {
+        // ✅ Update existing pigeon
+        await updatePigeon({
+          id: pigeonData._id,
+          data: dataToSend,
+          imageFile,
+          token,
+        }).unwrap();
+        message.success("Pigeon updated successfully!");
+      } else {
+        // ✅ Add new pigeon
+        await addPigeon({ data: dataToSend, imageFile, token }).unwrap();
+        message.success("Pigeon added successfully!");
+      }
+
       form.resetFields();
       onCancel();
     } catch (err) {
@@ -187,6 +208,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
                 placeholder="Select Country"
                 className="custom-select-ant-modal"
               >
+                <Option value="Bangladesh">Bangladesh</Option>
                 <Option value="USA">USA</Option>
                 <Option value="UK">UK</Option>
                 <Option value="Canada">Canada</Option>
@@ -223,6 +245,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             </Form.Item>
           </Col>
 
+          {/* Color & Pattern */}
           <Col xs={24} sm={12} md={8}>
             <Form.Item
               label="Color & Pattern"
@@ -294,16 +317,11 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
                 placeholder="Select Rating"
                 className="custom-select-ant-modal"
               >
-                <Option value={10}>10</Option>
-                <Option value={20}>20</Option>
-                <Option value={30}>30</Option>
-                <Option value={40}>40</Option>
-                <Option value={50}>50</Option>
-                <Option value={60}>60</Option>
-                <Option value={70}>70</Option>
-                <Option value={80}>80</Option>
-                <Option value={90}>90</Option>
-                <Option value={100}>100</Option>
+                {Array.from({ length: 10 }, (_, i) => (i + 1) * 10).map((v) => (
+                  <Option key={v} value={v}>
+                    {v}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
@@ -354,16 +372,11 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
                 placeholder="Select Rating"
                 className="custom-select-ant-modal"
               >
-                <Option value={10}>10</Option>
-                <Option value={20}>20</Option>
-                <Option value={30}>30</Option>
-                <Option value={40}>40</Option>
-                <Option value={50}>50</Option>
-                <Option value={60}>60</Option>
-                <Option value={70}>70</Option>
-                <Option value={80}>80</Option>
-                <Option value={90}>90</Option>
-                <Option value={100}>100</Option>
+                {Array.from({ length: 10 }, (_, i) => (i + 1) * 10).map((v) => (
+                  <Option key={v} value={v}>
+                    {v}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
@@ -402,6 +415,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             </Form.Item>
           </Col>
 
+          {/* Iconic Score */}
           <Col xs={24} sm={12} md={8}>
             <Form.Item
               label="Iconic Score"
@@ -415,16 +429,11 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
                 placeholder="Select Iconic Score"
                 className="custom-select-ant-modal"
               >
-                <Option value={10}>10</Option>
-                <Option value={20}>20</Option>
-                <Option value={30}>30</Option>
-                <Option value={40}>40</Option>
-                <Option value={50}>50</Option>
-                <Option value={60}>60</Option>
-                <Option value={70}>70</Option>
-                <Option value={80}>80</Option>
-                <Option value={90}>90</Option>
-                <Option value={100}>100</Option>
+                {Array.from({ length: 10 }, (_, i) => (i + 1) * 10).map((v) => (
+                  <Option key={v} value={v}>
+                    {v}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
@@ -483,7 +492,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
                   if (!isJpgOrPng) {
                     message.error("You can only upload JPG/PNG files!");
                   }
-                  return false; // ✅ Prevent auto upload, just store locally
+                  return false;
                 }}
                 accept=".jpg,.jpeg,.png"
               >
@@ -504,7 +513,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             </Form.Item>
           </Col>
 
-          {/* Notes */}
+          {/* Notes / Results */}
           <Col xs={24} sm={12} md={12}>
             <div className="flex items-center mb-2">
               <Switch
