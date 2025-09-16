@@ -89,9 +89,11 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
                 placeholder="Select Pigeon Score"
                 className="custom-select-ant-modal"
               >
-                <Select.Option value={10}>10</Select.Option>
-                <Select.Option value={20}>20</Select.Option>
-                <Select.Option value={30}>30</Select.Option>
+                {Array.from({ length: 10 }, (_, i) => (
+                  <Select.Option key={i + 1} value={(i + 1) * 10}>
+                    {(i + 1) * 10}
+                  </Select.Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
@@ -195,8 +197,16 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
               valuePropName="checked"
               className="custom-form-item-ant"
             >
-              <Checkbox>Verified Breeder (Lock Data)</Checkbox>
+              <Checkbox>
+                <span className="font-semibold text-[16px]">
+                  Verified Breeder (Lock Data)
+                </span>
+              </Checkbox>
             </Form.Item>
+            <p className="text-gray-400 text-sm ml-6">
+              Check this box to verify the breeder and lock all data from
+              editing.
+            </p>
           </Col>
         </Row>
       </Form>
