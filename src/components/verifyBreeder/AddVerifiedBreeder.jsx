@@ -9,7 +9,10 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
   // Set form values when editing
   useEffect(() => {
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      form.setFieldsValue({
+        ...initialValues,
+        status: !!initialValues.status, // force boolean for checkbox
+      });
     } else {
       form.resetFields();
     }
@@ -72,18 +75,24 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             </Form.Item>
           </Col>
 
-          {/* Pigeon Score */}
+          {/* Country */}
           <Col xs={24} sm={12} md={12}>
             <Form.Item
               label="Pigeon Score"
               name="pigeonScore"
-              rules={[{ required: true, message: "Please enter pigeon score" }]}
-              className="custom-form-item-ant"
+              rules={[
+                { required: true, message: "Please select pigeon score" },
+              ]}
+              className="custom-form-item-ant-select"
             >
-              <Input
-                placeholder="Enter Pigeon Score"
-                className="custom-input-ant-modal"
-              />
+              <Select
+                placeholder="Select Pigeon Score"
+                className="custom-select-ant-modal"
+              >
+                <Select.Option value={10}>10</Select.Option>
+                <Select.Option value={20}>20</Select.Option>
+                <Select.Option value={30}>30</Select.Option>
+              </Select>
             </Form.Item>
           </Col>
 
@@ -186,9 +195,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
               valuePropName="checked"
               className="custom-form-item-ant"
             >
-              <Checkbox className="custom-checkbox-ant-modal">
-                Verified Breeder (Lock Data)
-              </Checkbox>
+              <Checkbox>Verified Breeder (Lock Data)</Checkbox>
             </Form.Item>
           </Col>
         </Row>

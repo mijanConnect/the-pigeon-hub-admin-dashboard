@@ -363,7 +363,10 @@ const LoginCredentials = () => {
 
       <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
         <div className="border rounded-lg shadow-md bg-gray-50">
-          <div style={{ minWidth: "max-content" }}>
+          <div
+            style={{ minWidth: "max-content" }}
+            className="bg-[#333D49] rounded-lg"
+          >
             <Table
               rowSelection={rowSelection}
               columns={columns}

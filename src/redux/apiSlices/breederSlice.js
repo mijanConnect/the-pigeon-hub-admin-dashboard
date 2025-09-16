@@ -6,7 +6,7 @@ const breederSlice = api.injectEndpoints({
       query: ({
         page = 1,
         limit = 10,
-        search,
+        searchTerm,
         country,
         gender,
         status,
@@ -15,11 +15,12 @@ const breederSlice = api.injectEndpoints({
         const params = new URLSearchParams();
         params.append("page", page);
         params.append("limit", limit);
-        if (search) params.append("search", search);
+        // if (search) params.append("search", search);
+        if (searchTerm) params.append("searchTerm", searchTerm); // ✅ fixed here
         if (country && country !== "all") params.append("country", country);
         if (gender && gender !== "all") params.append("gender", gender);
-        if (status !== undefined && status !== "all")
-          params.append("status", status === "Active" ? true : false);
+        if (status !== undefined)
+          params.append("status", status ? true : false); // convert to boolean
         if (experience && experience !== "all")
           params.append("experience", experience);
 
@@ -39,7 +40,7 @@ const breederSlice = api.injectEndpoints({
           phoneNumber: b.phone,
           gender: b.gender,
           experienceLevel: b.experience,
-          status: b.status,
+          status: Boolean(b.status), // ✅ Force boolean
         }));
         return {
           breeders,

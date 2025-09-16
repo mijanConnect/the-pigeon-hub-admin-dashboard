@@ -32,10 +32,16 @@ const VerifyBreeder = () => {
   const { data: apiData, isLoading } = useGetBreedersQuery({
     page,
     limit,
-    search: searchText || undefined,
+    // search: searchText || undefined,
+    searchTerm: searchText || undefined,
     country: filterCountry !== "all" ? filterCountry : undefined,
     gender: filterGender !== "all" ? filterGender : undefined,
-    status: filterStatus !== "all" ? filterStatus : undefined,
+    status:
+      filterStatus === "Verified"
+        ? true
+        : filterStatus === "NotVerified"
+        ? false
+        : undefined,
     experience: filterExperience !== "all" ? filterExperience : undefined,
   });
 
@@ -56,7 +62,11 @@ const VerifyBreeder = () => {
   };
 
   const openEditModal = (record) => {
-    setEditingData(record);
+    const formattedRecord = {
+      ...record,
+      status: !!record.status, // ensure true/false for checkbox
+    };
+    setEditingData(formattedRecord);
     setIsModalVisible(true);
   };
 
@@ -68,11 +78,13 @@ const VerifyBreeder = () => {
         country: values.country,
         email: values.email,
         phone: values.phoneNumber,
-        status: values.status === "Active" || values.status === true,
+        status: !!values.status, // ✅ always boolean
         score: Number(values.pigeonScore),
         experience: values.experienceLevel,
         gender: values.gender,
       };
+
+      console.log(payload);
 
       if (editingData) {
         await updateBreeder({
@@ -274,8 +286,8 @@ const VerifyBreeder = () => {
                 }}
               >
                 <Option value="all">All</Option>
-                <Option value="Active">Active</Option>
-                <Option value="Inactive">Inactive</Option>
+                <Option value="Verified">Verified</Option>
+                <Option value="NotVerified">Not Verified</Option>
               </Select>
             </div>
           </Col>
@@ -284,7 +296,10 @@ const VerifyBreeder = () => {
 
       {/* Table */}
       <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
-        <div style={{ minWidth: "max-content" }}>
+        <div
+          style={{ minWidth: "max-content" }}
+          className="bg-[#333D49] rounded-lg"
+        >
           <Table
             columns={getColumns()}
             dataSource={filteredData}
@@ -344,7 +359,7 @@ const VerifyBreeder = () => {
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onSave={handleSave}
-        breederData={editingData}
+        initialValues={editingData}
       />
     </div>
   );
