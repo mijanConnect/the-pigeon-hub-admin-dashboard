@@ -166,7 +166,7 @@ const PackagesPlans = () => {
 
   // Card and text styles
   const getCardStyle = (pkg) => {
-    if (pkg.popular || pkg.title === "Premium")
+    if (pkg.popular || pkg.title === "Professional")
       return "shadow-lg rounded-lg bg-primary hover:shadow-xl transition-all transform hover:-translate-y-1";
     if (pkg.title === "Freebie")
       return "shadow-sm rounded-lg border border-gray-300 bg-[#F9FAFB] hover:shadow-md transition-all transform hover:-translate-y-1";
@@ -174,27 +174,27 @@ const PackagesPlans = () => {
   };
 
   const getTitleStyle = (pkg) =>
-    pkg.popular || pkg.title === "Premium"
+    pkg.popular || pkg.title === "Professional"
       ? "text-white text-[22px] font-semibold"
       : "text-[#071952] text-[22px] font-semibold";
 
   const getPriceStyle = (pkg) =>
-    pkg.popular || pkg.title === "Premium"
+    pkg.popular || pkg.title === "Professional"
       ? "text-white text-[56px] font-semibold"
       : "text-[#071952] text-[56px] font-semibold";
 
   const getDurationStyle = (pkg) =>
-    pkg.popular || pkg.title === "Premium"
+    pkg.popular || pkg.title === "Professional"
       ? "text-white text-[16px] font-regular"
       : "text-[#071952] text-[16px] font-regular";
 
   const getDescriptionStyle = (pkg) =>
-    pkg.popular || pkg.title === "Premium"
+    pkg.popular || pkg.title === "Professional"
       ? "text-white text-[16px] font-thin"
       : "text-[#071952] text-[16px] font-thin";
 
   const getFeatureStyle = (pkg) =>
-    pkg.popular || pkg.title === "Premium"
+    pkg.popular || pkg.title === "Professional"
       ? "text-white text-[16px] font-thin"
       : "text-[#071952] text-[16px] font-thin";
 
@@ -258,7 +258,7 @@ const PackagesPlans = () => {
                       let iconColor = "";
                       let featureTextColor = "";
 
-                      if (pkg.popular || pkg.title === "Premium") {
+                      if (pkg.popular || pkg.title === "Professional") {
                         icon = (
                           <CheckCircleFilled className="text-white mr-2 text-[20px]" />
                         );

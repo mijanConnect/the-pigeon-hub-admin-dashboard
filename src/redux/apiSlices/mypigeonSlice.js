@@ -72,43 +72,31 @@ const mypigeonSlice = api.injectEndpoints({
       providesTags: (result, error, id) => [{ type: "Pigeon", id }],
     }),
 
-    // ---------- POST ----------
+    // Add Pigeon
     addPigeon: builder.mutation({
-      query: ({ data, imageFile, token }) => {
-        const formData = new FormData();
-        formData.append("data", JSON.stringify(data));
-        if (imageFile) {
-          formData.append("image", imageFile);
-        }
-        return {
-          url: "/pigeon",
-          method: "POST",
-          body: formData,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-      },
+      query: ({ formData, token }) => ({
+        url: "/pigeon",
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ only Authorization
+          // Remove Content-Type
+        },
+      }),
       invalidatesTags: [{ type: "Pigeon", id: "LIST" }],
     }),
 
-    // ---------- UPDATE ----------
+    // Update Pigeon
     updatePigeon: builder.mutation({
-      query: ({ id, data, imageFile, token }) => {
-        const formData = new FormData();
-        formData.append("data", JSON.stringify(data));
-        if (imageFile) {
-          formData.append("image", imageFile);
-        }
-        return {
-          url: `/pigeon/${id}`,
-          method: "PATCH", // Use PUT or PATCH according to your API
-          body: formData,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-      },
+      query: ({ id, formData, token }) => ({
+        url: `/pigeon/${id}`,
+        method: "PATCH",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ only Authorization
+          // Remove Content-Type
+        },
+      }),
       invalidatesTags: (result, error, { id }) => [
         { type: "Pigeon", id },
         { type: "Pigeon", id: "LIST" },

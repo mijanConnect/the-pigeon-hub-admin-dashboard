@@ -188,8 +188,8 @@ const MyPigeon = () => {
           type="primary"
           className="py-5 px-7 font-semibold text-[16px]"
           onClick={() => {
-            setEditingPigeon(null);
-            setIsModalVisible(true);
+            setEditingPigeonId(null); // ✅ reset ID
+            setIsModalVisible(true); // ✅ open modal
           }}
         >
           Add New Pigeon
@@ -320,7 +320,7 @@ const MyPigeon = () => {
               </div>
             ) : (
               <Table
-                rowSelection={rowSelection}
+                // rowSelection={rowSelection}
                 columns={columns}
                 dataSource={pigeons}
                 rowClassName={() => "hover-row"}
@@ -386,13 +386,14 @@ const MyPigeon = () => {
         visible={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);
-          setEditingPigeonId(null); // reset after closing
+          setEditingPigeonId(null); // clear edit ID
         }}
         onSave={(values) => {
           console.log(editingPigeonId ? "Edit Pigeon:" : "Add Pigeon:", values);
           setIsModalVisible(false);
+          setEditingPigeonId(null); // clear edit ID after save
         }}
-        pigeonData={editingPigeonData?.data} // ✅ pass fetched data
+        pigeonData={editingPigeonId ? editingPigeonData?.data : null} // ✅ Only pass data if editing
       />
     </div>
   );

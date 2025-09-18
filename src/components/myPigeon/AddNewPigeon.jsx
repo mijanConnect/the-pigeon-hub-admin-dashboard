@@ -18,6 +18,7 @@ import {
   useAddPigeonMutation,
   useUpdatePigeonMutation,
 } from "../../redux/apiSlices/mypigeonSlice";
+import { getImageUrl } from "../common/imageUrl";
 
 const { Option } = Select;
 
@@ -38,30 +39,43 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
   const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
-    if (pigeonData) {
-      // Split combined color & pattern
-      const [color, pattern] = pigeonData.color?.includes("&")
-        ? pigeonData.color.split(" & ").map((v) => v.trim())
-        : [pigeonData.color, null];
+    if (visible) {
+      if (pigeonData) {
+        const [color, pattern] = pigeonData.color?.includes("&")
+          ? pigeonData.color.split(" & ").map((v) => v.trim())
+          : [pigeonData.color, null];
 
-      setSelected({ color, pattern });
-      setShowResults(Boolean(pigeonData.results));
+        setSelected({ color, pattern });
+        setShowResults(Boolean(pigeonData.results));
 
-      // Prefill form with pigeonData
-      form.setFieldsValue({
-        ...pigeonData,
-        fatherRingId: pigeonData.fatherRingId?.ringNumber || "",
-        motherRingId: pigeonData.motherRingId?.ringNumber || "",
-        colorPattern: { color, pattern },
-        verification: pigeonData.verified ? "verified" : "notverified",
-        iconic: pigeonData.iconic ? "yes" : "no",
-      });
-    } else {
-      setSelected({ color: null, pattern: null });
-      setShowResults(false);
-      form.resetFields();
+        // Map existing photos to Upload format
+        const photoList = pigeonData.photos
+          ? pigeonData.photos.map((url, index) => ({
+              uid: String(index),
+              name: `image-${index}.jpg`,
+              status: "done",
+              url: getImageUrl(url), // store the original URL directly
+              originFileObj: null, // already uploaded
+            }))
+          : [];
+
+        form.setFieldsValue({
+          ...pigeonData,
+          fatherRingId: pigeonData.fatherRingId?.ringNumber || "",
+          motherRingId: pigeonData.motherRingId?.ringNumber || "",
+          colorPattern: { color, pattern },
+          verification: pigeonData.verified ? "verified" : "notverified",
+          iconic: pigeonData.iconic ? "yes" : "no",
+          photos: photoList, // ✅ pass formatted photo list
+        });
+      } else {
+        // New Add
+        setSelected({ color: null, pattern: null });
+        setShowResults(false);
+        form.resetFields();
+      }
     }
-  }, [pigeonData, form]);
+  }, [pigeonData, visible, form]);
 
   const handleClick = (color, pattern) => {
     setSelected({ color, pattern });
@@ -91,17 +105,29 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
     try {
       const values = await form.validateFields();
       const fileList = values.photos || [];
-      const imageFile = fileList[0]?.originFileObj;
 
+      // Separate new uploads vs existing images
+      const newFiles = fileList.filter((file) => file.originFileObj);
+      const existingFiles = fileList.filter((file) => !file.originFileObj);
+
+      // Determine deleted images (from original photos)
+      const originalUrls = pigeonData?.photos || [];
+      const existingUrls = existingFiles.map((f) => f.url || f.response?.url);
+      const deletedUrls = originalUrls.filter(
+        (url) => !existingUrls.includes(url)
+      );
+
+      // Combine color & pattern
       const combinedColor =
         values.colorPattern?.color && values.colorPattern?.pattern
           ? `${values.colorPattern.color} & ${values.colorPattern.pattern}`
           : values.colorPattern?.color || values.colorPattern?.pattern || "-";
 
+      // Data to send to server
       const dataToSend = {
         ringNumber: values.ringNumber,
         name: values.name,
-        racherRating: values.racerRating || 0,
+        racherRating: values.racingRating || 0,
         country: values.country,
         birthYear: values.birthYear,
         story: values.story || "",
@@ -118,28 +144,32 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
         results: values.results || "",
         verified: values.verification === "verified",
         iconic: values.iconic === "yes",
-        fatherRingId: values.fatherRingId ? values.fatherRingId : "", // ✅ send empty string if empty
-        motherRingId: values.motherRingId ? values.motherRingId : "", // ✅ same here
+        fatherRingId: values.fatherRingId || "",
+        motherRingId: values.motherRingId || "",
+        existingImages: existingUrls, // URLs to keep
       };
 
       const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("data", JSON.stringify(dataToSend));
+
+      // Append newly added files
+      newFiles.forEach((file) => formData.append("image", file.originFileObj));
+
+      // Append deleted images info
+      formData.append("deletedImages", JSON.stringify(deletedUrls));
 
       if (pigeonData?._id) {
-        // ✅ Update existing pigeon
-        await updatePigeon({
-          id: pigeonData._id,
-          data: dataToSend,
-          imageFile,
-          token,
-        }).unwrap();
+        await updatePigeon({ id: pigeonData._id, formData, token }).unwrap();
         message.success("Pigeon updated successfully!");
       } else {
-        // ✅ Add new pigeon
-        await addPigeon({ data: dataToSend, imageFile, token }).unwrap();
+        await addPigeon({ formData, token }).unwrap();
         message.success("Pigeon added successfully!");
       }
 
       form.resetFields();
+      setSelected({ color: null, pattern: null });
+      setShowResults(false);
       onCancel();
     } catch (err) {
       console.error(err);
@@ -149,11 +179,24 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
     }
   };
 
+  useEffect(() => {
+    if (!visible) {
+      form.resetFields(); // ✅ always clear form when modal closes
+      setSelected({ color: null, pattern: null });
+      setShowResults(false);
+    }
+  }, [visible, form]);
+
   return (
     <Modal
       title={pigeonData ? "Edit Pigeon" : "Add New Pigeon"}
       open={visible}
-      onCancel={onCancel}
+      onCancel={() => {
+        form.resetFields(); // clear form
+        setSelected({ color: null, pattern: null });
+        setShowResults(false);
+        onCancel(); // notify parent to close modal
+      }}
       width={1200}
       footer={[
         <Button key="cancel" onClick={onCancel}>
@@ -479,6 +522,10 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
               <Upload
                 name="files"
                 listType="picture-card"
+                fileList={form.getFieldValue("photos")}
+                onPreview={(file) =>
+                  window.open(getImageUrl(file.url), "_blank")
+                }
                 multiple
                 className="border rounded-lg p-3 border-[#071952]"
                 maxCount={5}

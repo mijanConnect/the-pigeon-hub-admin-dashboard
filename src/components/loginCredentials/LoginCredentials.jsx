@@ -368,7 +368,7 @@ const LoginCredentials = () => {
             className="bg-[#333D49] rounded-lg"
           >
             <Table
-              rowSelection={rowSelection}
+              // rowSelection={rowSelection}
               columns={columns}
               dataSource={data}
               rowClassName={() => "hover-row"}
