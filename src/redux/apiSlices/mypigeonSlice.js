@@ -32,12 +32,14 @@ const mypigeonSlice = api.injectEndpoints({
         };
       },
       transformResponse: (response) => {
-        const pigeons = response?.data?.data?.map((pigeon) => ({
+        const pigeonArray = response?.data?.data || []; // ✅ actual pigeons array
+
+        const pigeons = pigeonArray.map((pigeon) => ({
           _id: pigeon._id,
           image: pigeon.photos?.[0] || "",
           name: pigeon.name,
           country: { name: pigeon.country, icon: "" },
-          breeder: pigeon.breeder,
+          breeder: pigeon.breeder?.breederName || "-",
           ringNumber: pigeon.ringNumber,
           birthYear: pigeon.birthYear,
           father: pigeon.fatherRingId
@@ -52,8 +54,13 @@ const mypigeonSlice = api.injectEndpoints({
           verified: pigeon.verified ? "Yes" : "No",
           icon: pigeon.verified ? "/assets/verify.png" : "",
         }));
-        return { pigeons, pagination: response?.data?.pagination || {} };
+
+        return {
+          pigeons,
+          pagination: response?.data?.pagination || {},
+        };
       },
+
       providesTags: (result) =>
         result?.pigeons
           ? [
@@ -114,6 +121,29 @@ const mypigeonSlice = api.injectEndpoints({
         { type: "Pigeon", id: "LIST" },
       ],
     }),
+
+    getBreederNames: builder.query({
+      query: () => ({
+        url: "/breeder", // ✅ adjust according to your backend route
+        method: "GET",
+      }),
+      transformResponse: (response) => {
+        // assuming response.data contains array of breeders
+        return (
+          response?.data?.breeder?.map((b) => ({
+            _id: b._id,
+            breederName: b.breederName,
+          })) || []
+        );
+      },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map((b) => ({ type: "Breeder", id: b._id })),
+              { type: "Breeder", id: "LIST" },
+            ]
+          : [{ type: "Breeder", id: "LIST" }],
+    }),
   }),
 });
 
@@ -123,4 +153,5 @@ export const {
   useAddPigeonMutation,
   useUpdatePigeonMutation, // ✅
   useDeletePigeonMutation,
+  useGetBreederNamesQuery, // ✅ New hook for breeder names
 } = mypigeonSlice;

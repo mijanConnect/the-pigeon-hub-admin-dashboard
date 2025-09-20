@@ -18,7 +18,8 @@ import {
 } from "../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../common/imageUrl";
 import VerifyIcon from "../../assets/verify.png";
-import { FaTrash, FaEdit } from "react-icons/fa";
+import { FaTrash, FaEdit, FaEye } from "react-icons/fa";
+import ViewPigeon from "./ViewPigeon"; // ✅ import
 import Swal from "sweetalert2";
 
 const { Option } = Select;
@@ -35,6 +36,20 @@ const MyPigeon = () => {
     color: "all",
     status: "all",
   });
+
+  // Add states
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [viewPigeonId, setViewPigeonId] = useState(null);
+
+  const { data: viewPigeonData, isLoading: viewLoading } =
+    useGetSinglePigeonQuery(viewPigeonId, {
+      skip: !viewPigeonId, // only fetch when ID exists
+    });
+
+  const handleView = (record) => {
+    setViewPigeonId(record._id); // ✅ fetch full pigeon details
+    setViewModalVisible(true);
+  };
 
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
@@ -157,6 +172,12 @@ const MyPigeon = () => {
       render: (_, record) => (
         <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
           <div className="flex gap-5 border px-4 py-2 rounded">
+            <Tooltip title="View Details">
+              <FaEye
+                style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
+                onClick={() => handleView(record)}
+              />
+            </Tooltip>
             <Tooltip title="View & Update Details">
               <FaEdit
                 style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
@@ -394,6 +415,16 @@ const MyPigeon = () => {
           setEditingPigeonId(null); // clear edit ID after save
         }}
         pigeonData={editingPigeonId ? editingPigeonData?.data : null} // ✅ Only pass data if editing
+      />
+
+      <ViewPigeon
+        visible={viewModalVisible}
+        onCancel={() => {
+          setViewModalVisible(false);
+          setViewPigeonId(null); // reset when closing
+        }}
+        pigeonData={viewPigeonData?.data || null}
+        loading={viewLoading}
       />
     </div>
   );

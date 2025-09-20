@@ -341,15 +341,14 @@ select {
 
 /* Keep default border visible */
 .custom-select-ant-white .ant-select-selector {
-  border: 1px solid #9ca3af !important;  /* default gray border */
+  border: 1px solid #9ca3af !important; /* default gray border */
 }
 
 /* Change border color when active/focused */
 .custom-select-ant-white.ant-select-focused .ant-select-selector {
-  border-color: #181818 !important;      /* yellow border on focus */
-  box-shadow: none !important;           /* optional: remove shadow */
+  border-color: #181818 !important; /* yellow border on focus */
+  box-shadow: none !important; /* optional: remove shadow */
 }
-
 
 /* Arrow icon styling */
 .custom-select-ant-white .ant-select-arrow {
@@ -481,6 +480,33 @@ select {
 }
 .custom-form-item-ant-select {
   margin-bottom: 8px !important; /* adjust as needed */
+}
+
+/* Placeholder color */
+.custom-form-item-ant-select .ant-select-selection-placeholder {
+  color: #9d9ea1 !important; /* light gray placeholder */
+  opacity: 1 !important;
+}
+
+/* Selected value color */
+.custom-form-item-ant-select .ant-select-selection-item {
+  color: #071952 !important; /* dark color for selected value */
+}
+
+/* Input inside Select (if searching enabled) */
+.custom-form-item-ant-select .ant-select-selection-search-input {
+  color: #071952 !important; /* typed search text color */
+}
+
+/* Focused state */
+.custom-form-item-ant-select.ant-select-focused .ant-select-selector {
+  border-color: #071952 !important; /* keep border consistent */
+  box-shadow: none !important; /* remove default focus shadow */
+}
+
+/* Arrow color */
+.custom-form-item-ant-select .ant-select-arrow {
+  color: #071952 !important;
 }
 
 /* Image upload */
