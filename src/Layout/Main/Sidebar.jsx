@@ -149,7 +149,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         // },
         {
           key: "/terms-and-conditions",
-          label: <Link to="/terms-and-conditions">Terms And Condition</Link>,
+          label: <Link to="/terms-and-conditions">Terms And Conditions</Link>,
         },
         // {
         //   key: "/privacy-policy",

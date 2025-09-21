@@ -7,6 +7,7 @@ import { useUser } from "../../provider/User";
 import { IoIosLogOut } from "react-icons/io";
 import Avatar from "../../assets/avatar.png";
 import { getImageUrl } from "../../components/common/imageUrl";
+import { useGetRecentNotificationsQuery } from "../../redux/apiSlices/notificationSlice";
 
 const Header = () => {
   const { user } = useUser();
@@ -75,12 +76,14 @@ const Header = () => {
   );
 
   // Dummy notifications (you can replace with API data later)
-  const notifications = [
-    { id: 1, text: "New user registered" },
-    { id: 2, text: "Payment received successfully" },
-    { id: 3, text: "Server maintenance scheduled" },
-    { id: 4, text: "New promotion campaign launched" },
-  ];
+  // const notifications = [
+  //   { id: 1, text: "New user registered" },
+  //   { id: 2, text: "Payment received successfully" },
+  //   { id: 3, text: "Server maintenance scheduled" },
+  //   { id: 4, text: "New promotion campaign launched" },
+  // ];
+
+  const { data: notifications = [] } = useGetRecentNotificationsQuery(10);
 
   return (
     <div className="flex items-center justify-between gap-5 w-full px-4 py-6 bg-[#F2F2F2] lg:px-10">
