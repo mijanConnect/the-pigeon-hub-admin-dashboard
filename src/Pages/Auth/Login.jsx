@@ -2,27 +2,32 @@ import { Form, Input, message as antdMessage } from "antd";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLoginMutation } from "../../redux/apiSlices/authSlice";
+import { useUser } from "../../provider/User";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
   const [messageApi, contextHolder] = antdMessage.useMessage(); // ✅ hook version
+  const { setUser } = useUser();
 
   const onFinish = async (values) => {
     try {
       const response = await login(values).unwrap();
       if (response?.success) {
-        // store token
+        // ✅ store token
         localStorage.setItem("token", response.data.accessToken);
 
-        // ✅ don't await — toast + navigation happen instantly
+        // ✅ success toast
         messageApi.success(response.message || "Logged in successfully!");
-        navigate("/");
+
+        // ✅ hard reload → ensures UserProvider refetches profile with new token
+        window.location.href = "/";
       } else {
         messageApi.error(response.message || "Login failed!");
       }
     } catch (error) {
-      messageApi.error(error || "Something went wrong!");
+      messageApi.error(error?.data?.message || "Something went wrong!");
     }
   };
 
@@ -73,6 +78,15 @@ const Login = () => {
             }}
           />
         </Form.Item>
+
+        <div className="flex justify-end mt-2">
+          <Link
+            to="/auth/forgot-password"
+            className="text-sm text-blue-500 hover:underline"
+          >
+            Forgot Password
+          </Link>
+        </div>
 
         <Form.Item>
           <button

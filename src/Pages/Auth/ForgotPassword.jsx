@@ -1,15 +1,21 @@
-import { Button, Form, Input } from "antd";
+import { Form, Input } from "antd";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import keyIcon from "../../assets/key.png";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useForgotPasswordMutation } from "../../redux/apiSlices/authSlice";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
   const onFinish = async (values) => {
-    navigate(`/auth/verify-otp?email=${values?.email}`);
+    try {
+      await forgotPassword({ email: values.email }).unwrap();
+      navigate(`/auth/verify-otp?email=${values?.email}`);
+    } catch (error) {
+      console.error("Forgot password error:", error);
+    }
   };
 
   return (
@@ -28,7 +34,7 @@ const ForgotPassword = () => {
             {
               required: true,
               message: "Please input your Email!",
-              type: "email", // optional: validates email format
+              type: "email",
             },
           ]}
         >
@@ -41,8 +47,8 @@ const ForgotPassword = () => {
               outline: "none",
               boxShadow: "none",
               borderRadius: 5,
-              backgroundColor: "transparent", // ✅ transparent background
-              color: "#ffffff", // optional: make text white
+              backgroundColor: "transparent",
+              color: "#ffffff",
             }}
           />
         </Form.Item>
@@ -51,6 +57,7 @@ const ForgotPassword = () => {
           <button
             htmlType="submit"
             type="submit"
+            disabled={isLoading}
             style={{
               width: "100%",
               height: 45,
@@ -62,7 +69,7 @@ const ForgotPassword = () => {
             }}
             className="flex items-center justify-center bg-primary hover:bg-[#1f2682] transition rounded-lg"
           >
-            Submit
+            {isLoading ? "Sending..." : "Submit"}
           </button>
         </Form.Item>
       </Form>

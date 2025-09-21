@@ -1,39 +1,31 @@
+// src/redux/apiSlices/termsAndConditionSlice.js
 import { api } from "../api/baseApi";
 
-
 const termsAndConditionSlice = api.injectEndpoints({
-    endpoints: (builder)=>({
-        updateTermsAndConditions: builder.mutation({
-            query: ({id, description})=> {
-                return{
-                    url: `/terms-and-condition/update-terms-and-condition/${id}`,
-                    method: "PATCH",
-                    body: {description},
-                    headers:{
-                        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
-                    }
-                }
-            }
-        }),
-        termsAndCondition: builder.query({
-            query: ()=> {
-                return{
-                    url: "/terms-and-condition/get-terms-and-condition",
-                    method: "GET",
-                    headers:{
-                        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
-                    }
-                    
-                }
-            },
-            transformResponse: ({data})=>{
-                return data
-            }
-        }),
-    })
-})
+  endpoints: (builder) => ({
+    // GET Terms & Conditions
+    getTermsAndConditions: builder.query({
+      query: () => ({
+        url: "/rule/terms-and-conditions",
+        method: "GET",
+      }),
+      transformResponse: (response) => response.data, // return data object
+      providesTags: ["TermsAndConditions"],
+    }),
+
+    // POST / update Terms & Conditions
+    updateTermsAndConditions: builder.mutation({
+      query: (content) => ({
+        url: "/rule/terms-and-conditions",
+        method: "POST",
+        body: { content },
+      }),
+      invalidatesTags: ["TermsAndConditions"], // refresh after update
+    }),
+  }),
+});
 
 export const {
-    useTermsAndConditionQuery,
-    useUpdateTermsAndConditionsMutation
+  useGetTermsAndConditionsQuery,
+  useUpdateTermsAndConditionsMutation,
 } = termsAndConditionSlice;

@@ -36,12 +36,17 @@ const Contact = () => {
   ];
 
   return (
-    <div className="p-6 rounded-lg bg-gradient-to-r from-primary to-secondary">
-      <h1 className="text-3xl font-bold text-white mb-10 text-center">
-        Contact
-      </h1>
+    <div className="p-6 rounded-lg">
+      <div>
+        <h1 className="text-3xl font-bold text-primary mb-1 text-center">
+          Contact
+        </h1>
+        <p className="text-center">
+          Get in touch with us for any inquiries or support.
+        </p>
+      </div>
       <Flex vertical justify="center" gap={30} className="w-full">
-        <div className="flex items-center justify-normal bg-white p-12 w-4/5 mx-auto gap-4 rounded-xl">
+        <div className="flex items-center justify-normal bg-white w-4/5 mx-auto gap-4 rounded-xl border border-primary mt-6 py-16">
           {[
             {
               icon: <LiaPhoneVolumeSolid size={50} />,
@@ -82,6 +87,12 @@ const Contact = () => {
         >
           Edit Info
         </button>
+        {/* <Button
+          type="primary"
+          onClick={showModal}
+          block
+          style={{ height: 40, width: 400 }}
+        ></Button> */}
       </Flex>
 
       {/* Edit Contact Modal */}

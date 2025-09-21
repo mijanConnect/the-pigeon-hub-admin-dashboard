@@ -60,6 +60,18 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     );
   };
 
+  const renderIcon2 = (IconComponent, itemKey) => {
+    const isActive = isItemActive(itemKey);
+    return (
+      <div style={{ width: 20, height: 20 }} className={isActive ? "" : ""}>
+        <IconComponent
+          className="menu-icon"
+          fill={isActive ? "#ffffff" : "#1E1E1E"}
+        />
+      </div>
+    );
+  };
+
   const menuItems = [
     {
       key: "/",
@@ -113,6 +125,37 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           {collapsed ? "" : "Analytics & Reports"}
         </Link>
       ),
+    },
+    {
+      key: "subMenuSetting",
+      icon: renderIcon2(Settings, "subMenuSetting"),
+      label: "Settings",
+      children: [
+        {
+          key: "/profile",
+          label: <Link to="/profile">Update Profile</Link>,
+        },
+        // {
+        //   key: "/faq",
+        //   label: <Link to="/faq">FAQ </Link>,
+        // },
+        // {
+        //   key: "/contact",
+        //   label: <Link to="/contact">Contact Us</Link>,
+        // },
+        // {
+        //   key: "/about",
+        //   label: <Link to="/about">About Us </Link>,
+        // },
+        {
+          key: "/terms-and-conditions",
+          label: <Link to="/terms-and-conditions">Terms And Condition</Link>,
+        },
+        // {
+        //   key: "/privacy-policy",
+        //   label: <Link to="/privacy-policy">Privacy Policy</Link>,
+        // },
+      ],
     },
     // Pigeon Hub End
     // {
@@ -170,11 +213,11 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     //     </Link>
     //   ),
     // },
-    {
-      key: "/settings",
-      icon: renderIcon(Settings, "/settings"),
-      label: <Link to="/settings">{collapsed ? "" : "Settings"}</Link>,
-    },
+    // {
+    //   key: "/settings",
+    //   icon: renderIcon(Settings, "/settings"),
+    //   label: <Link to="/settings">{collapsed ? "" : "Settings"}</Link>,
+    // },
     // {
     //   key: "/profile",
     //   icon: renderIcon(Settings, "/pushNotification"),

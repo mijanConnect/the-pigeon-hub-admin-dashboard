@@ -1,38 +1,41 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import JoditEditor from "jodit-react";
 import GradientButton from "../../components/common/GradiantButton";
 import { Button, message, Modal } from "antd";
+import {
+  useGetTermsAndConditionsQuery,
+  useUpdateTermsAndConditionsMutation,
+} from "../../redux/apiSlices/termsAndConditionSlice";
 
 const TermsAndCondition = () => {
   const editor = useRef(null);
+  const { data, isLoading } = useGetTermsAndConditionsQuery();
+  const [updateTerms] = useUpdateTermsAndConditionsMutation();
 
-  // Using a single state for both content and saved content
-  const [termsContent, setTermsContent] = useState(`
-    <h2 style="font-size: 24px; font-weight: bold; color: #333;">Terms & Conditions</h2>
-    <p style="font-size: 16px; color: #555;">Welcome to our website. If you continue to browse and use this website, you are agreeing to comply with and be bound by the following terms and conditions of use.</p><br />
-    <h3 style="font-size: 20px; font-weight: bold; color: #444;">1. General Terms</h3>
-    <p style="font-size: 16px; color: #555;">The content of the pages of this website is for your general information and use only. It is subject to change without notice.</p><br />
-    <h3 style="font-size: 20px; font-weight: bold; color: #444;">2. Privacy Policy</h3>
-    <p style="font-size: 16px; color: #555;">Your use of this website is also subject to our Privacy Policy, which is incorporated by reference.</p><br />
-    <h3 style="font-size: 20px; font-weight: bold; color: #444;">3. Disclaimer</h3>
-    <p style="font-size: 16px; color: #555;">The information contained in this website is for general information purposes only. We endeavor to keep the information up to date and correct.</p>
-`);
-
+  const [termsContent, setTermsContent] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const showModal = () => {
-    setIsModalOpen(true);
+  // Set content when data is loaded
+  useEffect(() => {
+    if (data?.content) {
+      setTermsContent(data.content);
+    }
+  }, [data]);
+
+  const showModal = () => setIsModalOpen(true);
+
+  const handleOk = async () => {
+    try {
+      await updateTerms(termsContent).unwrap();
+      message.success("Terms & Conditions updated successfully!");
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Update error:", error);
+      message.error("Failed to update Terms & Conditions");
+    }
   };
 
-  const handleOk = () => {
-    // When saving, just set the content to the saved state
-    setIsModalOpen(false);
-    message.success("Terms & Conditions updated successfully!");
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
+  const handleCancel = () => setIsModalOpen(false);
 
   return (
     <div className="p-4">
@@ -47,10 +50,14 @@ const TermsAndCondition = () => {
       </div>
 
       <div className="saved-content mt-6 border p-6 rounded-lg bg-white">
-        <div
-          dangerouslySetInnerHTML={{ __html: termsContent }}
-          className="prose max-w-none"
-        />
+        {isLoading ? (
+          <p>Loading...</p>
+        ) : (
+          <div
+            dangerouslySetInnerHTML={{ __html: termsContent }}
+            className="prose max-w-none"
+          />
+        )}
       </div>
 
       <Modal
@@ -81,9 +88,7 @@ const TermsAndCondition = () => {
             <JoditEditor
               ref={editor}
               value={termsContent}
-              onChange={(newContent) => {
-                setTermsContent(newContent);
-              }}
+              onChange={(newContent) => setTermsContent(newContent)}
             />
           </div>
         )}
