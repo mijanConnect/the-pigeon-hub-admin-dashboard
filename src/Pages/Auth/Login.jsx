@@ -79,10 +79,10 @@ const Login = () => {
           />
         </Form.Item>
 
-        <div className="flex justify-end mt-2">
+        <div className="flex justify-end">
           <Link
             to="/auth/forgot-password"
-            className="text-sm text-blue-500 hover:underline"
+            className="text-[16px] text-white hover:text-white hover:underline"
           >
             Forgot Password
           </Link>
