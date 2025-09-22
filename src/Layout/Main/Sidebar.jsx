@@ -19,8 +19,13 @@ import {
   AuditLog,
   loginCredentials,
   Rewords,
+  MyPigeon,
+  PigeonManagement,
+  Analytics,
+  Verified,
 } from "../../components/common/Svg";
 import image4 from "../../assets/image4.png";
+import VerifySidebar from "../../assets/verify-sidebar.png";
 
 const Sidebar = ({ collapsed, setCollapsed }) => {
   const location = useLocation();
@@ -82,12 +87,12 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     // Pigeon Hub Start
     {
       key: "/my-pigeon",
-      icon: renderIcon(Marchant, "/my-pigeon"),
+      icon: renderIcon(MyPigeon, "/my-pigeon"),
       label: <Link to="/my-pigeon">{collapsed ? "" : "My Pigeon"}</Link>,
     },
     {
       key: "/pigeon-management",
-      icon: renderIcon(Marchant, "/pigeon-management"),
+      icon: renderIcon(PigeonManagement, "/pigeon-management"),
       label: (
         <Link to="/pigeon-management">
           {collapsed ? "" : "Pigeon Management"}
@@ -96,7 +101,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     },
     {
       key: "/verify-breeder",
-      icon: renderIcon(Marchant, "/verify-breeder"),
+      icon: renderIcon(Verified, "/verify-breeder"),
       label: (
         <Link to="/verify-breeder">{collapsed ? "" : "Verify Breeder"}</Link>
       ),
@@ -119,7 +124,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     },
     {
       key: "/reportingAnalytics",
-      icon: renderIcon(Rewords, "/reportingAnalytics"),
+      icon: renderIcon(Analytics, "/reportingAnalytics"),
       label: (
         <Link to="/reportingAnalytics">
           {collapsed ? "" : "Analytics & Reports"}
