@@ -572,3 +572,9 @@ select {
 .ant-pagination-item-active a {
   color: #212b35 !important;
 }
+
+.ant-upload-list-picture-card img {
+  width: 100%;
+  height: 150px; /* same as your div height */
+  object-fit: cover; /* cover the area */
+}
