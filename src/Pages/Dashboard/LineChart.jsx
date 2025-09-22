@@ -47,7 +47,7 @@ const LineChart = () => {
   const { data: revenueData = [], isLoading } =
     useGetMonthlyRevenueQuery(selectedYear);
 
-    console.log(data)
+  // console.log(data);
 
   // Effect to update chart height based on screen size
   useEffect(() => {
