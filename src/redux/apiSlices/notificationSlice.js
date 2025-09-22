@@ -21,12 +21,23 @@ const notificationSlice = api.injectEndpoints({
       transformResponse: (response) => response.data,
       providesTags: ["Notification"],
     }),
+
     readAllNotifications: builder.mutation({
       query: () => ({
-        url: `/notification/read-all`,
-        method: "POST",
+        url: `/notification/admin`,
+        method: "PATCH",
       }),
       invalidatesTags: ["Notification"],
+    }),
+
+    // ✅ NEW: Unread Count API
+    getUnreadNotificationCount: builder.query({
+      query: () => ({
+        url: `/notification/unreadCount`,
+        method: "GET",
+      }),
+      transformResponse: (response) => response.data.unreadCount || 0,
+      providesTags: ["Notification"],
     }),
   }),
 });
@@ -35,4 +46,5 @@ export const {
   useGetRecentNotificationsQuery,
   useGetNotificationsQuery,
   useReadAllNotificationsMutation,
+  useGetUnreadNotificationCountQuery, // ✅ Export this
 } = notificationSlice;

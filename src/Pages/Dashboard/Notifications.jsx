@@ -15,25 +15,30 @@ const Notifications = () => {
   const handleReadAll = async () => {
     try {
       const res = await readAll().unwrap();
-      toast.success(res.message || "All notifications marked as read!");
+
+      if (res.success) {
+        toast.success(res.message || "All notifications marked as read!");
+      } else {
+        toast.error(res.message || "Failed to mark as read");
+      }
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to mark as read");
+      toast.error(error?.data?.message || "Request failed");
     }
   };
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-[22px]">All Notifications</h2>
+      <div className="flex items-center justify-between mb-4 px-4 bg-primary">
+        <h2 className="text-[22px] font-bold text-white">All Notifications</h2>
         <button
           onClick={handleReadAll}
-          className="bg-primary text-white h-10 px-4 rounded-md"
+          className="bg-primary text-white h-10 rounded-md"
         >
           Read All
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-5">
+      <div className="grid grid-cols-1 gap-2 px-4">
         {isLoading
           ? [...Array(8).keys()].map((_, index) => (
               <div
@@ -52,36 +57,43 @@ const Notifications = () => {
                 key={notification._id}
                 className="border-b-[1px] pb-2 border-[#d9d9d9] flex items-center gap-3"
               >
-                {/* <img
-                  style={{
-                    height: "50px",
-                    width: "50px",
-                    borderRadius: "100%",
-                    border: "2px solid gray",
-                  }}
-                  src="https://img.freepik.com/free-photo/everything-is-okay-cheerful-friendly-looking-caucasian-guy-with-moustache-beard-raising-hand-with-ok-great-gesture-giving-approval-like-having-situation-control_176420-22386.jpg"
-                /> */}
                 <div>
-                  <p>{notification.text}</p>
-                  {/* <p style={{ color: "gray", marginTop: "4px" }}>
+                  <p
+                    className={
+                      notification.read
+                        ? "font-normal text-gray-500"
+                        : "font-semibold text-black"
+                    }
+                  >
+                    {notification.text}
+                  </p>
+                  <p
+                    style={{
+                      color: "gray",
+                      marginTop: "2px",
+                      fontSize: "12px",
+                    }}
+                  >
                     {new Date(notification.createdAt).toLocaleString()}
-                  </p> */}
+                  </p>
                 </div>
               </div>
             ))}
       </div>
 
-      <div className="flex items-center justify-center mt-6">
+      <div className="flex items-center justify-end mt-4">
         <ConfigProvider
           theme={{
             components: {
               Pagination: {
-                itemActiveBg: "#6C57EC",
-                borderRadius: "100%",
+                colorText: "#ffffff", // normal number color (white like table body)
+                colorTextDisabled: "#888888", // disabled arrows
+                itemActiveBg: "#6C57EC", // active background (purple)
+                itemActiveColor: "#ffffff", // active number text color
+                colorPrimaryHover: "#6C57EC", // hover border/text
+                itemBg: "#071952", // background for each item (same as table row)
+                itemLinkBg: "#071952", // arrows background
               },
-            },
-            token: {
-              colorPrimary: "white",
             },
           }}
         >

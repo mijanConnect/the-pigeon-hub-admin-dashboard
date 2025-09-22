@@ -115,86 +115,131 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
   const [updatePigeon] = useUpdatePigeonMutation();
 
   const handleSave = async () => {
-    try {
-      const values = await form.validateFields();
-      const fileList = values.photos || [];
+  try {
+    const values = await form.validateFields();
+    const fileList = values.photos || [];
 
-      const newFiles = fileList.filter((file) => file.originFileObj);
-      const existingFiles = fileList.filter((file) => !file.originFileObj);
-      const originalUrls = pigeonData?.photos || [];
-      const existingUrls = existingFiles.map((f) => f.url || f.response?.url);
-      const deletedUrls = originalUrls.filter(
-        (url) => !existingUrls.includes(url)
-      );
+    const newFiles = fileList.filter((file) => file.originFileObj);
+    const existingFiles = fileList.filter((file) => !file.originFileObj);
 
-      const combinedColor =
-        values.colorPattern?.color && values.colorPattern?.pattern
-          ? `${values.colorPattern.color} & ${values.colorPattern.pattern}`
-          : values.colorPattern?.color || values.colorPattern?.pattern || "-";
-
-      const dataToSend = {
-        ringNumber: values.ringNumber,
-        name: values.name,
-        // racherRating: values.racingRating || 0,
-        country: values.country,
-        birthYear: values.birthYear,
-        story: values.story || "",
-        shortInfo: values.shortInfo || "",
-        breeder: values.breeder,
-        color: combinedColor,
-        racingRating: values.racingRating,
-        breederRating: values.breederRating,
-        iconicScore: values.iconicScore,
-        gender: values.gender,
-        status: values.status,
-        location: values.location,
-        notes: values.notes || "",
-        results:
-          raceResults.length > 0
-            ? raceResults.map((r) => ({
-                name: r.name,
-                date: r.date,
-                distance: r.distance,
-                total: Number(r.total),
-                place: r.place,
-              }))
-            : [],
-        verified: values.verification === "verified",
-        iconic: values.iconic === "yes",
-        fatherRingId: values.fatherRingId || "",
-        motherRingId: values.motherRingId || "",
-        existingImages: existingUrls,
-      };
-
-      console.log("Data to send:", dataToSend);
-
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("data", JSON.stringify(dataToSend));
-
-      newFiles.forEach((file) => formData.append("image", file.originFileObj));
-      formData.append("deletedImages", JSON.stringify(deletedUrls));
-
-      if (pigeonData?._id) {
-        await updatePigeon({ id: pigeonData._id, formData, token }).unwrap();
-        message.success("Pigeon updated successfully!");
-      } else {
-        await addPigeon({ formData, token }).unwrap();
-        message.success("Pigeon added successfully!");
+    // Helper function to extract the image filename/path from URL
+    const extractImagePath = (url) => {
+      if (!url) return "";
+      // Extract everything after /images/
+      if (url.includes("/images/")) {
+        return url.split("/images/")[1];
       }
+      // If it's already just a filename/path, return as is
+      return url;
+    };
 
-      form.resetFields();
-      setSelected({ color: null, pattern: null });
-      setShowResults(false);
-      setRaceResults([]);
-      onCancel();
-    } catch (err) {
-      console.error(err);
-      message.error(
-        "Failed to save pigeon. " + (err?.data?.message || err.message)
+    // Get existing URLs - these are the images that are still in the form
+    const existingUrls = existingFiles
+      .map((file) => {
+        return extractImagePath(file.url || file.response?.url);
+      })
+      .filter(Boolean);
+
+    // For UPDATE operations, we need to handle existing images differently
+    let existingImages = [];
+    let deletedUrls = [];
+
+    if (pigeonData?._id) {
+      // UPDATE case
+      const originalUrls = pigeonData?.photos || [];
+      const normalizedOriginalUrls = originalUrls.map((url) => extractImagePath(url));
+      
+      deletedUrls = normalizedOriginalUrls.filter(
+        (normalizedUrl) => !existingUrls.includes(normalizedUrl)
       );
+      
+      // Keep existing images with proper format
+      existingImages = existingUrls.map((path) => `/images/${path}`);
+    } else {
+      // ADD case - no existing images
+      existingImages = [];
+      deletedUrls = [];
     }
-  };
+
+    const combinedColor =
+      values.colorPattern?.color && values.colorPattern?.pattern
+        ? `${values.colorPattern.color} & ${values.colorPattern.pattern}`
+        : values.colorPattern?.color || values.colorPattern?.pattern || "-";
+
+    const dataToSend = {
+      ringNumber: values.ringNumber,
+      name: values.name,
+      country: values.country,
+      birthYear: values.birthYear,
+      story: values.story || "",
+      shortInfo: values.shortInfo || "",
+      breeder: values.breeder,
+      color: combinedColor,
+      racingRating: values.racingRating,
+      breederRating: values.breederRating,
+      iconicScore: values.iconicScore,
+      gender: values.gender,
+      status: values.status,
+      location: values.location,
+      notes: values.notes || "",
+      results:
+        raceResults.length > 0
+          ? raceResults.map((r) => ({
+              name: r.name,
+              date: r.date,
+              distance: r.distance,
+              total: Number(r.total),
+              place: r.place,
+            }))
+          : [],
+      verified: values.verification === "verified",
+      iconic: values.iconic === "yes",
+      fatherRingId: values.fatherRingId || "",
+      motherRingId: values.motherRingId || "",
+    };
+
+    // Only add existingImages field for updates
+    if (pigeonData?._id) {
+      dataToSend.existingImages = existingImages;
+    }
+
+    console.log("Data to send:", dataToSend);
+    console.log("Existing URLs:", existingUrls);
+    console.log("Deleted URLs:", deletedUrls);
+    console.log("New files count:", newFiles.length);
+
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(dataToSend));
+
+    // Add new image files
+    newFiles.forEach((file) => formData.append("image", file.originFileObj));
+    
+    // Add deleted images info (only for updates)
+    if (pigeonData?._id) {
+      formData.append("deletedImages", JSON.stringify(deletedUrls));
+    }
+
+    if (pigeonData?._id) {
+      await updatePigeon({ id: pigeonData._id, formData, token }).unwrap();
+      message.success("Pigeon updated successfully!");
+    } else {
+      await addPigeon({ formData, token }).unwrap();
+      message.success("Pigeon added successfully!");
+    }
+
+    form.resetFields();
+    setSelected({ color: null, pattern: null });
+    setShowResults(false);
+    setRaceResults([]);
+    onCancel();
+  } catch (err) {
+    console.error(err);
+    message.error(
+      "Failed to save pigeon. " + (err?.data?.message || err.message)
+    );
+  }
+};
 
   useEffect(() => {
     if (!visible) {
@@ -654,55 +699,48 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
           </Col>
 
           {/* Pigeon Photos */}
-          <Col xs={24} sm={12} md={12}>
-            <Form.Item
-              label="Pigeon Photos"
-              name="photos"
-              valuePropName="fileList"
-              getValueFromEvent={(e) =>
-                Array.isArray(e) ? e : e && e.fileList
-              }
+          <Form.Item
+            label="Pigeon Photos"
+            name="photos"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+          >
+            <Upload
+              name="files"
+              listType="picture-card"
+              fileList={form.getFieldValue("photos")}
+              onPreview={(file) => window.open(getImageUrl(file.url), "_blank")}
+              onChange={({ fileList }) =>
+                form.setFieldsValue({ photos: fileList })
+              } // ✅ Important!
+              multiple
+              className="border rounded-lg p-3 border-[#071952]"
+              maxCount={5}
+              showUploadList={{ showPreviewIcon: true, showRemoveIcon: true }}
+              beforeUpload={(file) => {
+                const isJpgOrPng =
+                  file.type === "image/jpeg" || file.type === "image/png";
+                if (!isJpgOrPng)
+                  message.error("You can only upload JPG/PNG files!");
+                return false; // prevent auto upload
+              }}
+              accept=".jpg,.jpeg,.png"
             >
-              <Upload
-                name="files"
-                listType="picture-card"
-                fileList={form.getFieldValue("photos")}
-                onPreview={(file) =>
-                  window.open(getImageUrl(file.url), "_blank")
-                }
-                multiple
-                className="border rounded-lg p-3 border-[#071952]"
-                maxCount={5}
-                showUploadList={{
-                  showPreviewIcon: true,
-                  showRemoveIcon: true,
+              <div
+                style={{
+                  width: 150,
+                  height: 150,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-                beforeUpload={(file) => {
-                  const isJpgOrPng =
-                    file.type === "image/jpeg" || file.type === "image/png";
-                  if (!isJpgOrPng) {
-                    message.error("You can only upload JPG/PNG files!");
-                  }
-                  return false;
-                }}
-                accept=".jpg,.jpeg,.png"
               >
-                <div
-                  style={{
-                    width: 150,
-                    height: 150,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8 }}>Upload</div>
-                </div>
-              </Upload>
-            </Form.Item>
-          </Col>
+                <PlusOutlined />
+                <div style={{ marginTop: 8 }}>Upload</div>
+              </div>
+            </Upload>
+          </Form.Item>
 
           {/* existing notes/results */}
         </Row>

@@ -55,6 +55,7 @@ const breederSlice = api.injectEndpoints({
             ]
           : [{ type: "Breeder", id: "LIST" }],
     }),
+
     addBreeder: builder.mutation({
       query: ({ data, token }) => ({
         url: "/breeder",
@@ -64,6 +65,7 @@ const breederSlice = api.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Breeder", id: "LIST" }],
     }),
+
     updateBreeder: builder.mutation({
       query: ({ id, data, token }) => ({
         url: `/breeder/${id}`,
@@ -76,6 +78,7 @@ const breederSlice = api.injectEndpoints({
         { type: "Breeder", id: "LIST" },
       ],
     }),
+
     deleteBreeder: builder.mutation({
       query: (id) => ({ url: `/breeder/${id}`, method: "DELETE" }),
       invalidatesTags: (result, error, id) => [
