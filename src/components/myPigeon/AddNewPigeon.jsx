@@ -716,8 +716,8 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             >
               <div
                 style={{
-                  width: 150,
-                  height: 150,
+                  width: 102,
+                  height: 102,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",

@@ -11,30 +11,30 @@ const SetPassword = () => {
 
   const onFinish = async (values) => {
     const resetToken = localStorage.getItem("resetToken");
-    console.log("🔹 Retrieved reset token from localStorage:", resetToken); // Debug log
-    
+    // console.log("🔹 Retrieved reset token from localStorage:", resetToken); // Debug log
+
     if (!resetToken) {
       alert("Reset token missing. Please verify your email again.");
       return;
     }
 
     try {
-      console.log("🔹 Sending reset password request with token:", resetToken); // Debug log
+      // console.log("🔹 Sending reset password request with token:", resetToken); // Debug log
       const res = await resetPassword({
         newPassword: values.newPassword,
         confirmPassword: values.confirmPassword,
         token: resetToken, // Make sure this is the plain string token
       }).unwrap();
-      
-      console.log("Password reset successful:", res);
-      
+
+      // console.log("Password reset successful:", res);
+
       // Clean up the reset token
       localStorage.removeItem("resetToken");
-      
+
       navigate("/auth/login");
     } catch (err) {
       console.error("Reset password error:", err);
-      
+
       // Show more detailed error message
       if (err?.data?.message) {
         alert(err.data.message);

@@ -57,8 +57,8 @@ const authSlice = api.injectEndpoints({
     // Try different approaches for reset password
     resetPassword: builder.mutation({
       query: ({ newPassword, confirmPassword, token }) => {
-        console.log("🔹 Reset password mutation - token received:", token);
-        console.log("🔹 Request body:", { newPassword, confirmPassword });
+        // console.log("🔹 Reset password mutation - token received:", token);
+        // console.log("🔹 Request body:", { newPassword, confirmPassword });
 
         // Try approach 1: Bearer token in Authorization header
         const headers = {
@@ -66,7 +66,7 @@ const authSlice = api.injectEndpoints({
           "Content-Type": "application/json",
         };
 
-        console.log("🔹 Headers being sent:", headers);
+        // console.log("🔹 Headers being sent:", headers);
 
         return {
           url: "/auth/reset-password",

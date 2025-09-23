@@ -575,6 +575,74 @@ select {
 
 .ant-upload-list-picture-card img {
   width: 100%;
-  height: 150px; /* same as your div height */
+  height: 102px; /* same as your div height */
   object-fit: cover; /* cover the area */
+}
+/* Add this CSS to fix API-loaded image dimensions */
+
+/* Add this CSS to fix API-loaded image dimensions and prevent overflow */
+
+/* Fix for existing images loaded from API */
+.ant-upload-list-picture-card .ant-upload-list-item {
+  width: 102px !important;
+  height: 102px !important;
+  margin-right: 8px !important;
+  margin-bottom: 8px !important;
+  border: 1px solid #d9d9d9 !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* Fix the image container */
+.ant-upload-list-picture-card .ant-upload-list-item-thumbnail {
+  width: 100px !important; /* 2px less to account for border */
+  height: 100px !important; /* 2px less to account for border */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  border-radius: 4px !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+/* Fix the actual image element */
+.ant-upload-list-picture-card .ant-upload-list-item-thumbnail img {
+  max-width: 100px !important;
+  max-height: 100px !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+  border-radius: 4px !important;
+  display: block !important;
+  margin: auto !important;
+}
+
+/* Fix action buttons positioning */
+.ant-upload-list-picture-card .ant-upload-list-item-actions {
+  position: absolute !important;
+  top: 2px !important;
+  right: 2px !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  border-radius: 2px !important;
+  padding: 1px !important;
+  z-index: 10 !important;
+}
+
+/* Ensure upload button stays consistent */
+.ant-upload-select-picture-card {
+  width: 102px !important;
+  height: 102px !important;
+  margin-right: 8px !important;
+  margin-bottom: 8px !important;
+  border: 1px dashed #d9d9d9 !important;
+  border-radius: 6px !important;
+}
+
+/* Add margin-top ONLY for dropdown error messages */
+.custom-form-item-ant-select .ant-form-item-explain {
+  margin-top: 7px; /* adjust as needed */
 }
