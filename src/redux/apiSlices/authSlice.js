@@ -22,10 +22,6 @@ const authSlice = api.injectEndpoints({
       transformResponse: (data) => {
         return data;
       },
-      transformErrorResponse: ({ data }) => {
-        const { message } = data;
-        return message;
-      },
     }),
     forgotPassword: builder.mutation({
       query: (data) => {

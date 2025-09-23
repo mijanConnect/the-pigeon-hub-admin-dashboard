@@ -27,7 +27,16 @@ const Login = () => {
         messageApi.error(response.message || "Login failed!");
       }
     } catch (error) {
-      messageApi.error(error?.data?.message || "Something went wrong!");
+      console.error("Login error:", error);
+
+      const backendMessage =
+        (typeof error === "string" && error) || // if transformErrorResponse made it a string
+        error?.data?.message || // normal RTKQ error object
+        error?.data?.errorMessages?.[0]?.message ||
+        error?.error ||
+        "Something went wrong!";
+
+      messageApi.error(backendMessage);
     }
   };
 
