@@ -13,6 +13,8 @@
     "@reduxjs/toolkit": "^2.2.7",
     "antd": "^5.20.3",
     "chart.js": "^4.4.8",
+    "country-list": "^2.4.1",
+    "country-list-js": "^3.1.8",
     "file-saver": "^2.0.5",
     "html2canvas": "^1.4.1",
     "i18next": "^23.4.6",

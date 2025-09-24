@@ -1,11 +1,13 @@
 import React, { useEffect } from "react";
 import { Modal, Form, Input, Select, Row, Col, Button, Checkbox } from "antd";
+import { getNames } from "country-list";
 
 const { Option } = Select;
 
 const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
   const [form] = Form.useForm();
 
+  const countries = getNames();
   // Set form values when editing
   useEffect(() => {
     if (initialValues) {
@@ -99,6 +101,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
           </Col>
 
           {/* Country */}
+
           <Col xs={24} sm={12} md={12}>
             <Form.Item
               label="Country"
@@ -109,11 +112,17 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
               <Select
                 placeholder="Select Country"
                 className="custom-select-ant-modal"
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option?.children?.toLowerCase().includes(input.toLowerCase())
+                }
               >
-                <Option value="USA">USA</Option>
-                <Option value="UK">UK</Option>
-                <Option value="Canada">Canada</Option>
-                <Option value="Germany">Germany</Option>
+                {countries.map((country, index) => (
+                  <Option key={index} value={country}>
+                    {country}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>

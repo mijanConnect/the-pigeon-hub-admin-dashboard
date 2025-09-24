@@ -25,6 +25,8 @@ import PigeonImage from "../../../src/assets/pigeon-image.png";
 import VerifyIcon from "../../assets/verify.png";
 import Swal from "sweetalert2";
 import ViewPigeon from "../myPigeon/ViewPigeon";
+import { getNames } from "country-list";
+import { getCode } from "country-list";
 
 const { Option } = Select;
 
@@ -44,6 +46,7 @@ const PigeonManagement = () => {
   const [editingPigeonId, setEditingPigeonId] = useState(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [viewPigeonId, setViewPigeonId] = useState(null);
+  const countries = getNames();
 
   // RTK Query hooks
   const { data, isLoading } = useGetAllPigeonsQuery({
@@ -213,7 +216,21 @@ const PigeonManagement = () => {
       title: "Country",
       dataIndex: "country",
       key: "country",
-      render: (country) => country || "-",
+      render: (country) => {
+        const countryCode = country ? getCode(country.name || country) : null;
+        return countryCode ? (
+          <div className="flex items-center gap-2">
+            <img
+              src={`https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`}
+              alt={country.name || country}
+              className="w-5 h-4 rounded-sm"
+            />
+            <p className="text-white">{countryCode}</p>
+          </div>
+        ) : (
+          <span>-</span>
+        );
+      },
     },
     { title: "Pigeon ID", dataIndex: "pigeonId", key: "pigeonId" },
     { title: "Ring Number", dataIndex: "ringNumber", key: "ringNumber" },
@@ -307,15 +324,22 @@ const PigeonManagement = () => {
                 placeholder="Select Country"
                 className="custom-select-ant"
                 style={{ width: "100%" }}
-                value={filters.country}
+                value={filters.country || "all"}
                 onChange={(value) => handleFilterChange("country", value)}
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option?.children?.toLowerCase().includes(input.toLowerCase())
+                }
               >
+                {/* ✅ "All" option at the top */}
                 <Option value="all">All</Option>
-                <Option value="Bangladesh">Bangladesh</Option>
-                <Option value="USA">USA</Option>
-                <Option value="UK">UK</Option>
-                <Option value="Canada">Canada</Option>
-                <Option value="Germany">Germany</Option>
+
+                {countries.map((country, index) => (
+                  <Option key={index} value={country}>
+                    {country}
+                  </Option>
+                ))}
               </Select>
             </div>
           </Col>

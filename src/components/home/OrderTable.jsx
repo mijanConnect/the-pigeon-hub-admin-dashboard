@@ -4,6 +4,7 @@ import VerifyIcon from "../../../src/assets/verify.png";
 import { getImageUrl } from "../common/imageUrl";
 import PigeonImage from "../../../src/assets/pigeon-image.png";
 import { useGetRecentPigeonsQuery } from "../../redux/apiSlices/dashboardSlice";
+import { getCode } from "country-list";
 
 // const getImageUrlTable = (path) =>
 //   path ? `${getImageUrl}${path}` : PigeonImage;
@@ -34,7 +35,21 @@ const getColumns = () => [
     title: "Country",
     dataIndex: "country",
     key: "country",
-    render: (country) => <span>{country?.name || "-"}</span>,
+    render: (country) => {
+      const countryCode = country ? getCode(country.name || country) : null;
+      return countryCode ? (
+        <div className="flex items-center gap-2">
+          <img
+            src={`https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`}
+            alt={country.name || country}
+            className="w-5 h-4 rounded-sm"
+          />
+          <p className="text-white">{countryCode}</p>
+        </div>
+      ) : (
+        <span>-</span>
+      );
+    },
   },
   { title: "Breeder", dataIndex: "breeder", key: "breeder" },
   { title: "Ring Number", dataIndex: "ringNumber", key: "ringNumber" },

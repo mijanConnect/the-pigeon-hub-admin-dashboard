@@ -4,8 +4,13 @@
 // export default defineConfig({
 //   plugins: [react()],
 //   server: {
+//     // Local run
 //     host: "10.10.7.21",
-//     port: 3003,
+//     port: 3001,
+
+//     // Host run
+//     // host: "50.6.200.33",
+//     // port: 3001,
 //   },
 // });
 
@@ -15,11 +20,6 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: "0.0.0.0", // allow access from any IP
-    port: 3001,
-    allowedHosts: [
-      "mijanur3000.binarybards.online", // ✅ add your domain here
-    ],
+    host: "50.6.200.33",
   },
 });
-

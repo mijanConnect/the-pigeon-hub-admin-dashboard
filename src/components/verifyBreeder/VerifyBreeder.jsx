@@ -3,12 +3,14 @@ import { Button, Table, Input, Select, Row, Col, Tooltip } from "antd";
 import { FaTrash, FaEye } from "react-icons/fa";
 import Swal from "sweetalert2";
 import AddVerifyBreeder from "./AddVerifiedBreeder";
+import { getCode } from "country-list";
 import {
   useGetBreedersQuery,
   useAddBreederMutation,
   useUpdateBreederMutation,
   useDeleteBreederMutation,
 } from "../../redux/apiSlices/breederSlice";
+import { getNames } from "country-list";
 
 const { Option } = Select;
 
@@ -23,6 +25,14 @@ const VerifyBreeder = () => {
   const [filterGender, setFilterGender] = useState("all");
   const [filterExperience, setFilterExperience] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filters, setFilters] = useState({
+    search: "",
+    country: "all",
+    gender: "all",
+    color: "all",
+    status: "all",
+  });
+  const countries = getNames();
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -130,7 +140,26 @@ const VerifyBreeder = () => {
     { title: "Breeder Name", dataIndex: "breederName", key: "breederName" },
     { title: "Loft Name", dataIndex: "loftName", key: "loftName" },
     { title: "Pigeon Score", dataIndex: "pigeonScore", key: "pigeonScore" },
-    { title: "Country", dataIndex: "country", key: "country" },
+    {
+      title: "Country",
+      dataIndex: "country",
+      key: "country",
+      render: (country) => {
+        const countryCode = country ? getCode(country.name || country) : null;
+        return countryCode ? (
+          <div className="flex items-center gap-2">
+            <img
+              src={`https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`}
+              alt={country.name || country}
+              className="w-5 h-4 rounded-sm"
+            />
+            <p className="text-white">{countryCode}</p>
+          </div>
+        ) : (
+          <span>-</span>
+        );
+      },
+    },
     { title: "E-mail", dataIndex: "email", key: "email" },
     { title: "Phone Number", dataIndex: "phoneNumber", key: "phoneNumber" },
     { title: "Gender", dataIndex: "gender", key: "gender" },
@@ -219,17 +248,23 @@ const VerifyBreeder = () => {
               <Select
                 placeholder="Select Country"
                 className="custom-select-ant"
-                value={filterCountry}
-                onChange={(value) => {
-                  setFilterCountry(value);
-                  setPage(1);
-                }}
+                style={{ width: "100%" }}
+                value={filters.country || "all"}
+                onChange={(value) => handleFilterChange("country", value)}
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option?.children?.toLowerCase().includes(input.toLowerCase())
+                }
               >
+                {/* ✅ "All" option at the top */}
                 <Option value="all">All</Option>
-                <Option value="USA">USA</Option>
-                <Option value="UK">UK</Option>
-                <Option value="Canada">Canada</Option>
-                <Option value="Germany">Germany</Option>
+
+                {countries.map((country, index) => (
+                  <Option key={index} value={country}>
+                    {country}
+                  </Option>
+                ))}
               </Select>
             </div>
           </Col>

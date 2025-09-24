@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { FaTrash } from "react-icons/fa6";
 import { useBannersQuery, useCreateBannerMutation, useDeleteBannerMutation, useUpdateStatusMutation } from '../../redux/apiSlices/bannerSlice';
 import toast from 'react-hot-toast';
-import { imageUrl } from '../../redux/api/baseApi';
+// import { imageUrl } from '../../redux/api/baseApi';
 import { Checkbox } from 'antd';
+import { getImageUrl } from '../../components/common/imageUrl';
 
 const Banner = () => {
 
@@ -79,7 +80,7 @@ const Banner = () => {
                             <div key={index} className='w-full h-[200px] border relative rounded-lg p-2'>
                                 <img 
                                     style={{width: "100%", height:"100%", objectFit: "contain"}} 
-                                    src={`${imageUrl}${url?.banner}`} alt=""
+                                    src={`${getImageUrl}${url?.banner}`} alt=""
                                 />
                                 <div className='absolute top-[10px] right-[10px] flex items-center gap-3'>
                                     <div 

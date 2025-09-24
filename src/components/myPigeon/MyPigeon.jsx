@@ -21,6 +21,8 @@ import VerifyIcon from "../../assets/verify.png";
 import { FaTrash, FaEdit, FaEye } from "react-icons/fa";
 import ViewPigeon from "./ViewPigeon"; // ✅ import
 import Swal from "sweetalert2";
+import { getNames } from "country-list";
+import { getCode } from "country-list";
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -53,14 +55,15 @@ const MyPigeon = () => {
 
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
+  const countries = getNames();
 
-  const [editingPigeonId, setEditingPigeonId] = useState(null); // ✅ store ID
+  const [editingPigeonId, setEditingPigeonId] = useState(null);
   const { data: editingPigeonData } = useGetSinglePigeonQuery(editingPigeonId, {
     skip: !editingPigeonId, // don't fetch until ID is set
   });
 
   const showEditModal = (record) => {
-    setEditingPigeonId(record._id); // ✅ set the ID to fetch
+    setEditingPigeonId(record._id);
     setIsModalVisible(true);
   };
 
@@ -137,9 +140,23 @@ const MyPigeon = () => {
       title: "Country",
       dataIndex: "country",
       key: "country",
-      render: (country) =>
-        country?.name ? <span>{country.name}</span> : <span>-</span>,
+      render: (country) => {
+        const countryCode = country ? getCode(country.name || country) : null;
+        return countryCode ? (
+          <div className="flex items-center gap-2">
+            <img
+              src={`https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`}
+              alt={country.name || country}
+              className="w-5 h-4 rounded-sm"
+            />
+            <p className="text-white">{countryCode}</p>
+          </div>
+        ) : (
+          <span>-</span>
+        );
+      },
     },
+
     { title: "Breeder", dataIndex: "breeder", key: "breeder" },
     { title: "Ring Number", dataIndex: "ringNumber", key: "ringNumber" },
     { title: "Birth Year", dataIndex: "birthYear", key: "birthYear" },
@@ -259,15 +276,22 @@ const MyPigeon = () => {
                 placeholder="Select Country"
                 className="custom-select-ant"
                 style={{ width: "100%" }}
-                value={filters.country}
+                value={filters.country || "all"}
                 onChange={(value) => handleFilterChange("country", value)}
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option?.children?.toLowerCase().includes(input.toLowerCase())
+                }
               >
+                {/* ✅ "All" option at the top */}
                 <Option value="all">All</Option>
-                <Option value="Bangladesh">Bangladesh</Option>
-                <Option value="USA">USA</Option>
-                <Option value="UK">UK</Option>
-                <Option value="Canada">Canada</Option>
-                <Option value="Germany">Germany</Option>
+
+                {countries.map((country, index) => (
+                  <Option key={index} value={country}>
+                    {country}
+                  </Option>
+                ))}
               </Select>
             </div>
           </Col>

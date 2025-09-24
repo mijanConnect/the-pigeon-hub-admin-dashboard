@@ -21,6 +21,7 @@ import {
 } from "../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../common/imageUrl";
 import { useGetBreedersQuery } from "../../redux/apiSlices/breederSlice";
+import { getNames } from "country-list";
 
 const { Option } = Select;
 
@@ -40,6 +41,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
   const [addPigeon, { isLoading: isAdding }] = useAddPigeonMutation();
   const [showResults, setShowResults] = useState(false);
   const [raceResults, setRaceResults] = useState([]);
+  const countries = getNames();
 
   useEffect(() => {
     if (visible) {
@@ -319,12 +321,17 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
               <Select
                 placeholder="Select Country"
                 className="custom-select-ant-modal"
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option?.children?.toLowerCase().includes(input.toLowerCase())
+                }
               >
-                <Option value="Bangladesh">Bangladesh</Option>
-                <Option value="USA">USA</Option>
-                <Option value="UK">UK</Option>
-                <Option value="Canada">Canada</Option>
-                <Option value="Germany">Germany</Option>
+                {countries.map((country, index) => (
+                  <Option key={index} value={country}>
+                    {country}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
