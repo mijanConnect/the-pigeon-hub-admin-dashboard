@@ -374,6 +374,13 @@ const VerifyBreeder = () => {
                 ),
               },
             }}
+            locale={{
+              emptyText: (
+                <div className="py-10 text-gray-400 text-center">
+                  No pigeons found 🕊️
+                </div>
+              ),
+            }}
             bordered={false}
             pagination={{
               current: page,

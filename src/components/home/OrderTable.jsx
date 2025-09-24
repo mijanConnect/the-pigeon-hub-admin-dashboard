@@ -108,6 +108,8 @@ const PigeonTable = () => {
           Recently Added Pigeons
         </h1>
       </div>
+
+      {/* Table */}
       <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
         <div className="border rounded-lg shadow-md bg-gray-50">
           <div
@@ -153,6 +155,13 @@ const PigeonTable = () => {
                   ),
                 },
               }}
+              locale={{
+                emptyText: (
+                  <div className="py-10 text-gray-400 text-center">
+                    No pigeons found 🕊️
+                  </div>
+                ),
+              }}
               bordered={false}
               // pagination={{
               //   current: pagination.page,
@@ -162,12 +171,13 @@ const PigeonTable = () => {
               // }}
               pagination={false}
               size="small"
-              scroll={{ x: "max-content" }}
+              scroll={pigeons.length > 0 ? { x: "max-content" } : undefined}
               rowKey="key"
             />
           </div>
         </div>
       </div>
+      
     </div>
   );
 };
