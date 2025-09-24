@@ -16,7 +16,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: "0.0.0.0", // allow access from any IP
-    port: 3000,
+    port: 3001,
     allowedHosts: [
       "mijanur3000.binarybards.online", // ✅ add your domain here
     ],
