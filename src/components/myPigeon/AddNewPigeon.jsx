@@ -211,11 +211,66 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
       setShowResults(false);
       setRaceResults([]);
       onCancel();
+      // } catch (err) {
+      //   console.error(err);
+
+      //   const backendErrors = err?.data?.errorMessages;
+
+      //   if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+      //     // Extract father and mother errors
+      //     const fatherError = backendErrors.find((e) =>
+      //       e.message?.toLowerCase().includes("father")
+      //     );
+      //     const motherError = backendErrors.find((e) =>
+      //       e.message?.toLowerCase().includes("mother")
+      //     );
+
+      //     // Clear previous errors first
+      //     form.setFields([
+      //       { name: "fatherRingId", errors: [] },
+      //       { name: "motherRingId", errors: [] },
+      //     ]);
+
+      //     if (fatherError) {
+      //       // show only father error first
+      //       form.setFields([
+      //         { name: "fatherRingId", errors: [fatherError.message] },
+      //       ]);
+      //       return;
+      //     }
+
+      //     if (motherError) {
+      //       // father is fixed, now show mother error
+      //       form.setFields([
+      //         { name: "motherRingId", errors: [motherError.message] },
+      //       ]);
+      //       return;
+      //     }
+
+      //     // Fallback for any other errors
+      //     form.setFields(
+      //       backendErrors
+      //         .filter(
+      //           (e) =>
+      //             !e.message?.toLowerCase().includes("father") &&
+      //             !e.message?.toLowerCase().includes("mother")
+      //         )
+      //         .map((e) => ({
+      //           name: "fatherRingId", // fallback field
+      //           errors: [e.message],
+      //         }))
+      //     );
+      //   } else {
+      //     message.error(
+      //       err?.data?.message ||
+      //         err.message ||
+      //         "Please fill all required fields!"
+      //     );
+      //   }
+      // }
     } catch (err) {
       console.error(err);
-      message.error(
-        "Failed to save pigeon. " + (err?.data?.message || err.message)
-      );
+      message.error(err?.data?.message || err.message);
     }
   };
 
@@ -341,6 +396,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Birth Year"
               name="birthYear"
+              rules={[{ required: true }]}
               className="custom-form-item-ant"
             >
               <Input
@@ -372,7 +428,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
               rules={[
                 { required: true, message: "Please select color & pattern" },
               ]}
-              className="custom-form-item-ant-select"
+              className="custom-form-item-ant-select color-pattern-custom"
             >
               <Dropdown overlay={menu} trigger={["click"]}>
                 <Button
@@ -396,6 +452,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Gender"
               name="gender"
+              rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -439,6 +496,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Breeder Rating"
               name="breederRating"
+              rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -459,6 +517,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Status"
               name="status"
+              rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -480,6 +539,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Location"
               name="location"
+              rules={[{ required: true }]}
               className="custom-form-item-ant"
             >
               <Input
@@ -494,6 +554,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Racing Rating"
               name="racingRating"
+              rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -514,6 +575,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Verification"
               name="verification"
+              rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -531,6 +593,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Iconic"
               name="iconic"
+              rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -694,6 +757,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
           <Form.Item
             label="Pigeon Photos"
             name="photos"
+            rules={[{ required: true }]}
             valuePropName="fileList"
             getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
           >

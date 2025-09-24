@@ -479,6 +479,7 @@ const LoginCredentials = () => {
                   <Input
                     placeholder="Enter Email"
                     className="custom-input-ant-modal"
+                    disabled
                   />
                 </Form.Item>
               </Col>
@@ -649,7 +650,13 @@ const LoginCredentials = () => {
               <Form.Item
                 name="password"
                 label="Password"
-                rules={[{ required: true, message: "Please enter password" }]}
+                rules={[
+                  { required: true, message: "Please enter password" },
+                  {
+                    min: 8,
+                    message: "Password must be at least 8 characters long",
+                  },
+                ]}
                 className="custom-form-item-ant"
               >
                 <Input.Password
@@ -658,6 +665,7 @@ const LoginCredentials = () => {
                 />
               </Form.Item>
             </Col>
+
             <Col xs={24} sm={12}>
               <Form.Item
                 name="pageAccess"

@@ -345,6 +345,7 @@ const PackagesPlans = () => {
                   <Input
                     placeholder="e.g. Basic Plan"
                     className="custom-input-ant-modal"
+                    disabled
                   />
                 </Form.Item>
               </Col>

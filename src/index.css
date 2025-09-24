@@ -646,3 +646,10 @@ select {
 .custom-form-item-ant-select .ant-form-item-explain {
   margin-top: 7px; /* adjust as needed */
 }
+
+.color-pattern-custom .ant-form-item-explain-error {
+  color: #ff4d4f;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: -8px;
+}
