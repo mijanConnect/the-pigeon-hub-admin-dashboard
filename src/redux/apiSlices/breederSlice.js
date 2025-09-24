@@ -61,7 +61,7 @@ const breederSlice = api.injectEndpoints({
         url: "/breeder",
         method: "POST",
         body: data,
-        headers: { Authorization: `Bearer ${token}` },
+        // headers: { Authorization: `Bearer ${token}` },
       }),
       invalidatesTags: [{ type: "Breeder", id: "LIST" }],
     }),

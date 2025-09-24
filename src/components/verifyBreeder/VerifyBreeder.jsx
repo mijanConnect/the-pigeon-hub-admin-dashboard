@@ -94,8 +94,6 @@ const VerifyBreeder = () => {
         gender: values.gender,
       };
 
-      console.log(payload);
-
       if (editingData) {
         await updateBreeder({
           id: editingData._id,
@@ -104,8 +102,15 @@ const VerifyBreeder = () => {
         }).unwrap();
         Swal.fire("Updated!", "Breeder updated successfully!", "success");
       } else {
-        await addBreeder({ data: payload, token: "your-auth-token" }).unwrap();
-        Swal.fire("Added!", "Breeder added successfully!", "success");
+        const res = await addBreeder({
+          data: payload,
+          token: "your-auth-token",
+        }).unwrap();
+        if (res.success) {
+          Swal.fire("Added!", "Breeder added successfully!", "success");
+        } else {
+          Swal.fire("Error", "Something went wrong!", "error");
+        }
       }
       setIsModalVisible(false);
     } catch (error) {

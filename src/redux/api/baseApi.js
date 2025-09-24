@@ -3,18 +3,19 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
-    // baseUrl: "http://10.10.7.41:5001/api/v1",
-    baseUrl: "http://50.6.200.33:5001/api/v1",
+    baseUrl: "http://10.10.7.41:5001/api/v1",
+    // baseUrl: "http://50.6.200.33:5001/api/v1",
     // baseUrl: "http://10.10.7.46:5006/api/v1",
     prepareHeaders: (headers, { endpoint }) => {
-      headers.set("ngrok-skip-browser-warning", "true");
+      // headers.set("ngrok-skip-browser-warning", "true");
 
       // Don't override Authorization header if it's already set by the endpoint
-      if (!headers.has("authorization")) {
+      if (!headers.has("Authorization")) {
         const token = localStorage.getItem("token");
-        // console.log("📤 Sending token in headers:", token);
+
+        console.log("📤 Sending token in headers:", token);
         if (token) {
-          headers.set("authorization", `Bearer ${token}`);
+          headers.set("Authorization", `Bearer ${token}`);
         }
       }
       return headers;

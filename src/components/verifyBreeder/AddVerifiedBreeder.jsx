@@ -47,21 +47,6 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
     >
       <Form form={form} layout="vertical" className="mb-6">
         <Row gutter={[30, 20]}>
-          {/* Breeder Name */}
-          <Col xs={24} sm={12} md={12}>
-            <Form.Item
-              label="Breeder Name"
-              name="breederName"
-              rules={[{ required: true, message: "Please enter breeder name" }]}
-              className="custom-form-item-ant"
-            >
-              <Input
-                placeholder="Enter Breeder Name"
-                className="custom-input-ant-modal"
-              />
-            </Form.Item>
-          </Col>
-
           {/* Loft Name */}
           <Col xs={24} sm={12} md={12}>
             <Form.Item
@@ -72,6 +57,21 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             >
               <Input
                 placeholder="Enter Loft Name"
+                className="custom-input-ant-modal"
+              />
+            </Form.Item>
+          </Col>
+
+          {/* Breeder Name */}
+          <Col xs={24} sm={12} md={12}>
+            <Form.Item
+              label="Breeder Name"
+              name="breederName"
+              rules={[{ required: true, message: "Please enter breeder name" }]}
+              className="custom-form-item-ant"
+            >
+              <Input
+                placeholder="Enter Breeder Name"
                 className="custom-input-ant-modal"
               />
             </Form.Item>
@@ -101,7 +101,6 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
           </Col>
 
           {/* Country */}
-
           <Col xs={24} sm={12} md={12}>
             <Form.Item
               label="Country"
@@ -161,7 +160,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
           </Col>
 
           {/* Gender */}
-          <Col xs={24} sm={12} md={12}>
+          {/* <Col xs={24} sm={12} md={12}>
             <Form.Item
               label="Gender"
               name="gender"
@@ -176,10 +175,10 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
                 <Option value="Cock">Cock</Option>
               </Select>
             </Form.Item>
-          </Col>
+          </Col> */}
 
           {/* Experience Level */}
-          <Col xs={24} sm={12} md={12}>
+          {/* <Col xs={24} sm={12} md={12}>
             <Form.Item
               label="Experience Level"
               name="experienceLevel"
@@ -197,7 +196,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
                 <Option value="Expert">Expert</Option>
               </Select>
             </Form.Item>
-          </Col>
+          </Col> */}
 
           {/* Verified Breeder (Lock Data) */}
           <Col xs={24} sm={12} md={12}>
