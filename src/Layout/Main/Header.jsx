@@ -16,7 +16,7 @@ const Header = () => {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  const src = user?.profileImage;
+  const src = user?.profile;
 
   const showLogoutConfirm = () => {
     setIsLogoutModalOpen(true);
@@ -82,9 +82,7 @@ const Header = () => {
             </div>
             <img
               src={
-                user?.profileImage
-                  ? getImageUrl(user.profileImage)
-                  : "/placeholder.png"
+                user?.profile ? getImageUrl(user.profile) : "/placeholder.png"
               }
               alt="profile-pic"
               style={{
