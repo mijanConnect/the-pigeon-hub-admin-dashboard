@@ -5,6 +5,7 @@ export const api = createApi({
   baseQuery: fetchBaseQuery({
     // baseUrl: "http://10.10.7.41:5001/api/v1",
     baseUrl: "http://50.6.200.33:5001/api/v1",
+
     // baseUrl: "http://10.10.7.46:5006/api/v1",
     prepareHeaders: (headers, { endpoint }) => {
       // headers.set("ngrok-skip-browser-warning", "true");
