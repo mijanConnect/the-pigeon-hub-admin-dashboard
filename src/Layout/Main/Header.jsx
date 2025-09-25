@@ -67,6 +67,8 @@ const Header = () => {
   // ✅ Fetch unread count
   const { data: unreadCount = 0 } = useGetUnreadNotificationCountQuery();
 
+  console.log(unreadCount);
+
   return (
     <div className="flex items-center justify-between gap-5 w-full px-4 py-6 bg-[#F2F2F2] lg:px-10">
       <h2 className="font-bold text-xl text-secondary"></h2>
@@ -77,21 +79,41 @@ const Header = () => {
             <div className="flex flex-row gap-1">
               <p>Hello,</p>
               <p className="text-[16px] font-semibold">
-                {user?.name || "Mijan"}
+                {user?.name || "User"}
               </p>
             </div>
-            <img
-              src={
-                user?.profile ? getImageUrl(user.profile) : "/placeholder.png"
-              }
-              alt="profile-pic"
+            <div
               style={{
                 width: 45,
                 height: 45,
                 borderRadius: "50%",
-                objectFit: "cover",
+                backgroundColor: "#071952",
+                color: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: "bold",
+                fontSize: 16,
+                textTransform: "uppercase",
               }}
-            />
+            >
+              {user?.profile ? (
+                <img
+                  src={getImageUrl(user.profile)}
+                  alt="profile-pic"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : user?.name ? (
+                user.name.charAt(0)
+              ) : (
+                "U"
+              )}
+            </div>
           </div>
         </Dropdown>
 
@@ -142,7 +164,7 @@ const Header = () => {
           dataSource={notifications}
           renderItem={(item) => (
             <List.Item key={item._id}>
-              <span>{item.text}</span>
+              <span className="font-semibold">{item.text}</span>
             </List.Item>
           )}
         />

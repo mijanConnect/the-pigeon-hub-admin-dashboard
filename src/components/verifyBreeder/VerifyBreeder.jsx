@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Button, Table, Input, Select, Row, Col, Tooltip } from "antd";
-import { FaTrash, FaEye } from "react-icons/fa";
+import { FaTrash, FaEye, FaEdit } from "react-icons/fa";
 import Swal from "sweetalert2";
 import AddVerifyBreeder from "./AddVerifiedBreeder";
 import { getCode } from "country-list";
@@ -144,7 +144,7 @@ const VerifyBreeder = () => {
   const getColumns = () => [
     { title: "Breeder Name", dataIndex: "breederName", key: "breederName" },
     { title: "Loft Name", dataIndex: "loftName", key: "loftName" },
-    { title: "Pigeon Score", dataIndex: "pigeonScore", key: "pigeonScore" },
+    // { title: "Pigeon Score", dataIndex: "pigeonScore", key: "pigeonScore" },
     {
       title: "Country",
       dataIndex: "country",
@@ -167,12 +167,12 @@ const VerifyBreeder = () => {
     },
     { title: "E-mail", dataIndex: "email", key: "email" },
     { title: "Phone Number", dataIndex: "phoneNumber", key: "phoneNumber" },
-    { title: "Gender", dataIndex: "gender", key: "gender" },
-    {
-      title: "Experience Level",
-      dataIndex: "experienceLevel",
-      key: "experienceLevel",
-    },
+    // { title: "Gender", dataIndex: "gender", key: "gender" },
+    // {
+    //   title: "Experience Level",
+    //   dataIndex: "experienceLevel",
+    //   key: "experienceLevel",
+    // },
     {
       title: "Status",
       dataIndex: "status",
@@ -187,7 +187,7 @@ const VerifyBreeder = () => {
         <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
           <div className="flex gap-5 border px-4 py-2 rounded">
             <Tooltip title="View & Update Details">
-              <FaEye
+              <FaEdit
                 style={{ color: "#ffff", fontSize: "16px", cursor: "pointer" }}
                 onClick={() => openEditModal(record)}
               />
@@ -357,6 +357,7 @@ const VerifyBreeder = () => {
                       color: "#ffffff",
                       fontWeight: 600,
                       padding: "0 16px",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {props.children}

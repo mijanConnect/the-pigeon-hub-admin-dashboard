@@ -77,8 +77,8 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             </Form.Item>
           </Col>
 
-          {/* Country */}
-          <Col xs={24} sm={12} md={12}>
+          {/* Pigeon Score */}
+          {/* <Col xs={24} sm={12} md={12}>
             <Form.Item
               label="Pigeon Score"
               name="pigeonScore"
@@ -98,14 +98,14 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
                 ))}
               </Select>
             </Form.Item>
-          </Col>
+          </Col> */}
 
           {/* Country */}
           <Col xs={24} sm={12} md={12}>
             <Form.Item
               label="Country"
               name="country"
-              rules={[{ required: true, message: "Please select country" }]}
+              // rules={[{ required: true, message: "Please select country" }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -131,10 +131,10 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             <Form.Item
               label="E-mail"
               name="email"
-              rules={[
-                { required: true, message: "Please enter email" },
-                { type: "email", message: "Enter a valid email" },
-              ]}
+              // rules={[
+              //   { required: true, message: "Please enter email" },
+              //   { type: "email", message: "Enter a valid email" },
+              // ]}
               className="custom-form-item-ant"
             >
               <Input
@@ -149,7 +149,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             <Form.Item
               label="Phone Number"
               name="phoneNumber"
-              rules={[{ required: true, message: "Please enter phone number" }]}
+              // rules={[{ required: true, message: "Please enter phone number" }]}
               className="custom-form-item-ant"
             >
               <Input
@@ -200,7 +200,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
 
           {/* Verified Breeder (Lock Data) */}
           <Col xs={24} sm={12} md={12}>
-            <Form.Item
+            {/* <Form.Item
               name="status"
               valuePropName="checked"
               className="custom-form-item-ant"
@@ -214,9 +214,26 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             <p className="text-gray-400 text-sm ml-6">
               Check this box to verify the breeder and lock all data from
               editing.
-            </p>
+            </p> */}
           </Col>
         </Row>
+
+        <div className="mt-6">
+          <Form.Item
+            name="status"
+            valuePropName="checked"
+            className="custom-form-item-ant"
+          >
+            <Checkbox>
+              <span className="font-semibold text-[16px]">
+                Verified Breeder (Lock Data)
+              </span>
+            </Checkbox>
+          </Form.Item>
+          <p className="text-gray-400 text-sm ml-6">
+            Check this box to verify the breeder and lock all data from editing.
+          </p>
+        </div>
       </Form>
     </Modal>
   );

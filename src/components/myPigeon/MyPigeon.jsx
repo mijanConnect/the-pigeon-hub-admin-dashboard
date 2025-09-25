@@ -392,6 +392,7 @@ const MyPigeon = () => {
                           color: "#ffffff",
                           fontWeight: 600,
                           padding: "0 16px",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {props.children}

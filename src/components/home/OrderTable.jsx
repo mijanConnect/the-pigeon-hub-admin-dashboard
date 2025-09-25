@@ -133,6 +133,7 @@ const PigeonTable = () => {
                         color: "#ffffff",
                         fontWeight: 600,
                         padding: "0 16px",
+                        whiteSpace: "nowrap",
                       }}
                     >
                       {props.children}
@@ -177,7 +178,6 @@ const PigeonTable = () => {
           </div>
         </div>
       </div>
-      
     </div>
   );
 };

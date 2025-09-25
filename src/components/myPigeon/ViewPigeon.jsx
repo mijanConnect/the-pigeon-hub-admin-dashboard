@@ -28,22 +28,32 @@ const ViewPigeon = ({ visible, onCancel, pigeonData, loading }) => {
       ) : pigeonData ? (
         <>
           {/* Main Image */}
-          <div className="flex justify-center mb-4">
-            <img
-              src={
-                pigeonData?.photos?.[0]
-                  ? getImageUrl(pigeonData.photos[0])
-                  : "/placeholder.png"
-              }
-              alt={pigeonData?.name || "pigeon"}
-              style={{
-                width: 120,
-                height: 120,
-                borderRadius: "50%",
-                objectFit: "cover",
-              }}
-            />
-          </div>
+          {/* Pigeon Photos Gallery */}
+          {pigeonData?.photos?.length > 0 && (
+            <div className="mb-4">
+              <h3 className="mb-2 font-semibold">Pigeon Photos</h3>
+              <div className="flex flex-wrap justify-start gap-4 border p-4 rounded-lg">
+                {pigeonData.photos.map((photo, index) => (
+                  <div key={index} className="flex flex-col items-center">
+                    <img
+                      src={getImageUrl(photo)}
+                      alt={`Photo ${index + 1}`}
+                      style={{
+                        width: 120,
+                        height: 120,
+                        borderRadius: "8px",
+                        objectFit: "cover",
+                      }}
+                    />
+                    <span className="mt-1 text-sm text-gray-500">
+                      {pigeonData.photoTitles?.[index] || `Photo ${index + 1}`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-10 flex-col md:flex-row">
             <div className="flex-1">
               {/* Pigeon Info */}

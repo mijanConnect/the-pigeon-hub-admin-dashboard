@@ -144,11 +144,23 @@ const mypigeonSlice = api.injectEndpoints({
             ]
           : [{ type: "Breeder", id: "LIST" }],
     }),
+
+    getPigeonSearch: builder.query({
+      query: (searchTerm) => ({
+        url: `/pigeon`,
+        method: "GET",
+        params: { searchTerm },
+      }),
+      transformResponse: (response) => {
+        return response?.data?.data || [];
+      },
+    }),
   }),
 });
 
 export const {
   useGetMyPigeonsQuery,
+  useGetPigeonSearchQuery,
   useGetSinglePigeonQuery, // ✅ New hook
   useAddPigeonMutation,
   useUpdatePigeonMutation, // ✅
