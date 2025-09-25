@@ -653,3 +653,18 @@ select {
   font-weight: 500;
   margin-top: -8px;
 }
+
+.single-photo-upload .ant-upload-select {
+  display: flex !important;
+  width: 100% !important;
+  height: 100px !important;
+}
+
+.single-photo-upload .ant-upload-list-picture-card-container {
+  width: 100% !important;
+}
+
+.single-photo-upload .ant-upload-list-picture-card .ant-upload-list-item {
+  width: 100% !important;
+  height: 100px !important;
+}

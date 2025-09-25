@@ -86,10 +86,10 @@ const VerifyBreeder = () => {
         loftName: values.loftName,
         breederName: values.breederName,
         country: values.country,
-        email: values.email,
+        // email: values.email,
         phone: values.phoneNumber,
         status: !!values.status, // ✅ always boolean
-        score: Number(values.pigeonScore),
+        // score: Number(values.pigeonScore),
         experience: values.experienceLevel,
         gender: values.gender,
       };
@@ -165,8 +165,31 @@ const VerifyBreeder = () => {
         );
       },
     },
-    { title: "E-mail", dataIndex: "email", key: "email" },
-    { title: "Phone Number", dataIndex: "phoneNumber", key: "phoneNumber" },
+    {
+      title: "E-mail",
+      dataIndex: "email",
+      key: "email",
+      render: (text) => {
+        return text ? (
+          <p href={`mailto:${text}`}>{text}</p>
+        ) : (
+          "N/A"
+        );
+      },
+    },
+
+    {
+      title: "Phone Number",
+      dataIndex: "phoneNumber",
+      key: "phoneNumber",
+      render: (text) => {
+        return text ? (
+          <p href={`mailto:${text}`}>{text}</p>
+        ) : (
+          "N/A"
+        );
+      },
+    },
     // { title: "Gender", dataIndex: "gender", key: "gender" },
     // {
     //   title: "Experience Level",
