@@ -23,6 +23,8 @@ import ViewPigeon from "./ViewPigeon"; // ✅ import
 import Swal from "sweetalert2";
 import { getNames } from "country-list";
 import { getCode } from "country-list";
+import { PiDnaBold } from "react-icons/pi";
+import { useNavigate } from "react-router-dom";
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -42,6 +44,7 @@ const MyPigeon = () => {
   // Add states
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [viewPigeonId, setViewPigeonId] = useState(null);
+  const navigate=useNavigate()
 
   const { data: viewPigeonData, isLoading: viewLoading } =
     useGetSinglePigeonQuery(viewPigeonId, {
@@ -93,6 +96,7 @@ const MyPigeon = () => {
 
   const [deletePigeon] = useDeletePigeonMutation();
 
+
   const handleDelete = (record) => {
     Swal.fire({
       title: "Delete Pigeon?",
@@ -115,6 +119,10 @@ const MyPigeon = () => {
   //   setEditingPigeon(record);
   //   setIsModalVisible(true);
   // };
+
+  const showPedigreeChart = (record) => {
+    navigate(`/pigeon-management/${record._id}`);
+  };
 
   const columns = [
     {
@@ -193,6 +201,12 @@ const MyPigeon = () => {
               <FaEye
                 style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
                 onClick={() => handleView(record)}
+              />
+            </Tooltip>
+            <Tooltip title="View Pedigree">
+              <PiDnaBold
+                style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
+                onClick={() => showPedigreeChart(record)}
               />
             </Tooltip>
             <Tooltip title="View & Update Details">

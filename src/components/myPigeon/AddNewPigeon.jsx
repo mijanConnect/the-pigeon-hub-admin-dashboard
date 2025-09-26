@@ -381,7 +381,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Country"
               name="country"
-              rules={[{ required: true, message: "Please select country" }]}
+              // rules={[{ required: true, message: "Please select country" }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -407,7 +407,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Birth Year"
               name="birthYear"
-              rules={[{ required: true }]}
+              rules={[{ required: true, message: "Please enter birth year" }]}
               className="custom-form-item-ant"
             >
               <Input
@@ -481,7 +481,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Breeder"
               name="breeder"
-              rules={[{ required: true, message: "Please select a breeder" }]}
+              // rules={[{ required: true, message: "Please select a breeder" }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -507,7 +507,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Breeder Rating"
               name="breederRating"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -528,7 +528,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Status"
               name="status"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -550,7 +550,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Location"
               name="location"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant"
             >
               <Input
@@ -565,7 +565,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Racing Rating"
               name="racingRating"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -586,7 +586,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Verification"
               name="verification"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -604,7 +604,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Iconic"
               name="iconic"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -622,9 +622,9 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Iconic Score"
               name="iconicScore"
-              rules={[
-                { required: true, message: "Please select iconic score" },
-              ]}
+              // rules={[
+              //   { required: true, message: "Please select iconic score" },
+              // ]}
               className="custom-form-item-ant-select"
             >
               <Select

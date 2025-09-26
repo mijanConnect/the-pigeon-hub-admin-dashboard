@@ -32,13 +32,14 @@ import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedig
 
 const PigeonNode = ({ data }) => {
   const countryCode = data.country ? getCode(data.country) : null;
+  // Remove console logs in production
   console.log(data.gender);
+  console.log(data.verified);
+  
+  // Gender is already properly formatted as "Hen" or "Cock" from PedigreeData.jsx
+  // Just use the gender icon function directly
   const getGenderIcon = (gender) => {
     return gender === "Cock" ? "♂" : "♀";
-  };
-
-  const getGenderColor = (gender) => {
-    return gender === "male" ? "bg-blue-500" : "bg-pink-500";
   };
 
   const getGenerationColor = (generation) => {
@@ -80,14 +81,14 @@ const PigeonNode = ({ data }) => {
       style={{ backgroundColor: data.color }}
       className={`${getCardSize(data?.generation)}
        
-        border-b-8 border-r-10 border-black
+        border-b-8  border-r-8 border-black
           text-white rounded-none transition-all duration-300 px-4 py-2
           ${getGenerationColor(data?.generation)} border`}
     >
       <Handle
         type="target"
         position={Position.Left}
-        className="w-3 h-3 !bg-slate-400"
+        className=" !bg-slate-400"
       />
       <div className="flex items-center justify-between ">
         {countryCode && (
@@ -116,14 +117,14 @@ const PigeonNode = ({ data }) => {
           </span>
         )}
         <img
-          src="/assests/Letter-P.png"
+          src="/assets/Letter-P.png"
           alt="Letter P"
           width={24}
           height={24}
           className="w-6 h-6"
         />
         <img
-          src="/assests/Gold-cup.png"
+          src="/assets/GoldCup.png"
           alt="Letter P"
           width={30}
           height={30}
@@ -136,26 +137,34 @@ const PigeonNode = ({ data }) => {
       <div className="">
         <div className="flex items-center justify-start gap-2 space-y-2">
           {data.name && (
-            <h3 className="font-bold text-black text-xl truncate">
+            <h3 className="font-bold text-black  truncate">
               {data.name}
             </h3>
           )}
         </div>
         <div className="flex items-center justify-start gap-2">
           {" "}
-          {data.owner && (
-            <div className="flex items-center gap-2 text-xl  italic text-black">
+          {/* {data.owner && (
+            <div className="flex items-center gap-2 text-xl italic text-black">
               <UserOutlined className="w-3 h-3" />
               <span className="truncate">{data.owner}</span>
             </div>
+          )} */}
+          {data.owner && (
+            <div className="flex items-center gap-2  italic text-black">
+              {/* <UserOutlined className="w-3 h-3" /> */}
+              <span className="truncate">{data.owner}</span>
+              {data.verified && (
+                <img
+                  src="/assets/Letter-B.png"
+                  alt="Verified Breeder"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
+              )}
+            </div>
           )}
-          <img
-            src="/assests/Letter-B.png"
-            alt="Letter P"
-            width={24}
-            height={24}
-            className="w-6 h-6"
-          />
         </div>
 
         {data.description && (
@@ -169,10 +178,10 @@ const PigeonNode = ({ data }) => {
           </div>
         )}
         {data.achievements && (
-          <div className="flex  gap-2">
+          <div className="flex items-center gap-2">
             <p className="text-xs text-black">Results : </p>
             <img
-              src="/assests/Gold-tropy.png"
+              src="/assets/GoldTrophy.png"
               alt="Letter P"
               width={30}
               height={30}
@@ -191,7 +200,7 @@ const PigeonNode = ({ data }) => {
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3 h-3 !bg-slate-400"
+        className=" !bg-slate-400"
       />
     </div>
   );
@@ -290,195 +299,93 @@ export default function PigeonPedigreeChart() {
         return;
       }
 
-      // Show loading state
+      // Button loading state
       const exportButton = document.querySelector("[data-export-pdf]");
       if (exportButton) {
         exportButton.textContent = "Exporting...";
         exportButton.disabled = true;
       }
 
-      // Create a comprehensive function to convert lab colors to RGB
-      const convertLabToRgb = (labString) => {
-        // Extract values from lab() function
-        const labMatch = labString.match(/lab\(\s*([^)]+)\s*\)/);
-        if (!labMatch) return labString;
+      // --- Fix overflow/transform issues ---
+      const ancestors = [];
+      let el = chartRef.current;
+      while (el) {
+        ancestors.push(el);
+        el = el.parentElement;
+      }
+      const styleBackups = ancestors.map((node) => ({
+        node,
+        transform: node.style.transform,
+        overflow: node.style.overflow,
+      }));
+      ancestors.forEach((node) => {
+        node.style.transform = "none";
+        node.style.overflow = "visible";
+      });
 
-        const values = labMatch[1]
-          .split(/\s+/)
-          .map((v) => parseFloat(v.replace("%", "")));
-        const [l, a, b] = values;
+      // Wait small delay for styles
+      await new Promise((r) => setTimeout(r, 80));
 
-        // Simple lab to RGB conversion (approximation)
-        // For a more accurate conversion, you might want to use a color library
-        const y = (l + 16) / 116;
-        const x = a / 500 + y;
-        const z = y - b / 200;
-
-        const r = Math.max(
-          0,
-          Math.min(
-            255,
-            Math.round(255 * (3.2406 * x - 1.5372 * y - 0.4986 * z))
-          )
-        );
-        const g = Math.max(
-          0,
-          Math.min(
-            255,
-            Math.round(255 * (-0.9689 * x + 1.8758 * y + 0.0415 * z))
-          )
-        );
-        const blue = Math.max(
-          0,
-          Math.min(255, Math.round(255 * (0.0557 * x - 0.204 * y + 1.057 * z)))
-        );
-
-        return `rgb(${r}, ${g}, ${blue})`;
-      };
-
-      // More comprehensive approach to handle lab colors
-      const temporarilyReplaceLabColors = (element) => {
-        const originalStyles = [];
-
-        // Function to recursively process all elements
-        const processElement = (el) => {
-          if (el.nodeType === Node.ELEMENT_NODE) {
-            const style = el.getAttribute("style");
-            const computedStyle = window.getComputedStyle(el);
-
-            // Check both inline styles and computed styles for lab colors
-            let needsReplacement = false;
-            let newStyle = style || "";
-
-            // Check inline style attribute
-            if (style && style.includes("lab(")) {
-              needsReplacement = true;
-              newStyle = style.replace(/lab\([^)]+\)/g, (match) => {
-                return convertLabToRgb(match);
-              });
-            }
-
-            // Check computed styles for common color properties
-            const colorProperties = [
-              "color",
-              "background-color",
-              "border-color",
-              "fill",
-              "stroke",
-            ];
-            colorProperties.forEach((prop) => {
-              const value = computedStyle.getPropertyValue(prop);
-              if (value && value.includes("lab(")) {
-                needsReplacement = true;
-                const convertedColor = convertLabToRgb(value);
-                newStyle += `; ${prop}: ${convertedColor} !important`;
-              }
-            });
-
-            if (needsReplacement) {
-              originalStyles.push({
-                element: el,
-                originalStyle: style,
-                hasStyle: el.hasAttribute("style"),
-              });
-              el.setAttribute("style", newStyle);
-            }
-
-            // Process child elements
-            Array.from(el.children).forEach(processElement);
-          }
-        };
-
-        processElement(element);
-        return originalStyles;
-      };
-
-      // Apply lab color replacements
-      const styleBackups = temporarilyReplaceLabColors(chartRef.current);
-
-      // Wait a moment for DOM updates
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Configure html2canvas with better error handling
+      // --- Capture canvas ---
+      const dpr = Math.max(window.devicePixelRatio || 1, 1);
       const canvas = await html2canvas(chartRef.current, {
-        scale: 2, // Higher resolution
+        scale: Math.min(2 * dpr, 4),
         useCORS: true,
-        allowTaint: true,
+        allowTaint: false,
         backgroundColor: "#ffffff",
-        width: chartRef.current.scrollWidth,
-        height: chartRef.current.scrollHeight,
-        logging: false, // Disable logging to reduce console noise
-        ignoreElements: (element) => {
-          // Skip elements that might cause issues
-          return (
-            element.classList &&
-            element.classList.contains("html2canvas-ignore")
-          );
-        },
+        logging: false,
+        windowWidth: document.documentElement.scrollWidth,
+        windowHeight: document.documentElement.scrollHeight,
+        scrollX: -window.scrollX,
+        scrollY: -window.scrollY,
       });
 
-      // Restore original styles
-      styleBackups.forEach((backup) => {
-        if (backup.hasStyle && backup.originalStyle) {
-          backup.element.setAttribute("style", backup.originalStyle);
-        } else if (!backup.hasStyle) {
-          backup.element.removeAttribute("style");
-        }
+      // Restore styles
+      styleBackups.forEach((b) => {
+        b.node.style.transform = b.transform || "";
+        b.node.style.overflow = b.overflow || "";
       });
 
-      const imgData = canvas.toDataURL("image/png", 1.0); // Full quality
-
-      // Calculate PDF dimensions
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-
-      // Calculate scale to fit on standard paper size
-      const maxWidth = imgWidth > imgHeight ? 1120 : 790; // A4 landscape/portrait at 150 DPI
-      const maxHeight = imgWidth > imgHeight ? 790 : 1120;
-
-      const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight, 1);
-      const finalWidth = imgWidth * scale;
-      const finalHeight = imgHeight * scale;
-
-      // Create PDF with appropriate orientation
+      // --- Prepare image for PDF ---
+      const imgData = canvas.toDataURL("image/png", 1.0);
       const pdf = new jsPDF({
-        orientation: imgWidth > imgHeight ? "landscape" : "portrait",
+        orientation: canvas.width > canvas.height ? "landscape" : "portrait",
         unit: "px",
-        format: [finalWidth + 40, finalHeight + 40], // Add padding
+        format: "a4",
       });
 
-      // Center the image on the page
-      const xOffset = 20;
-      const yOffset = 20;
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
 
-      // Add the image to PDF
-      pdf.addImage(imgData, "PNG", xOffset, yOffset, finalWidth, finalHeight);
+      // Scale image to fit width
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
-      // Generate filename with current date
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // First page
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Extra pages if needed
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // --- Save PDF ---
       const currentDate = new Date().toISOString().split("T")[0];
       const filename = `pigeon-pedigree-chart-${currentDate}.pdf`;
-
-      // Save PDF
       pdf.save(filename);
 
-      console.log("PDF export completed successfully");
+      console.log("✅ PDF export completed successfully");
     } catch (error) {
-      console.error("Error exporting to PDF:", error);
-
-      // More specific error messages
-      if (error.message && error.message.includes("lab")) {
-        alert(
-          "Error: Unsupported color format detected. Please try refreshing the page and exporting again."
-        );
-      } else if (error.message && error.message.includes("canvas")) {
-        alert(
-          "Error: Unable to capture chart image. Please ensure the chart is fully loaded and try again."
-        );
-      } else {
-        alert("Error exporting to PDF. Please try again or refresh the page.");
-      }
+      console.error("❌ Error exporting to PDF:", error);
+      alert("Error exporting to PDF. Please refresh the page and try again.");
     } finally {
-      // Reset button state
       const exportButton = document.querySelector("[data-export-pdf]");
       if (exportButton) {
         exportButton.textContent = "Export as PDF";

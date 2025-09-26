@@ -28,6 +28,7 @@ import ViewPigeon from "../myPigeon/ViewPigeon";
 import { getNames } from "country-list";
 import { getCode } from "country-list";
 import { useNavigate } from "react-router-dom";
+import { PiDnaBold } from "react-icons/pi";
 
 const { Option } = Select;
 
@@ -215,8 +216,8 @@ const PigeonManagement = () => {
       ),
     },
     { title: "Name", dataIndex: "name", key: "name" },
-    { title: "Verified", dataIndex: "verified", key: "verified" },
-    { title: "Iconic", dataIndex: "iconic", key: "iconic" },
+    // { title: "Verified", dataIndex: "verified", key: "verified" },
+    // { title: "Iconic", dataIndex: "iconic", key: "iconic" },
     { title: "Iconic Score", dataIndex: "iconicScore", key: "iconicScore" },
     {
       title: "Country",
@@ -238,7 +239,7 @@ const PigeonManagement = () => {
         );
       },
     },
-    { title: "Pigeon ID", dataIndex: "pigeonId", key: "pigeonId" },
+    // { title: "Pigeon ID", dataIndex: "pigeonId", key: "pigeonId" },
     { title: "Ring Number", dataIndex: "ringNumber", key: "ringNumber" },
     { title: "Birth Year", dataIndex: "birthYear", key: "birthYear" },
     { title: "Father", dataIndex: "father", key: "father" },
@@ -278,7 +279,7 @@ const PigeonManagement = () => {
               />
             </Tooltip>
             <Tooltip title="View & Update Details">
-              <FaEdit
+              <PiDnaBold 
                 style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
                 onClick={() => showPedigreeChart(record)}
               />

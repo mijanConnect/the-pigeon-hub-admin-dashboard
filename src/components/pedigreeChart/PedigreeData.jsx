@@ -25,19 +25,27 @@ export const convertBackendToExistingFormat = (backendResponse) => {
   // Helper function to get gender from data
   const getGender = (genderData) => {
     if (typeof genderData === "string") {
-      return genderData.toLowerCase() === "hen" ? "female" : "male";
+      return genderData.toLowerCase() === "hen" ? "Hen" : "Cock";
     }
-    return "male"; // default
+    return "Cock"; // default
   };
 
   // Helper function to get breeder name with status check
   const getBreederInfo = (breeder) => {
     if (typeof breeder === "object" && breeder) {
       const name = breeder.breederName || "Unknown Owner";
-      // const status = breeder.status === true ? " (Active)" : " (Inactive)";
-      return name + status;
+      return name;
     }
     return breeder || "Unknown Owner";
+  };
+  
+  // Helper function to get consistent breeder verification status
+  const getBreederVerification = (breeder) => {
+    if (typeof breeder === "object" && breeder) {
+      // Use breeder.verified property if it exists, otherwise use false
+      return breeder.verified === true;
+    }
+    return false;
   };
 
   // Subject node (Generation 0) - All data included
@@ -59,7 +67,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
       description:
         subject.notes || subject.shortInfo || "No description available",
       achievements: formatResults(subject.results),
-      verified: subject.verified || false,
+      verified: getBreederVerification(subject.breeder),
     },
   });
 
@@ -85,7 +93,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
           subject.fatherRingId.shortInfo ||
           "No description available",
         achievements: formatResults(subject.fatherRingId.results),
-        verified: subject.fatherRingId.verified || false,
+        verified: getBreederVerification(subject.fatherRingId.breeder),
       },
     });
 
@@ -122,7 +130,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
           subject.motherRingId.shortInfo ||
           "No description available",
         achievements: formatResults(subject.motherRingId.results),
-        verified: subject.motherRingId.verified || false,
+        verified: getBreederVerification(subject.motherRingId.breeder),
       },
     });
 
@@ -161,7 +169,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
         achievements:
           formatResults(subject.fatherRingId.fatherRingId.results) ||
           "Multiple race winner",
-        verified: subject.fatherRingId.fatherRingId.verified || false,
+        verified: getBreederVerification(subject.fatherRingId.fatherRingId.breeder),
       },
     });
 
@@ -199,7 +207,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
         achievements:
           formatResults(subject.fatherRingId.motherRingId.results) ||
           "Top producer",
-        verified: subject.fatherRingId.motherRingId.verified || false,
+        verified: getBreederVerification(subject.fatherRingId.motherRingId.breeder),
       },
     });
 
@@ -237,7 +245,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
         achievements:
           formatResults(subject.motherRingId.fatherRingId.results) ||
           "National ace",
-        verified: subject.motherRingId.fatherRingId.verified || false,
+        verified: getBreederVerification(subject.motherRingId.fatherRingId.breeder),
       },
     });
 
@@ -275,7 +283,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
         achievements:
           formatResults(subject.motherRingId.motherRingId.results) ||
           "Mother of champions",
-        verified: subject.motherRingId.motherRingId.verified || false,
+        verified: getBreederVerification(subject.motherRingId.motherRingId.breeder),
       },
     });
 
@@ -322,8 +330,9 @@ export const convertBackendToExistingFormat = (backendResponse) => {
           formatResults(
             subject.fatherRingId.fatherRingId.fatherRingId.results
           ) || "Olympic champion",
-        verified:
-          subject.fatherRingId.fatherRingId.fatherRingId.verified || false,
+        verified: getBreederVerification(
+          subject.fatherRingId.fatherRingId.fatherRingId.breeder
+        ),
       },
     });
 
@@ -368,8 +377,9 @@ export const convertBackendToExistingFormat = (backendResponse) => {
           formatResults(
             subject.fatherRingId.fatherRingId.motherRingId.results
           ) || "Mother of winners",
-        verified:
-          subject.fatherRingId.fatherRingId.motherRingId.verified || false,
+        verified: getBreederVerification(
+          subject.fatherRingId.fatherRingId.motherRingId.breeder
+        ),
       },
     });
 
@@ -414,8 +424,9 @@ export const convertBackendToExistingFormat = (backendResponse) => {
           formatResults(
             subject.fatherRingId.motherRingId.fatherRingId.results
           ) || "Proven breeder",
-        verified:
-          subject.fatherRingId.motherRingId.fatherRingId.verified || false,
+        verified: getBreederVerification(
+          subject.fatherRingId.motherRingId.fatherRingId.breeder
+        ),
       },
     });
 
@@ -459,8 +470,9 @@ export const convertBackendToExistingFormat = (backendResponse) => {
           formatResults(
             subject.fatherRingId.motherRingId.motherRingId.results
           ) || "Show winner",
-        verified:
-          subject.fatherRingId.motherRingId.motherRingId.verified || false,
+        verified: getBreederVerification(
+          subject.fatherRingId.motherRingId.motherRingId.breeder
+        ),
       },
     });
 
@@ -505,8 +517,9 @@ export const convertBackendToExistingFormat = (backendResponse) => {
           formatResults(
             subject.motherRingId.fatherRingId.fatherRingId.results
           ) || "Multi-race winner",
-        verified:
-          subject.motherRingId.fatherRingId.fatherRingId.verified || false,
+        verified: getBreederVerification(
+          subject.motherRingId.fatherRingId.fatherRingId.breeder
+        ),
       },
     });
 
@@ -550,8 +563,9 @@ export const convertBackendToExistingFormat = (backendResponse) => {
           formatResults(
             subject.motherRingId.fatherRingId.motherRingId.results
           ) || "Mother of winners",
-        verified:
-          subject.motherRingId.fatherRingId.motherRingId.verified || false,
+        verified: getBreederVerification(
+          subject.motherRingId.fatherRingId.motherRingId.breeder
+        ),
       },
     });
 
@@ -596,8 +610,9 @@ export const convertBackendToExistingFormat = (backendResponse) => {
           formatResults(
             subject.motherRingId.motherRingId.fatherRingId.results
           ) || "Regional winner",
-        verified:
-          subject.motherRingId.motherRingId.fatherRingId.verified || false,
+        verified: getBreederVerification(
+          subject.motherRingId.motherRingId.fatherRingId.breeder
+        ),
       },
     });
 
@@ -641,8 +656,9 @@ export const convertBackendToExistingFormat = (backendResponse) => {
           formatResults(
             subject.motherRingId.motherRingId.motherRingId.results
           ) || "Quality breeder",
-        verified:
-          subject.motherRingId.motherRingId.motherRingId.verified || false,
+        verified: getBreederVerification(
+          subject.motherRingId.motherRingId.motherRingId.breeder
+        ),
       },
     });
 
