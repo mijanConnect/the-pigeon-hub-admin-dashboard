@@ -36,12 +36,19 @@ const getColumns = () => [
     dataIndex: "country",
     key: "country",
     render: (country) => {
-      const countryCode = country ? getCode(country.name || country) : null;
+      // Check if country and country.name are valid strings
+      const countryCode =
+        typeof country === "object" && country?.name
+          ? getCode(country.name) // If country is an object, use country.name
+          : typeof country === "string"
+          ? getCode(country) // If country is a string, use it directly
+          : null;
+
       return countryCode ? (
         <div className="flex items-center gap-2">
           <img
             src={`https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`}
-            alt={country.name || country}
+            alt={country?.name || country}
             className="w-5 h-4 rounded-sm"
           />
           <p className="text-white">{countryCode}</p>
@@ -51,6 +58,7 @@ const getColumns = () => [
       );
     },
   },
+
   { title: "Breeder", dataIndex: "breeder", key: "breeder" },
   { title: "Ring Number", dataIndex: "ringNumber", key: "ringNumber" },
   { title: "Birth Year", dataIndex: "birthYear", key: "birthYear" },
