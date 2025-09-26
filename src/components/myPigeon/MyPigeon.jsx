@@ -44,7 +44,7 @@ const MyPigeon = () => {
   // Add states
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [viewPigeonId, setViewPigeonId] = useState(null);
-  const navigate=useNavigate()
+  const navigate = useNavigate();
 
   const { data: viewPigeonData, isLoading: viewLoading } =
     useGetSinglePigeonQuery(viewPigeonId, {
@@ -96,7 +96,6 @@ const MyPigeon = () => {
 
   const [deletePigeon] = useDeletePigeonMutation();
 
-
   const handleDelete = (record) => {
     Swal.fire({
       title: "Delete Pigeon?",
@@ -144,17 +143,45 @@ const MyPigeon = () => {
       ),
     },
     { title: "Name", dataIndex: "name", key: "name" },
+    // {
+    //   title: "Country",
+    //   dataIndex: "country",
+    //   key: "country",
+    //   render: (country) => {
+    //     const countryCode = country ? getCode(country?.name || country) : null;
+    //     return countryCode ? (
+    //       <div className="flex items-center gap-2">
+    //         <img
+    //           src={`https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`}
+    //           alt={country?.name || country}
+    //           className="w-5 h-4 rounded-sm"
+    //         />
+    //         <p className="text-white">{countryCode}</p>
+    //       </div>
+    //     ) : (
+    //       <span>-</span>
+    //     );
+    //   },
+    // },
+
     {
       title: "Country",
       dataIndex: "country",
       key: "country",
       render: (country) => {
-        const countryCode = country ? getCode(country.name || country) : null;
+        // Check if country and country.name are valid strings
+        const countryCode =
+          typeof country === "object" && country?.name
+            ? getCode(country.name) // If country is an object, use country.name
+            : typeof country === "string"
+            ? getCode(country) // If country is a string, use it directly
+            : null;
+
         return countryCode ? (
           <div className="flex items-center gap-2">
             <img
               src={`https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`}
-              alt={country.name || country}
+              alt={country?.name || country}
               className="w-5 h-4 rounded-sm"
             />
             <p className="text-white">{countryCode}</p>
@@ -290,7 +317,7 @@ const MyPigeon = () => {
                 placeholder="Select Country"
                 className="custom-select-ant"
                 style={{ width: "100%" }}
-                value={filters.country || "all"}
+                value={filters?.country || "all"}
                 onChange={(value) => handleFilterChange("country", value)}
                 showSearch
                 optionFilterProp="children"
@@ -301,7 +328,7 @@ const MyPigeon = () => {
                 {/* ✅ "All" option at the top */}
                 <Option value="all">All</Option>
 
-                {countries.map((country, index) => (
+                {countries?.map((country, index) => (
                   <Option key={index} value={country}>
                     {country}
                   </Option>
