@@ -86,7 +86,7 @@ const VerifyBreeder = () => {
         loftName: values.loftName,
         breederName: values.breederName,
         country: values.country,
-        // email: values.email,
+        email: values.email,
         phone: values.phoneNumber,
         status: !!values.status, // ✅ always boolean
         // score: Number(values.pigeonScore),
@@ -170,11 +170,7 @@ const VerifyBreeder = () => {
       dataIndex: "email",
       key: "email",
       render: (text) => {
-        return text ? (
-          <p href={`mailto:${text}`}>{text}</p>
-        ) : (
-          "N/A"
-        );
+        return text ? <p href={`mailto:${text}`}>{text}</p> : "N/A";
       },
     },
 
@@ -183,11 +179,7 @@ const VerifyBreeder = () => {
       dataIndex: "phoneNumber",
       key: "phoneNumber",
       render: (text) => {
-        return text ? (
-          <p href={`mailto:${text}`}>{text}</p>
-        ) : (
-          "N/A"
-        );
+        return text ? <p href={`mailto:${text}`}>{text}</p> : "N/A";
       },
     },
     // { title: "Gender", dataIndex: "gender", key: "gender" },

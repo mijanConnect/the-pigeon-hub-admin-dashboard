@@ -317,9 +317,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
       setPhotos((p) => ({ ...p, [key]: null }));
       setFileLists((fl) => ({ ...fl, [key]: [] }));
     },
-    customRequest: ({ onSuccess }) => {
-      onSuccess && onSuccess();
-    },
+    customRequest: ({ onSuccess }) => onSuccess && onSuccess(),
   });
 
   return (
@@ -793,38 +791,52 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
           </Col>
 
           {/* ===== PIGEON PHOTOS ===== */}
-          <Col span={24}>
-            <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>
-              Pigeon Photos
+          <div className="ml-4 p-4 border rounded-lg">
+            <p className="text-[14px] font-semibold mb-2">Pigeon Photos:</p>
+            <div className="border p-4 rounded-lg">
+              <Row gutter={[10, 16]} justify="start" wrap>
+                <Col flex="none">
+                  <Upload {...commonUploadProps("pigeonPhoto")}>
+                    {fileLists.pigeonPhoto?.length
+                      ? null
+                      : uploadButton("Upload Pigeon Photo")}
+                  </Upload>
+                </Col>
+
+                <Col flex="none">
+                  <Upload {...commonUploadProps("eyePhoto")}>
+                    {fileLists.eyePhoto?.length
+                      ? null
+                      : uploadButton("Upload Eye Photo")}
+                  </Upload>
+                </Col>
+
+                <Col flex="none">
+                  <Upload {...commonUploadProps("ownershipPhoto")}>
+                    {fileLists.ownershipPhoto?.length
+                      ? null
+                      : uploadButton("Upload Ownership Card")}
+                  </Upload>
+                </Col>
+
+                <Col flex="none">
+                  <Upload {...commonUploadProps("pedigreePhoto")}>
+                    {fileLists.pedigreePhoto?.length
+                      ? null
+                      : uploadButton("Upload Pedigree Photo")}
+                  </Upload>
+                </Col>
+
+                <Col flex="none">
+                  <Upload {...commonUploadProps("DNAPhoto")}>
+                    {fileLists.DNAPhoto?.length
+                      ? null
+                      : uploadButton("Upload DNA Photo")}
+                  </Upload>
+                </Col>
+              </Row>
             </div>
-            <Row gutter={[16, 16]}>
-              <Col xs={24} sm={12} md={8} lg={8} xl={4}>
-                <Upload {...commonUploadProps("pigeonPhoto")}>
-                  {uploadButton("Upload Pigeon Photo")}
-                </Upload>
-              </Col>
-              <Col xs={24} sm={12} md={8} lg={8} xl={4}>
-                <Upload {...commonUploadProps("eyePhoto")}>
-                  {uploadButton("Upload Eye Photo")}
-                </Upload>
-              </Col>
-              <Col xs={24} sm={12} md={8} lg={8} xl={4}>
-                <Upload {...commonUploadProps("ownershipPhoto")}>
-                  {uploadButton("Upload Ownership Card")}
-                </Upload>
-              </Col>
-              <Col xs={24} sm={12} md={8} lg={8} xl={4}>
-                <Upload {...commonUploadProps("pedigreePhoto")}>
-                  {uploadButton("Upload Pedigree Photo")}
-                </Upload>
-              </Col>
-              <Col xs={24} sm={12} md={8} lg={8} xl={4}>
-                <Upload {...commonUploadProps("DNAPhoto")}>
-                  {uploadButton("Upload DNA Photo")}
-                </Upload>
-              </Col>
-            </Row>
-          </Col>
+          </div>
         </Row>
       </Form>
     </Modal>
