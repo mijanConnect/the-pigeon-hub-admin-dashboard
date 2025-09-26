@@ -20,8 +20,8 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react()],
   server: {
-    // host: "50.6.200.33",
-    host: "206.162.244.155",
+    host: "50.6.200.33",
+    // host: "206.162.244.155",
     port: 3035,
   },
 });
