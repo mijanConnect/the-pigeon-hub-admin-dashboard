@@ -172,24 +172,24 @@ const MyPigeon = () => {
     { title: "Mother", dataIndex: "mother", key: "mother" },
     { title: "Gender", dataIndex: "gender", key: "gender" },
     { title: "Color & Pattern", dataIndex: "color", key: "color" },
-    { title: "Status", dataIndex: "status", key: "status" },
-    { title: "Verified", dataIndex: "verified", key: "verified" },
-    {
-      title: "Icon",
-      dataIndex: "icon",
-      key: "icon",
-      width: 80,
-      render: (src) =>
-        src && src !== "-" ? (
-          <img
-            src={VerifyIcon}
-            alt="verify"
-            style={{ width: 24, height: 24, objectFit: "cover" }}
-          />
-        ) : (
-          <span>-</span>
-        ),
-    },
+    // { title: "Status", dataIndex: "status", key: "status" },
+    // { title: "Verified", dataIndex: "verified", key: "verified" },
+    // {
+    //   title: "Icon",
+    //   dataIndex: "icon",
+    //   key: "icon",
+    //   width: 80,
+    //   render: (src) =>
+    //     src && src !== "-" ? (
+    //       <img
+    //         src={VerifyIcon}
+    //         alt="verify"
+    //         style={{ width: 24, height: 24, objectFit: "cover" }}
+    //       />
+    //     ) : (
+    //       <span>-</span>
+    //     ),
+    // },
     {
       title: "Actions",
       key: "actions",
