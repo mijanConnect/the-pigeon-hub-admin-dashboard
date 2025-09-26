@@ -6,152 +6,211 @@ import ReactFlow, {
   Handle,
   Position,
 } from "reactflow";
+
 import "reactflow/dist/style.css";
-import { Card, Typography, Tag, Button, Spin, Row, Col, message } from "antd";
+import { Card, Button, Modal, Spin } from "antd";
 import {
   UserOutlined,
+  CalendarOutlined,
+  CrownOutlined,
   TrophyOutlined,
+  InfoCircleOutlined,
   DownloadOutlined,
-  ManOutlined,
-  WomanOutlined,
 } from "@ant-design/icons";
-// If you used RTK Query before, keep your hook. Otherwise, replace with your data loader.
-// import { useGetPigeonPedigreeChartDataQuery } from "@/redux/featured/pigeon/pigeonApi";
-import { convertBackendToExistingFormat } from "./PigeonData"; // keep as-is if you already have it
-import { useParams } from "react-router-dom"; // ← React Router instead of Next.js
+// import { useParams } from "next/navigation";
+// import Spinner from "@/app/(commonLayout)/Spinner";
 import { getCode } from "country-list";
+// import { WinnerPedigree } from "../share/svg/howItWorkSvg";
 import * as XLSX from "xlsx";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+// import { convertBackendToExistingFormat } from "./PigeonData";
+// import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
+import { useParams } from "react-router-dom";
+import { convertBackendToExistingFormat } from "./PedigreeData";
+import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
 
-const { Title, Paragraph, Text } = Typography;
-
-/**
- * Ant Design friendly ReactFlow node
- */
 const PigeonNode = ({ data }) => {
   const countryCode = data.country ? getCode(data.country) : null;
-
+  console.log(data.gender);
   const getGenderIcon = (gender) => {
-    if (!gender) return null;
-    return gender.toLowerCase() === "cock" || gender.toLowerCase() === "male" ? (
-      <ManOutlined />
-    ) : (
-      <WomanOutlined />
-    );
+    return gender === "Cock" ? "♂" : "♀";
   };
 
-  const sizeByGeneration = (generation) => {
+  const getGenderColor = (gender) => {
+    return gender === "male" ? "bg-blue-500" : "bg-pink-500";
+  };
+
+  const getGenerationColor = (generation) => {
     switch (generation) {
       case 0:
+        return "border-black"; // Subject
       case 1:
-        return { width: 300, height: 700 };
+        return "border-black"; // Parents (2)
       case 2:
-        return { width: 300, height: 400 };
+        return "border-black"; // Grandparents (4)
       case 3:
-        return { width: 300, height: 200 };
+        return "border-black"; // Great-grandparents (8)
       case 4:
-        return { width: 300, height: 100 };
+        return "border-black"; // Great-great-grandparents (16)
       default:
-        return { width: 300, height: 96 };
+        return "border-black";
     }
   };
 
-  const cardSize = sizeByGeneration(data?.generation);
+  const getCardSize = (generation) => {
+    switch (generation) {
+      case 0:
+        return "w-[300px] h-[700px]"; // Subject - largest
+      case 1:
+        return "w-[300px] h-[700px]"; // Parents
+      case 2:
+        return "w-[300px] h-[400px]"; // Grandparents
+      case 3:
+        return "w-[300px] h-[200px]"; // Great-grandparents
+      case 4:
+        return "w-[300px] h-[100px]"; // Great-great-grandparents - smallest
+      default:
+        return "w-[300px] h-24";
+    }
+  };
 
   return (
     <div
-      style={{
-        backgroundColor: data.color || "#fff",
-        width: cardSize.width,
-        height: cardSize.height,
-        border: "1px solid #000",
-        borderRightWidth: 10,
-        borderBottomWidth: 8,
-        boxSizing: "border-box",
-        padding: 8,
-        borderRadius: 4,
-        color: "#111",
-      }}
+      style={{ backgroundColor: data.color }}
+      className={`${getCardSize(data?.generation)}
+       
+        border-b-8 border-r-10 border-black
+          text-white rounded-none transition-all duration-300 px-4 py-2
+          ${getGenerationColor(data?.generation)} border`}
     >
-      <Handle type="target" position={Position.Left} style={{ width: 12, height: 12, background: "#94a3b8" }} />
-
-      {/* Header Row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+      <Handle
+        type="target"
+        position={Position.Left}
+        className="w-3 h-3 !bg-slate-400"
+      />
+      <div className="flex items-center justify-between ">
         {countryCode && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div className="flex items-center gap-1">
             <img
               src={`https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`}
               alt={data.country}
-              width={24}
-              height={18}
-              style={{ borderRadius: 2 }}
+              className="w-6 h-5 rounded-sm"
             />
-            <Text strong>{countryCode}</Text>
+            <p className="text-black">{countryCode}</p>
           </div>
         )}
 
-        {data.birthYear && <Text>{String(data.birthYear).slice(-2)}</Text>}
-        {data.ringNumber && <Text strong style={{ color: "#C33739" }}>{data.ringNumber}</Text>}
-        {data.gender && <Text>{getGenderIcon(data.gender)}</Text>}
+        {/* <Crown className="w-3 h-3 text-amber-600" /> */}
+        {data.birthYear && (
+          <span className="text-black">
+            {data.birthYear.toString().slice(-2)}
+          </span>
+        )}
+        {data.ringNumber && (
+          <span className=" font-bold text-[#C33739]">{data.ringNumber}</span>
+        )}
+        {data.gender && (
+          <span className="text-black text-xl">
+            {getGenderIcon(data.gender)}
+          </span>
+        )}
+        <img
+          src="/assests/Letter-P.png"
+          alt="Letter P"
+          width={24}
+          height={24}
+          className="w-6 h-6"
+        />
+        <img
+          src="/assests/Gold-cup.png"
+          alt="Letter P"
+          width={30}
+          height={30}
+          className="w-7 h-7"
+        />
+
+        {/* <WinnerPedigree /> */}
       </div>
 
-      {/* Body */}
-      <div style={{ marginTop: 8 }}>
-        {data.name && (
-          <Title level={5} style={{ margin: 0 }}>
-            {data.name}
-          </Title>
-        )}
-
-        {data.owner && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-            <UserOutlined />
-            <Text italic>{data.owner}</Text>
-          </div>
-        )}
+      <div className="">
+        <div className="flex items-center justify-start gap-2 space-y-2">
+          {data.name && (
+            <h3 className="font-bold text-black text-xl truncate">
+              {data.name}
+            </h3>
+          )}
+        </div>
+        <div className="flex items-center justify-start gap-2">
+          {" "}
+          {data.owner && (
+            <div className="flex items-center gap-2 text-xl  italic text-black">
+              <UserOutlined className="w-3 h-3" />
+              <span className="truncate">{data.owner}</span>
+            </div>
+          )}
+          <img
+            src="/assests/Letter-B.png"
+            alt="Letter P"
+            width={24}
+            height={24}
+            className="w-6 h-6"
+          />
+        </div>
 
         {data.description && (
-          <Paragraph style={{ marginTop: 8, color: "#475569" }}>{data.description}</Paragraph>
-        )}
-
-        {data.colorName && (
-          <Paragraph style={{ marginTop: 4, color: "#475569" }}>
-            <Text strong>Color:</Text> {data.colorName}
-          </Paragraph>
-        )}
-
-        {data.achievements && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
-            <Text>Results:</Text>
-            <TrophyOutlined />
-            <Text>{data.achievements}</Text>
+          <div className="">
+            <p className="text-sm text-slate-700">{data.description}</p>
           </div>
         )}
+        {data.colorName && (
+          <div className="">
+            <p className="text-sm text-slate-700"> color : {data.colorName}</p>
+          </div>
+        )}
+        {data.achievements && (
+          <div className="flex  gap-2">
+            <p className="text-xs text-black">Results : </p>
+            <img
+              src="/assests/Gold-tropy.png"
+              alt="Letter P"
+              width={30}
+              height={30}
+              className="w-7 h-7"
+            />
+            <p className="text-xs text-black">{data.achievements}</p>
+          </div>
+        )}
+        {/* {data.position && (
+            <span variant="secondary" className="text-xs px-1 text-black">
+              {data.position}
+            </span>
+          )} */}
       </div>
 
-      <Handle type="source" position={Position.Right} style={{ width: 12, height: 12, background: "#94a3b8" }} />
+      <Handle
+        type="source"
+        position={Position.Right}
+        className="w-3 h-3 !bg-slate-400"
+      />
     </div>
   );
 };
 
-const nodeTypes = { pigeonNode: PigeonNode };
+const nodeTypes = {
+  pigeonNode: PigeonNode,
+};
 
 export default function PigeonPedigreeChart() {
-  // If you're not using React Router, replace this with how you get your "id"
   const { id } = useParams();
+  console.log("id", id);
 
-  // ---- Load Data ----
-  // If you have RTK Query, uncomment and use your API hook
-  // const { data: pedigreeData, isLoading } = useGetPigeonPedigreeChartDataQuery(id);
-  // For demo, assume pedigreeData is available via props or context. Replace as needed.
-  const pedigreeData = undefined; // <- supply real data
-  const isLoading = false; // <- update with your loader state
-
+  const { data: pedigreeData, isLoading } = useGetPigeonPedigreeDataQuery(id);
+  console.log("pedigreeData", pedigreeData);
   const chartRef = useRef(null);
 
-  const { nodes: dynamicNodes = [], edges: dynamicEdges = [] } = useMemo(() => {
-    return convertBackendToExistingFormat(pedigreeData) || { nodes: [], edges: [] };
+  const { nodes: dynamicNodes, edges: dynamicEdges } = useMemo(() => {
+    return convertBackendToExistingFormat(pedigreeData);
   }, [pedigreeData]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(dynamicNodes);
@@ -167,200 +226,310 @@ export default function PigeonPedigreeChart() {
     [setEdges]
   );
 
-  // ------- EXPORT: EXCEL -------
+  // Excel Export Function
   const exportToExcel = useCallback(() => {
     try {
+      // Prepare data for Excel
       const excelData = nodes.map((node, index) => ({
         "Serial No": index + 1,
-        Name: node.data?.name || "N/A",
-        "Ring Number": node.data?.ringNumber || "N/A",
-        Gender: node.data?.gender || "N/A",
-        "Birth Year": node.data?.birthYear || "N/A",
-        Owner: node.data?.owner || "N/A",
-        Country: node.data?.country || "N/A",
-        Color: node.data?.colorName || "N/A",
-        Generation: node.data?.generation ?? "N/A",
-        Achievements: node.data?.achievements || "N/A",
-        Description: node.data?.description || "N/A",
+        Name: node.data.name || "N/A",
+        "Ring Number": node.data.ringNumber || "N/A",
+        Gender: node.data.gender || "N/A",
+        "Birth Year": node.data.birthYear || "N/A",
+        Owner: node.data.owner || "N/A",
+        Country: node.data.country || "N/A",
+        Color: node.data.colorName || "N/A",
+        Generation:
+          node.data.generation !== undefined ? node.data.generation : "N/A",
+        Achievements: node.data.achievements || "N/A",
+        Description: node.data.description || "N/A",
       }));
 
+      // Create workbook and worksheet
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.json_to_sheet(excelData);
-      ws["!cols"] = [
-        { wch: 10 },
-        { wch: 20 },
-        { wch: 15 },
-        { wch: 10 },
-        { wch: 12 },
-        { wch: 20 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 12 },
-        { wch: 30 },
-        { wch: 40 },
-      ];
 
+      // Set column widths
+      const colWidths = [
+        { wch: 10 }, // Serial No
+        { wch: 20 }, // Name
+        { wch: 15 }, // Ring Number
+        { wch: 10 }, // Gender
+        { wch: 12 }, // Birth Year
+        { wch: 20 }, // Owner
+        { wch: 15 }, // Country
+        { wch: 15 }, // Color
+        { wch: 12 }, // Generation
+        { wch: 30 }, // Achievements
+        { wch: 40 }, // Description
+      ];
+      ws["!cols"] = colWidths;
+
+      // Add worksheet to workbook
       XLSX.utils.book_append_sheet(wb, ws, "Pigeon Pedigree");
+
+      // Generate filename with current date
       const currentDate = new Date().toISOString().split("T")[0];
       const filename = `pigeon-pedigree-${currentDate}.xlsx`;
+
+      // Save file
       XLSX.writeFile(wb, filename);
-      message.success("Excel exported successfully");
-    } catch (err) {
-      console.error(err);
-      message.error("Error exporting to Excel. Please try again.");
+
+      console.log("Excel export completed successfully");
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      alert("Error exporting to Excel. Please try again.");
     }
   }, [nodes]);
 
-  // ------- EXPORT: PDF -------
+  // PDF Export Function
   const exportToPDF = useCallback(async () => {
     try {
       if (!chartRef.current) {
-        message.warning("Chart not ready for export.");
+        alert("Chart not ready for export. Please try again.");
         return;
       }
 
-      const btn = document.querySelector('[data-export-pdf]');
-      if (btn) {
-        btn.textContent = "Exporting...";
-        btn.disabled = true;
+      // Show loading state
+      const exportButton = document.querySelector("[data-export-pdf]");
+      if (exportButton) {
+        exportButton.textContent = "Exporting...";
+        exportButton.disabled = true;
       }
 
-      // Replace unsupported lab() CSS colors by forcing computed color properties into RGB
+      // Create a comprehensive function to convert lab colors to RGB
       const convertLabToRgb = (labString) => {
-        const labMatch = labString?.match(/lab\(\s*([^)]+)\s*\)/);
+        // Extract values from lab() function
+        const labMatch = labString.match(/lab\(\s*([^)]+)\s*\)/);
         if (!labMatch) return labString;
-        const values = labMatch[1].split(/\s+/).map((v) => parseFloat(v.replace("%", "")));
+
+        const values = labMatch[1]
+          .split(/\s+/)
+          .map((v) => parseFloat(v.replace("%", "")));
         const [l, a, b] = values;
+
+        // Simple lab to RGB conversion (approximation)
+        // For a more accurate conversion, you might want to use a color library
         const y = (l + 16) / 116;
         const x = a / 500 + y;
         const z = y - b / 200;
-        const r = Math.max(0, Math.min(255, Math.round(255 * (3.2406 * x - 1.5372 * y - 0.4986 * z))));
-        const g = Math.max(0, Math.min(255, Math.round(255 * (-0.9689 * x + 1.8758 * y + 0.0415 * z))));
-        const blue = Math.max(0, Math.min(255, Math.round(255 * (0.0557 * x - 0.204 * y + 1.057 * z))));
+
+        const r = Math.max(
+          0,
+          Math.min(
+            255,
+            Math.round(255 * (3.2406 * x - 1.5372 * y - 0.4986 * z))
+          )
+        );
+        const g = Math.max(
+          0,
+          Math.min(
+            255,
+            Math.round(255 * (-0.9689 * x + 1.8758 * y + 0.0415 * z))
+          )
+        );
+        const blue = Math.max(
+          0,
+          Math.min(255, Math.round(255 * (0.0557 * x - 0.204 * y + 1.057 * z)))
+        );
+
         return `rgb(${r}, ${g}, ${blue})`;
       };
 
-      const temporarilyReplaceLabColors = (root) => {
-        const backups = [];
-        const process = (el) => {
-          if (el.nodeType !== Node.ELEMENT_NODE) return;
-          const styleAttr = el.getAttribute("style");
-          const cs = window.getComputedStyle(el);
-          let needs = false;
-          let newStyle = styleAttr || "";
+      // More comprehensive approach to handle lab colors
+      const temporarilyReplaceLabColors = (element) => {
+        const originalStyles = [];
 
-          if (styleAttr && styleAttr.includes("lab(")) {
-            needs = true;
-            newStyle = styleAttr.replace(/lab\([^\)]+\)/g, (m) => convertLabToRgb(m));
-          }
+        // Function to recursively process all elements
+        const processElement = (el) => {
+          if (el.nodeType === Node.ELEMENT_NODE) {
+            const style = el.getAttribute("style");
+            const computedStyle = window.getComputedStyle(el);
 
-          ["color", "background-color", "border-color", "fill", "stroke"].forEach((prop) => {
-            const val = cs.getPropertyValue(prop);
-            if (val && val.includes("lab(")) {
-              needs = true;
-              newStyle += `; ${prop}: ${convertLabToRgb(val)} !important`;
+            // Check both inline styles and computed styles for lab colors
+            let needsReplacement = false;
+            let newStyle = style || "";
+
+            // Check inline style attribute
+            if (style && style.includes("lab(")) {
+              needsReplacement = true;
+              newStyle = style.replace(/lab\([^)]+\)/g, (match) => {
+                return convertLabToRgb(match);
+              });
             }
-          });
 
-          if (needs) {
-            backups.push({ element: el, originalStyle: styleAttr, hasStyle: el.hasAttribute("style") });
-            el.setAttribute("style", newStyle);
+            // Check computed styles for common color properties
+            const colorProperties = [
+              "color",
+              "background-color",
+              "border-color",
+              "fill",
+              "stroke",
+            ];
+            colorProperties.forEach((prop) => {
+              const value = computedStyle.getPropertyValue(prop);
+              if (value && value.includes("lab(")) {
+                needsReplacement = true;
+                const convertedColor = convertLabToRgb(value);
+                newStyle += `; ${prop}: ${convertedColor} !important`;
+              }
+            });
+
+            if (needsReplacement) {
+              originalStyles.push({
+                element: el,
+                originalStyle: style,
+                hasStyle: el.hasAttribute("style"),
+              });
+              el.setAttribute("style", newStyle);
+            }
+
+            // Process child elements
+            Array.from(el.children).forEach(processElement);
           }
-
-          Array.from(el.children).forEach(process);
         };
-        process(root);
-        return backups;
+
+        processElement(element);
+        return originalStyles;
       };
 
-      const backups = temporarilyReplaceLabColors(chartRef.current);
-      await new Promise((r) => setTimeout(r, 100));
+      // Apply lab color replacements
+      const styleBackups = temporarilyReplaceLabColors(chartRef.current);
 
+      // Wait a moment for DOM updates
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Configure html2canvas with better error handling
       const canvas = await html2canvas(chartRef.current, {
-        scale: 2,
+        scale: 2, // Higher resolution
         useCORS: true,
         allowTaint: true,
         backgroundColor: "#ffffff",
         width: chartRef.current.scrollWidth,
         height: chartRef.current.scrollHeight,
-        logging: false,
-        ignoreElements: (el) => el.classList && el.classList.contains("html2canvas-ignore"),
+        logging: false, // Disable logging to reduce console noise
+        ignoreElements: (element) => {
+          // Skip elements that might cause issues
+          return (
+            element.classList &&
+            element.classList.contains("html2canvas-ignore")
+          );
+        },
       });
 
-      // restore
-      backups.forEach((b) => {
-        if (b.hasStyle && b.originalStyle) b.element.setAttribute("style", b.originalStyle);
-        else if (!b.hasStyle) b.element.removeAttribute("style");
+      // Restore original styles
+      styleBackups.forEach((backup) => {
+        if (backup.hasStyle && backup.originalStyle) {
+          backup.element.setAttribute("style", backup.originalStyle);
+        } else if (!backup.hasStyle) {
+          backup.element.removeAttribute("style");
+        }
       });
 
-      const imgData = canvas.toDataURL("image/png", 1.0);
+      const imgData = canvas.toDataURL("image/png", 1.0); // Full quality
+
+      // Calculate PDF dimensions
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-      const maxWidth = imgWidth > imgHeight ? 1120 : 790; // A4-ish @ 150DPI
+
+      // Calculate scale to fit on standard paper size
+      const maxWidth = imgWidth > imgHeight ? 1120 : 790; // A4 landscape/portrait at 150 DPI
       const maxHeight = imgWidth > imgHeight ? 790 : 1120;
+
       const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight, 1);
       const finalWidth = imgWidth * scale;
       const finalHeight = imgHeight * scale;
 
+      // Create PDF with appropriate orientation
       const pdf = new jsPDF({
         orientation: imgWidth > imgHeight ? "landscape" : "portrait",
         unit: "px",
-        format: [finalWidth + 40, finalHeight + 40],
+        format: [finalWidth + 40, finalHeight + 40], // Add padding
       });
 
-      pdf.addImage(imgData, "PNG", 20, 20, finalWidth, finalHeight);
+      // Center the image on the page
+      const xOffset = 20;
+      const yOffset = 20;
+
+      // Add the image to PDF
+      pdf.addImage(imgData, "PNG", xOffset, yOffset, finalWidth, finalHeight);
+
+      // Generate filename with current date
       const currentDate = new Date().toISOString().split("T")[0];
-      pdf.save(`pigeon-pedigree-chart-${currentDate}.pdf`);
-      message.success("PDF exported successfully");
+      const filename = `pigeon-pedigree-chart-${currentDate}.pdf`;
+
+      // Save PDF
+      pdf.save(filename);
+
+      console.log("PDF export completed successfully");
     } catch (error) {
-      console.error(error);
-      if (String(error?.message || "").includes("lab")) {
-        message.error("Unsupported CSS color format detected. Refresh and try again.");
-      } else if (String(error?.message || "").includes("canvas")) {
-        message.error("Unable to capture chart. Ensure it is fully loaded and try again.");
+      console.error("Error exporting to PDF:", error);
+
+      // More specific error messages
+      if (error.message && error.message.includes("lab")) {
+        alert(
+          "Error: Unsupported color format detected. Please try refreshing the page and exporting again."
+        );
+      } else if (error.message && error.message.includes("canvas")) {
+        alert(
+          "Error: Unable to capture chart image. Please ensure the chart is fully loaded and try again."
+        );
       } else {
-        message.error("Error exporting to PDF. Please try again.");
+        alert("Error exporting to PDF. Please try again or refresh the page.");
       }
     } finally {
-      const btn = document.querySelector('[data-export-pdf]');
-      if (btn) {
-        btn.textContent = "Export as PDF";
-        btn.disabled = false;
+      // Reset button state
+      const exportButton = document.querySelector("[data-export-pdf]");
+      if (exportButton) {
+        exportButton.textContent = "Export as PDF";
+        exportButton.disabled = false;
       }
     }
   }, []);
 
   const defaultViewport = { x: 0, y: 0, zoom: 0.8 };
 
-  if (isLoading) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 400 }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
+  if (isLoading) return <div>Loading ... </div>;
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", paddingInline: 16 }}>
-      <Row gutter={[24, 24]} align="middle" style={{ marginTop: 48 }}>
-        <Col xs={24} md={16}>
-          <Title level={3} style={{ marginBottom: 8 }}>Pigeon pedigree chart</Title>
-          <Paragraph>
-            The Pedigree Chart displays your pigeon's lineage across multiple generations, showing key details like name,
-            ring number, and birthdate. It helps you track breeding relationships and plan future pairings.
-          </Paragraph>
-        </Col>
-        <Col xs={24} md={8} style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-          <Button icon={<DownloadOutlined />} type="primary" onClick={exportToExcel}>
+    <div className="container  mx-auto">
+      <div className="flex flex-col md:flex-row items-center justify-between mt-12">
+        <div className="max-w-2xl">
+          <h2 className="text-black font-bold text-2xl">
+            Pigeon pedigree chart
+          </h2>
+          <p className="text-black">
+            The Pedigree Chart displays your pigeon's lineage across multiple
+            generations, showing key details like name, ring number, and
+            birthdate. It helps you track breeding relationships and plan future
+            pairings.
+          </p>
+        </div>
+        <div className="flex gap-5">
+          <Button
+            onClick={exportToExcel}
+            type="primary"
+            className="bg-primary text-white hover:text-white flex items-center gap-2"
+            icon={<DownloadOutlined />}
+          >
             Export as Excel
           </Button>
-          <Button icon={<DownloadOutlined />} onClick={exportToPDF} data-export-pdf>
+          <Button
+            onClick={exportToPDF}
+            type="primary"
+            data-export-pdf
+            className="bg-primary text-white hover:text-white flex items-center gap-2"
+            icon={<DownloadOutlined />}
+          >
             Export as PDF
           </Button>
-        </Col>
-      </Row>
-
-      <div ref={chartRef} style={{ width: "100%", height: 1700, display: "flex", alignItems: "center" }}>
+        </div>
+      </div>
+      <div
+        ref={chartRef}
+        className="w-full h-[1700px] flex justify-start items-center mt-0"
+      >
+        {/* --- ReactFlow (now dynamic) --- */}
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -371,7 +540,7 @@ export default function PigeonPedigreeChart() {
           defaultViewport={defaultViewport}
           fitView
           attributionPosition="bottom-right"
-          style={{ background: "transparent", height: "100%", paddingBlock: 16 }}
+          className="bg-transparent h-full py-16"
           minZoom={0.5}
           maxZoom={1}
           nodesDraggable={false}
@@ -382,7 +551,9 @@ export default function PigeonPedigreeChart() {
           zoomOnPinch={false}
           zoomOnDoubleClick={false}
           proOptions={{ hideAttribution: true }}
-        />
+        >
+          {/* <Background variant="dots" gap={25} size={1.5} color="#FFFFFF" /> */}
+        </ReactFlow>
       </div>
     </div>
   );

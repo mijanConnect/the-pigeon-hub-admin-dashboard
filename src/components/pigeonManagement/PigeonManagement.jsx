@@ -27,6 +27,7 @@ import Swal from "sweetalert2";
 import ViewPigeon from "../myPigeon/ViewPigeon";
 import { getNames } from "country-list";
 import { getCode } from "country-list";
+import { useNavigate } from "react-router-dom";
 
 const { Option } = Select;
 
@@ -47,6 +48,7 @@ const PigeonManagement = () => {
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [viewPigeonId, setViewPigeonId] = useState(null);
   const countries = getNames();
+  const navigate = useNavigate();
 
   // RTK Query hooks
   const { data, isLoading } = useGetAllPigeonsQuery({
@@ -103,6 +105,10 @@ const PigeonManagement = () => {
   const handleViewCancel = () => {
     setViewModalVisible(false);
     setViewPigeonId(null);
+  };
+
+  const showPedigreeChart = (record) => {
+    navigate(`/pigeon-management/${record._id}`);
   };
 
   const handleModalSave = async (values) => {
@@ -271,12 +277,12 @@ const PigeonManagement = () => {
                 onClick={() => handleView(record)}
               />
             </Tooltip>
-            {/* <Tooltip title="View & Update Details">
+            <Tooltip title="View & Update Details">
               <FaEdit
                 style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
-                onClick={() => showEditModal(record)}
+                onClick={() => showPedigreeChart(record)}
               />
-            </Tooltip> */}
+            </Tooltip>
             <Tooltip title="Delete">
               <FaTrash
                 style={{ color: "#ff4d4f", fontSize: 16, cursor: "pointer" }}

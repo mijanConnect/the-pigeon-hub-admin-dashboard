@@ -55,6 +55,7 @@ import PigeonManagement from "../components/pigeonManagement/PigeonManagement";
 import VerifyBreeder from "../components/verifyBreeder/VerifyBreeder";
 import { Profiler } from "react";
 import ProtectedRoute from "./ProtectedRoute";
+import PigeonPedigreeChart from "../components/pedigreeChart/PedigreeChartContainer";
 
 const router = createBrowserRouter([
   {
@@ -78,6 +79,10 @@ const router = createBrowserRouter([
       {
         path: "/pigeon-management",
         element: <PigeonManagement />,
+      },
+      {
+        path: "/pigeon-management/:id",
+        element: <PigeonPedigreeChart />,
       },
       {
         path: "/verify-breeder",
