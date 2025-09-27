@@ -17,7 +17,7 @@ import {
   useGetSinglePigeonQuery,
 } from "../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../common/imageUrl";
-import VerifyIcon from "../../assets/verify.png";
+import AllIcon from "../../assets/all.png";
 import { FaTrash, FaEdit, FaEye } from "react-icons/fa";
 import ViewPigeon from "./ViewPigeon"; // ✅ import
 import Swal from "sweetalert2";
@@ -25,6 +25,14 @@ import { getNames } from "country-list";
 import { getCode } from "country-list";
 import { PiDnaBold } from "react-icons/pi";
 import { useNavigate } from "react-router-dom";
+
+import VerifyIcon from "../../assets/verify.png";
+import RacingIcon from "../../assets/Racing.png";
+import BreedingIcon from "../../assets/Breeding.png";
+import LostIcon from "../../assets/Lost.png";
+import SoldIcon from "../../assets/Sold.png";
+import RetiredIcon from "../../assets/Retired.png";
+import DeceasedIcon from "../../assets/Deceased.png";
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -69,6 +77,17 @@ const MyPigeon = () => {
     setEditingPigeonId(record._id);
     setIsModalVisible(true);
   };
+
+  const handleAddPigeon = () => {
+    navigate("/add-pigeon");
+  };
+
+  // const handleEditPigeon = (record) => {
+  //   // setEditingPigeonId(record._id);
+  //   navigate(`/add-pigeon/${record._id}`);
+
+  //   console.log("Record", record._id);
+  // };
 
   const { data, isLoading } = useGetMyPigeonsQuery({
     page,
@@ -236,7 +255,7 @@ const MyPigeon = () => {
                 onClick={() => showPedigreeChart(record)}
               />
             </Tooltip>
-            <Tooltip title="View & Update Details">
+            <Tooltip title="Update Details">
               <FaEdit
                 style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
                 onClick={() => showEditModal(record)}
@@ -267,8 +286,9 @@ const MyPigeon = () => {
           type="primary"
           className="py-5 px-7 font-semibold text-[16px]"
           onClick={() => {
-            setEditingPigeonId(null); // ✅ reset ID
-            setIsModalVisible(true); // ✅ open modal
+            // setEditingPigeonId(null); // ✅ reset ID
+            // setIsModalVisible(true); // ✅ open modal
+            handleAddPigeon();
           }}
         >
           Add New Pigeon
@@ -287,13 +307,97 @@ const MyPigeon = () => {
               setPage(1); // reset pagination whenever tab changes
             }}
           >
-            <TabPane tab="All" key="all" />
-            <TabPane tab="Racing" key="Racing" />
-            <TabPane tab="Breeding" key="Breeding" />
-            <TabPane tab="Lost" key="Lost" />
-            <TabPane tab="Sold" key="Sold" />
-            <TabPane tab="Retired" key="Retired" />
-            <TabPane tab="Deceased" key="Deceased" />
+            <TabPane
+              tab={
+                <span className="flex items-center gap-2">
+                  <img
+                    src={AllIcon}
+                    alt="verify"
+                    style={{ objectFit: "cover" }}
+                  />{" "}
+                  All
+                </span>
+              }
+              key="all"
+            />
+            <TabPane
+              tab={
+                <span className="flex items-center gap-2">
+                  <img
+                    src={RacingIcon}
+                    alt="verify"
+                    style={{ objectFit: "cover" }}
+                  />{" "}
+                  Racing
+                </span>
+              }
+              key="Racing"
+            />
+            <TabPane
+              tab={
+                <span className="flex items-center gap-2">
+                  <img
+                    src={BreedingIcon}
+                    alt="verify"
+                    style={{ objectFit: "cover" }}
+                  />{" "}
+                  Breeding
+                </span>
+              }
+              key="Breeding"
+            />
+            <TabPane
+              tab={
+                <span className="flex items-center gap-2">
+                  <img
+                    src={LostIcon}
+                    alt="verify"
+                    style={{ objectFit: "cover" }}
+                  />{" "}
+                  Lost
+                </span>
+              }
+              key="Lost"
+            />
+            <TabPane
+              tab={
+                <span className="flex items-center gap-2">
+                  <img
+                    src={SoldIcon}
+                    alt="verify"
+                    style={{ objectFit: "cover" }}
+                  />{" "}
+                  Sold
+                </span>
+              }
+              key="Sold"
+            />
+            <TabPane
+              tab={
+                <span className="flex items-center gap-2">
+                  <img
+                    src={RetiredIcon}
+                    alt="verify"
+                    style={{ objectFit: "cover" }}
+                  />{" "}
+                  Retired
+                </span>
+              }
+              key="Retired"
+            />
+            <TabPane
+              tab={
+                <span className="flex items-center gap-2">
+                  <img
+                    src={DeceasedIcon}
+                    alt="verify"
+                    style={{ objectFit: "cover" }}
+                  />{" "}
+                  Deceased
+                </span>
+              }
+              key="Deceased"
+            />
           </Tabs>
         </div>
 

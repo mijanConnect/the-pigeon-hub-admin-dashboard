@@ -668,3 +668,10 @@ select {
   width: 100% !important;
   height: 100px !important;
 }
+
+/* This will affect all form labels globally */
+.ant-form-item-label > label {
+  font-size: 20px;
+  color: #18191b;
+  font-weight: bold;
+}

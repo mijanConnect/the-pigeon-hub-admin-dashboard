@@ -13,14 +13,17 @@ import {
   Dropdown,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import { useParams } from "react-router-dom";
 import {
   useAddPigeonMutation,
   useGetBreederNamesQuery,
   useGetPigeonSearchQuery,
   useUpdatePigeonMutation,
-} from "../../redux/apiSlices/mypigeonSlice";
-import { getImageUrl } from "../common/imageUrl";
+  useGetSinglePigeonQuery,
+} from "../../../redux/apiSlices/mypigeonSlice";
+import { getImageUrl } from "../../common/imageUrl";
 import { getNames } from "country-list";
+import { useNavigate } from "react-router-dom";
 
 const { Option } = Select;
 
@@ -34,13 +37,18 @@ const colorPatternMap = {
   Mealy: ["Barless", "Bar", "Check", "T-Check", "White Flight"],
 };
 
-const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
+const AddNewPigeon = ({ visible, onSave }) => {
   const [form] = Form.useForm();
   const [selected, setSelected] = useState({ color: null, pattern: null });
   const [addPigeon, { isLoading: isAdding }] = useAddPigeonMutation();
   const [showResults, setShowResults] = useState(false);
   const [raceResults, setRaceResults] = useState([]);
   const countries = getNames();
+  const navigate = useNavigate();
+  const [viewPigeonId, setViewPigeonId] = useState(null);
+  const { id } = useParams();
+
+  console.log("id", id);
 
   // 🔎 Parents
   const [fatherSearch, setFatherSearch] = useState("");
@@ -49,6 +57,16 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
     useGetPigeonSearchQuery(fatherSearch, { skip: !fatherSearch });
   const { data: motherOptions = [], isLoading: motherLoading } =
     useGetPigeonSearchQuery(motherSearch, { skip: !motherSearch });
+
+  //   const [editingPigeonId, setEditingPigeonId] = useState(null);
+  const { data: editingPigeonData } = useGetSinglePigeonQuery(id, {
+    skip: !id, // don't fetch until ID is set
+  });
+
+  const pigeonData = editingPigeonData?.data;
+
+  console.log(pigeonData);
+  console.log("ring NUmber", pigeonData?.ringNumber);
 
   // 📷 Images (File objects to send)
   const [photos, setPhotos] = useState({
@@ -100,6 +118,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
 
         form.setFieldsValue({
           ...pigeonData,
+          ringNumber: pigeonData.ringNumber,
           fatherRingId: pigeonData.fatherRingId?.ringNumber || "",
           motherRingId: pigeonData.motherRingId?.ringNumber || "",
           colorPattern: { color, pattern },
@@ -236,6 +255,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
       } else {
         await addPigeon({ formData, token }).unwrap();
         message.success("Pigeon added successfully!");
+        navigate("/my-pigeon");
       }
 
       form.resetFields();
@@ -256,7 +276,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
         pedigreePhoto: [],
         DNAPhoto: [],
       });
-      onCancel();
+      //   onCancel();
     } catch (err) {
       console.error(err);
       message.error(err?.data?.message || err.message);
@@ -321,30 +341,12 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
   });
 
   return (
-    <Modal
-      title={pigeonData ? "Edit Pigeon" : "Add New Pigeon"}
-      open={visible}
-      onCancel={onCancel}
-      width={1200}
-      footer={[
-        <Button
-          key="cancel"
-          onClick={onCancel}
-          disabled={isAdding || isUpdating}
-        >
-          Cancel
-        </Button>,
-        <Button
-          key="save"
-          type="primary"
-          onClick={handleSave}
-          loading={isAdding || isUpdating}
-        >
-          {pigeonData ? "Update Pigeon" : "Add New Pigeon"}
-        </Button>,
-      ]}
-    >
-      <Form form={form} layout="vertical" className="mb-6">
+    <div>
+      <Form
+        form={form}
+        layout="vertical"
+        className="mb-6 border rounded-lg border-primary px-[65px] py-[25px] mt-4"
+      >
         <Row gutter={[30, 20]}>
           {/* Ring Number */}
           <Col xs={24} sm={12} md={8}>
@@ -379,7 +381,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
           {/* Country */}
           <Col xs={24} sm={12} md={8}>
             <Form.Item
-              label="Country"
+              label="Choose a Country"
               name="country"
               // rules={[{ required: true, message: "Please select country" }]}
               className="custom-form-item-ant-select"
@@ -470,7 +472,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Gender"
               name="gender"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -846,7 +848,33 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
           </div>
         </Row>
       </Form>
-    </Modal>
+
+      <div className="flex justify-end">
+        {/* <Button
+          key="cancel"
+          onClick={onCancel}
+          disabled={isAdding || isUpdating}
+        >
+          Cancel
+        </Button> */}
+        <Button
+          onClick={() => navigate("/my-pigeon")} // Navigate on cancel
+          disabled={isAdding || isUpdating}
+          className="mr-[10px] bg-[#C33739] border border-[#C33739] text-white"
+        >
+          Cancel
+        </Button>
+
+        <Button
+          key="save"
+          type="primary"
+          onClick={handleSave}
+          loading={isAdding || isUpdating}
+        >
+          {pigeonData ? "Update Pigeon" : "Add New Pigeon"}
+        </Button>
+      </div>
+    </div>
   );
 };
 

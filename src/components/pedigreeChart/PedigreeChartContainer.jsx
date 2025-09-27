@@ -35,7 +35,7 @@ const PigeonNode = ({ data }) => {
   // Remove console logs in production
   console.log(data.gender);
   console.log(data.verified);
-  
+
   // Gender is already properly formatted as "Hen" or "Cock" from PedigreeData.jsx
   // Just use the gender icon function directly
   const getGenderIcon = (gender) => {
@@ -137,9 +137,7 @@ const PigeonNode = ({ data }) => {
       <div className="">
         <div className="flex items-center justify-start gap-2 space-y-2">
           {data.name && (
-            <h3 className="font-bold text-black  truncate">
-              {data.name}
-            </h3>
+            <h3 className="font-bold text-black  truncate">{data.name}</h3>
           )}
         </div>
         <div className="flex items-center justify-start gap-2">
