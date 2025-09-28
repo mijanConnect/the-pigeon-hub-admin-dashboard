@@ -48,7 +48,6 @@ import AuditLogs from "../components/auditLogs/AuditLogs";
 import LoginCredentials from "../components/loginCredentials/LoginCredentials";
 import ReportingAnalytics from "../components/reportingAnalytics/ReportingAnalytics";
 import PushNotifications from "../components/pushNotifications/PushNotifications";
-// import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 import { Navigate } from "react-router-dom";
 import MyPigeon from "../components/myPigeon/MyPigeon";
 import PigeonManagement from "../components/pigeonManagement/PigeonManagement";
@@ -57,7 +56,6 @@ import { Profiler } from "react";
 import ProtectedRoute from "./ProtectedRoute";
 import PigeonPedigreeChart from "../components/pedigreeChart/PedigreeChartContainer";
 import AddNewPigeon from "../components/myPigeon/addPigeon/AddNewPigeon";
-// import AddNewPigeon from "../components/myPigeon/AddNewPigeon";
 
 const router = createBrowserRouter([
   {
@@ -116,102 +114,6 @@ const router = createBrowserRouter([
       },
       // Pigeon End
       {
-        path: "/merchantManagement",
-        element: <SaleRepsManagement />,
-      },
-      {
-        path: "/customerManagement",
-        element: <CustomerManagement />,
-      },
-      {
-        path: "/tierSystem",
-        element: <TierSystem />,
-      },
-      {
-        path: "/subsciption",
-        element: <SubscriptionTable />,
-      },
-      {
-        path: "/promotionManagement",
-        element: <PromotionManagement />,
-      },
-      {
-        path: "/salesRepPortal",
-        element: <SalesRepPortal />,
-      },
-      {
-        path: "/auditLogs",
-        element: <AuditLogs />,
-      },
-      {
-        path: "/reportingAnalytics",
-        element: <ReportingAnalytics />,
-      },
-      {
-        path: "/pushNotification",
-        element: <PushNotifications />,
-      },
-
-      // Burger King end
-      {
-        path: "/orderManagement",
-        element: <OrderManagementContainer />,
-      },
-
-      {
-        path: "/salesManagement",
-        element: <SalesManagement />,
-      },
-      {
-        path: "/retailer",
-        element: <Retailer />,
-      },
-
-      {
-        path: "/merchantManagement/:id",
-        element: <ViewSalesReps />,
-      },
-      {
-        path: "/loyaltyProgram",
-        element: <LoyaltyProgram />,
-      },
-      {
-        path: "/category",
-        element: <CategoryManagement />,
-      },
-      {
-        path: "/color",
-        element: <ColorManagement />,
-      },
-      {
-        path: "/size",
-        element: <SizeManagement />,
-      },
-      {
-        path: "/products",
-        element: <ProductManagement />,
-      },
-      {
-        path: "/user",
-        element: <UserManagement />,
-      },
-      {
-        path: "/banner",
-        element: <Banner />,
-      },
-      {
-        path: "/about-us",
-        element: <AboutUs />,
-      },
-      {
-        path: "/contact",
-        element: <Contact />,
-      },
-      {
-        path: "/privacy-policy",
-        element: <PrivacyPolicy />,
-      },
-      {
         path: "/terms-and-conditions",
         element: <TermsAndConditions />,
       },
@@ -219,14 +121,6 @@ const router = createBrowserRouter([
         path: "/change-password",
         element: <ChangePassword />,
       },
-      {
-        path: "/faq",
-        element: <FAQSection />,
-      },
-      // {
-      //   path: "/sub-category",
-      //   element: <SubCategoryManagement />,
-      // },
       {
         path: "/profile",
         element: <AdminProfile />,

@@ -67,7 +67,7 @@ const Header = () => {
   // ✅ Fetch unread count
   const { data: unreadCount = 0 } = useGetUnreadNotificationCountQuery();
 
-  console.log(unreadCount);
+  // console.log(unreadCount);
 
   return (
     <div className="flex items-center justify-between gap-5 w-full px-4 py-6 bg-[#F2F2F2] lg:px-10">

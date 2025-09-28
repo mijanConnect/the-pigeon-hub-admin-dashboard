@@ -31,8 +31,8 @@ const PackagesPlans = () => {
     price: 0,
     duration: "1 month",
     features: [
-      "100+ of PNG & SVG Uploaded Pictures",
-      "Access to 4 Generation Details",
+      "50 of PNG & SVG Uploaded Pictures",
+      "Access to 3 Generation Details",
       "Upload custom icons and fonts",
       "Unlimited Sharing",
       "Upload graphics & video in up to 4k",
@@ -165,38 +165,46 @@ const PackagesPlans = () => {
   };
 
   // Card and text styles
+  // const getCardStyle = (pkg) => {
+  //   if (pkg.popular || pkg.title === "Professional")
+  //     return "shadow-lg rounded-lg bg-primary hover:shadow-xl transition-all transform hover:-translate-y-1";
+  //   if (pkg.title === "Freebie")
+  //     return "shadow-sm rounded-lg border border-gray-300 bg-[#F9FAFB] hover:shadow-md transition-all transform hover:-translate-y-1";
+  //   return "shadow-md rounded-lg border border-gray-400 bg-primary hover:shadow-lg transition-all transform hover:-translate-y-1";
+  // };
+
   const getCardStyle = (pkg) => {
-    if (pkg.popular || pkg.title === "Professional")
-      return "shadow-lg rounded-lg bg-primary hover:shadow-xl transition-all transform hover:-translate-y-1";
-    if (pkg.title === "Freebie")
+    if (pkg.title === "Freebie") {
       return "shadow-sm rounded-lg border border-gray-300 bg-[#F9FAFB] hover:shadow-md transition-all transform hover:-translate-y-1";
-    return "shadow-md rounded-lg border border-gray-400 bg-primary hover:shadow-lg transition-all transform hover:-translate-y-1";
+    } else {
+      return "shadow-lg rounded-lg bg-primary hover:shadow-xl transition-all transform hover:-translate-y-1";
+    }
   };
 
   const getTitleStyle = (pkg) =>
-    pkg.popular || pkg.title === "Professional"
-      ? "text-white text-[22px] font-semibold"
-      : "text-[#071952] text-[22px] font-semibold";
+    pkg.popular || pkg.title === "Freebie"
+      ? "text-[#071952] text-[22px] font-semibold"
+      : "text-white text-[22px] font-semibold";
 
   const getPriceStyle = (pkg) =>
-    pkg.popular || pkg.title === "Professional"
-      ? "text-white text-[56px] font-semibold"
-      : "text-[#071952] text-[56px] font-semibold";
+    pkg.popular || pkg.title === "Freebie"
+      ? "text-[#071952] text-[56px] font-semibold"
+      : "text-white text-[56px] font-semibold";
 
   const getDurationStyle = (pkg) =>
-    pkg.popular || pkg.title === "Professional"
-      ? "text-white text-[16px] font-regular"
-      : "text-[#071952] text-[16px] font-regular";
+    pkg.popular || pkg.title === "Freebie"
+      ? "text-[#071952] text-[16px] font-regular"
+      : "text-white text-[16px] font-regular";
 
   const getDescriptionStyle = (pkg) =>
-    pkg.popular || pkg.title === "Professional"
-      ? "text-white text-[16px] font-thin"
-      : "text-[#071952] text-[16px] font-thin";
+    pkg.popular || pkg.title === "Freebie"
+      ? "text-[#071952] text-[16px] font-thin"
+      : "text-white text-[16px] font-thin";
 
   const getFeatureStyle = (pkg) =>
-    pkg.popular || pkg.title === "Professional"
-      ? "text-white text-[16px] font-thin"
-      : "text-[#071952] text-[16px] font-thin";
+    pkg.popular || pkg.title === "Freebie"
+      ? "text-[#071952] text-[16px] font-thin"
+      : "text-white text-[16px] font-thin";
 
   if (isLoading)
     return <p className="text-center py-12">Loading packages...</p>;
@@ -345,7 +353,7 @@ const PackagesPlans = () => {
                   <Input
                     placeholder="e.g. Basic Plan"
                     className="custom-input-ant-modal"
-                    disabled
+                    // disabled
                   />
                 </Form.Item>
               </Col>

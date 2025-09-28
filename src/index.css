@@ -63,9 +63,14 @@
   margin-bottom: 10px !important;
 }
 
+.ant-table th,
+.ant-table td {
+  border: none !important; /* Removes the borders from cells */
+}
 /* Optional: To add padding to the rows */
 .custom-row .ant-table-cell {
   padding: 12px 20px;
+  border-bottom: 0;
 }
 
 /* Custom table styling */
@@ -73,12 +78,18 @@
   border: 1px solid #071952;
   border-radius: 10px;
 }
+
 .custom-table .ant-table-tbody > tr > td {
   border-bottom: 1px solid #ddd;
   padding: 12px 16px !important;
   text-align: center !important;
   font-size: 12px !important;
   font-weight: 400 !important;
+}
+
+/* Remove background color from before pseudo-element in table header */
+.ant-table-thead th::before {
+  background-color: transparent !important; /* Removes background */
 }
 
 .custom-table .ant-table-thead > tr > th {
@@ -675,3 +686,11 @@ select {
   color: #18191b;
   font-weight: bold;
 }
+
+/* .custom-input-ant-table {
+  border: 1px solid #555555 !important;
+} */
+
+/* .custom-select-ant-table {
+  border: 1px solid #555555 !important;
+} */

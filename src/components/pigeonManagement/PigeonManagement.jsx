@@ -279,7 +279,7 @@ const PigeonManagement = () => {
               />
             </Tooltip>
             <Tooltip title="View & Update Details">
-              <PiDnaBold 
+              <PiDnaBold
                 style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
                 onClick={() => showPedigreeChart(record)}
               />

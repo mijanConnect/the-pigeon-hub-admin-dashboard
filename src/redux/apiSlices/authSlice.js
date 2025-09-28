@@ -167,6 +167,15 @@ const authSlice = api.injectEndpoints({
         return user;
       },
     }),
+
+    // In authSlice
+    refreshToken: builder.mutation({
+      query: ({ refreshToken }) => ({
+        url: "/auth/refresh-token",
+        method: "POST",
+        body: { refreshToken },
+      }),
+    }),
   }),
 });
 
@@ -183,4 +192,5 @@ export const {
   useUpdateProfileMutation,
   useProfileQuery,
   useResendOtpMutation, // ✅ added
+  useRefreshTokenMutation,
 } = authSlice;

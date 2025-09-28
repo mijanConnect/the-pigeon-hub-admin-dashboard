@@ -42,7 +42,7 @@ const FeaturedInput = ({ value = [], onChange }) => {
               >
                 <Input
                   placeholder="Feature name"
-                  className="w-full"
+                  className="w-full custom-input-ant-modal"
                   value={value[index] || ""}
                   onChange={(e) => {
                     const newValues = [...value];
@@ -54,7 +54,7 @@ const FeaturedInput = ({ value = [], onChange }) => {
 
               {fields.length > 2 && (
                 <MinusCircleOutlined
-                  className="text-red-500 text-lg cursor-pointer"
+                  className="text-red-500 text-lg cursor-pointer mt-3"
                   onClick={() => {
                     const newValues = value.filter((_, i) => i !== index);
                     onChange(newValues);

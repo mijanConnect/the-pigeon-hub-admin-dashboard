@@ -296,12 +296,12 @@ const MyPigeon = () => {
       </div>
 
       {/* Tabs & Filters */}
-      <div className="bg-[#333D49] rounded-lg shadow-lg border border-gray-200 mb-2">
+      <div className="bg-[#333D49] rounded-lg shadow-lg border border-[#B7BBA0] mb-2">
         <div className="pt-3 mb-6 px-4 rounded-t-lg bg-[#44505E]">
           <Tabs
             defaultActiveKey="all"
             tabBarGutter={50}
-            className="custom-tabs"
+            className="custom-tabs text-[#B7BBA0]"
             onChange={(key) => {
               setTabKey(key);
               setPage(1); // reset pagination whenever tab changes
@@ -309,7 +309,7 @@ const MyPigeon = () => {
           >
             <TabPane
               tab={
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-[#B7BBA0]">
                   <img
                     src={AllIcon}
                     alt="verify"
@@ -322,7 +322,7 @@ const MyPigeon = () => {
             />
             <TabPane
               tab={
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-[#B7BBA0]">
                   <img
                     src={RacingIcon}
                     alt="verify"
@@ -335,7 +335,7 @@ const MyPigeon = () => {
             />
             <TabPane
               tab={
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-[#B7BBA0]">
                   <img
                     src={BreedingIcon}
                     alt="verify"
@@ -348,7 +348,7 @@ const MyPigeon = () => {
             />
             <TabPane
               tab={
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-[#B7BBA0]">
                   <img
                     src={LostIcon}
                     alt="verify"
@@ -361,7 +361,7 @@ const MyPigeon = () => {
             />
             <TabPane
               tab={
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-[#B7BBA0]">
                   <img
                     src={SoldIcon}
                     alt="verify"
@@ -374,7 +374,7 @@ const MyPigeon = () => {
             />
             <TabPane
               tab={
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-[#B7BBA0]">
                   <img
                     src={RetiredIcon}
                     alt="verify"
@@ -387,7 +387,7 @@ const MyPigeon = () => {
             />
             <TabPane
               tab={
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-[#B7BBA0]">
                   <img
                     src={DeceasedIcon}
                     alt="verify"
@@ -407,7 +407,7 @@ const MyPigeon = () => {
               <label className="mb-1 text-gray-300">Search</label>
               <Input
                 placeholder="Search..."
-                className="custom-input-ant"
+                className="custom-input-ant custom-input-ant-table"
                 value={filters.search}
                 onChange={(e) => handleFilterChange("search", e.target.value)}
               />
@@ -419,7 +419,7 @@ const MyPigeon = () => {
               <label className="mb-1 text-gray-300">Country</label>
               <Select
                 placeholder="Select Country"
-                className="custom-select-ant"
+                className="custom-select-ant custom-select-ant-table"
                 style={{ width: "100%" }}
                 value={filters?.country || "all"}
                 onChange={(value) => handleFilterChange("country", value)}
