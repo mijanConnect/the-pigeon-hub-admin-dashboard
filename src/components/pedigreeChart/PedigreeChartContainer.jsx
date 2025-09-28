@@ -63,17 +63,17 @@ const PigeonNode = ({ data }) => {
   const getCardSize = (generation) => {
     switch (generation) {
       case 0:
-        return "w-[300px] h-[700px]"; // Subject - largest
+        return "w-[270px] h-[700px]"; // Subject - largest
       case 1:
-        return "w-[300px] h-[700px]"; // Parents
+        return "w-[270px] h-[700px]"; // Parents
       case 2:
-        return "w-[300px] h-[400px]"; // Grandparents
+        return "w-[270px] h-[510px]"; // Grandparents
       case 3:
-        return "w-[300px] h-[200px]"; // Great-grandparents
+        return "w-[270px] h-[250px]"; // Great-grandparents
       case 4:
-        return "w-[300px] h-[100px]"; // Great-great-grandparents - smallest
+        return "w-[270px] h-[120px]"; // Great-great-grandparents - smallest
       default:
-        return "w-[300px] h-24";
+        return "w-[270px] h-24";
     }
   };
 
@@ -138,7 +138,7 @@ const PigeonNode = ({ data }) => {
       <div className="">
         <div className="flex items-center justify-start gap-2 space-y-2">
           {data.name && (
-            <h3 className="font-bold text-black  truncate">{data.name}</h3>
+            <h3 className="font-bold text-black pb-2 truncate">{data.name}</h3>
           )}
         </div>
         <div className="flex items-center justify-start gap-2">
@@ -152,7 +152,7 @@ const PigeonNode = ({ data }) => {
           {data.owner && (
             <div className="flex items-center gap-2  italic text-black">
               {/* <UserOutlined className="w-3 h-3" /> */}
-              <span className="truncate">{data.owner}</span>
+              <span className="truncate pb-2">{data.owner}</span>
               {data.verified && (
                 <img
                   src="/assets/Letter-B.png"

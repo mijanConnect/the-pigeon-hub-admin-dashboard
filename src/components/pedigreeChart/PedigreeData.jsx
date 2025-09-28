@@ -38,7 +38,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     }
     return breeder || "Unknown Owner";
   };
-  
+
   // Helper function to get consistent breeder verification status
   const getBreederVerification = (breeder) => {
     if (typeof breeder === "object" && breeder) {
@@ -52,7 +52,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
   nodes.push({
     id: "subject",
     type: "pigeonNode",
-    position: { x: 100, y: 500 },
+    position: { x: 0, y: 500 },
     data: {
       name: subject.name || "Unknown",
       ringNumber: subject.ringNumber || "Unknown",
@@ -68,6 +68,8 @@ export const convertBackendToExistingFormat = (backendResponse) => {
         subject.notes || subject.shortInfo || "No description available",
       achievements: formatResults(subject.results),
       verified: getBreederVerification(subject.breeder),
+
+      handles: "top-bottom",
     },
   });
 
@@ -76,7 +78,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "father_1",
       type: "pigeonNode",
-      position: { x: 450, y: 0 },
+      position: { x: 320, y: -200 },
       data: {
         name: subject.fatherRingId.name || "Unknown Father",
         ringNumber: subject.fatherRingId.ringNumber || "Unknown",
@@ -94,6 +96,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
           "No description available",
         achievements: formatResults(subject.fatherRingId.results),
         verified: getBreederVerification(subject.fatherRingId.breeder),
+        handles: "right-only",
       },
     });
 
@@ -104,7 +107,8 @@ export const convertBackendToExistingFormat = (backendResponse) => {
       target: "father_1",
       type: "smoothstep",
       style: { stroke: "#3b82f6", strokeWidth: 3 },
-      animated: true,
+      // animated: true,
+      curveness: 0.1,
     });
   }
 
@@ -113,7 +117,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "mother_1",
       type: "pigeonNode",
-      position: { x: 450, y: window.screen?.height - 30 || 1000 },
+      position: { x: 320, y: window.screen?.height - -130 || 1000 },
       data: {
         name: subject.motherRingId.name || "Unknown Mother",
         ringNumber: subject.motherRingId.ringNumber || "Unknown",
@@ -131,6 +135,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
           "No description available",
         achievements: formatResults(subject.motherRingId.results),
         verified: getBreederVerification(subject.motherRingId.breeder),
+        handles: "right-only",
       },
     });
 
@@ -140,7 +145,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
       target: "mother_1",
       type: "smoothstep",
       style: { stroke: "#ec4899", strokeWidth: 3 },
-      animated: true,
+      // animated: true,
     });
   }
 
@@ -149,7 +154,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "father_2_1",
       type: "pigeonNode",
-      position: { x: 800, y: 0 },
+      position: { x: 640, y: -200 },
       data: {
         name: subject.fatherRingId.fatherRingId.name || "Unknown GF (FP)",
         ringNumber: subject.fatherRingId.fatherRingId.ringNumber || "Unknown",
@@ -169,7 +174,9 @@ export const convertBackendToExistingFormat = (backendResponse) => {
         achievements:
           formatResults(subject.fatherRingId.fatherRingId.results) ||
           "Multiple race winner",
-        verified: getBreederVerification(subject.fatherRingId.fatherRingId.breeder),
+        verified: getBreederVerification(
+          subject.fatherRingId.fatherRingId.breeder
+        ),
       },
     });
 
@@ -187,7 +194,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "mother_2_1",
       type: "pigeonNode",
-      position: { x: 800, y: 420 },
+      position: { x: 640, y: 330 },
       data: {
         name: subject.fatherRingId.motherRingId.name || "Unknown GM (FP)",
         ringNumber: subject.fatherRingId.motherRingId.ringNumber || "Unknown",
@@ -207,7 +214,9 @@ export const convertBackendToExistingFormat = (backendResponse) => {
         achievements:
           formatResults(subject.fatherRingId.motherRingId.results) ||
           "Top producer",
-        verified: getBreederVerification(subject.fatherRingId.motherRingId.breeder),
+        verified: getBreederVerification(
+          subject.fatherRingId.motherRingId.breeder
+        ),
       },
     });
 
@@ -225,7 +234,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "father_2_2",
       type: "pigeonNode",
-      position: { x: 800, y: 920 },
+      position: { x: 640, y: 870 },
       data: {
         name: subject.motherRingId.fatherRingId.name || "Unknown GF (MP)",
         ringNumber: subject.motherRingId.fatherRingId.ringNumber || "Unknown",
@@ -245,7 +254,9 @@ export const convertBackendToExistingFormat = (backendResponse) => {
         achievements:
           formatResults(subject.motherRingId.fatherRingId.results) ||
           "National ace",
-        verified: getBreederVerification(subject.motherRingId.fatherRingId.breeder),
+        verified: getBreederVerification(
+          subject.motherRingId.fatherRingId.breeder
+        ),
       },
     });
 
@@ -263,7 +274,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "mother_2_2",
       type: "pigeonNode",
-      position: { x: 800, y: 1350 },
+      position: { x: 640, y: 1400 },
       data: {
         name: subject.motherRingId.motherRingId.name || "Unknown GM (MP)",
         ringNumber: subject.motherRingId.motherRingId.ringNumber || "Unknown",
@@ -283,7 +294,9 @@ export const convertBackendToExistingFormat = (backendResponse) => {
         achievements:
           formatResults(subject.motherRingId.motherRingId.results) ||
           "Mother of champions",
-        verified: getBreederVerification(subject.motherRingId.motherRingId.breeder),
+        verified: getBreederVerification(
+          subject.motherRingId.motherRingId.breeder
+        ),
       },
     });
 
@@ -303,7 +316,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "father_3_1",
       type: "pigeonNode",
-      position: { x: 1150, y: 0 },
+      position: { x: 960, y: -200 },
       data: {
         name:
           subject.fatherRingId.fatherRingId.fatherRingId.name || "Blue Prince",
@@ -349,7 +362,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "mother_3_1",
       type: "pigeonNode",
-      position: { x: 1150, y: 210 },
+      position: { x: 960, y: 60 },
       data: {
         name:
           subject.fatherRingId.fatherRingId.motherRingId.name ||
@@ -397,7 +410,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "father_3_2",
       type: "pigeonNode",
-      position: { x: 1150, y: 420 },
+      position: { x: 960, y: 330 },
       data: {
         name:
           subject.fatherRingId.motherRingId.fatherRingId.name || "Silver Storm",
@@ -443,7 +456,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "mother_3_2",
       type: "pigeonNode",
-      position: { x: 1150, y: 630 },
+      position: { x: 960, y: 590 },
       data: {
         name:
           subject.fatherRingId.motherRingId.motherRingId.name || "Pearl Beauty",
@@ -490,7 +503,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "father_3_3",
       type: "pigeonNode",
-      position: { x: 1150, y: 840 },
+      position: { x: 960, y: 870 },
       data: {
         name:
           subject.motherRingId.fatherRingId.fatherRingId.name || "Golden Eagle",
@@ -536,7 +549,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "mother_3_3",
       type: "pigeonNode",
-      position: { x: 1150, y: 1050 },
+      position: { x: 960, y: 1130 },
       data: {
         name:
           subject.motherRingId.fatherRingId.motherRingId.name || "Amber Star",
@@ -583,7 +596,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "father_3_4",
       type: "pigeonNode",
-      position: { x: 1150, y: 1260 },
+      position: { x: 960, y: 1400 },
       data: {
         name:
           subject.motherRingId.motherRingId.fatherRingId.name || "Ruby King",
@@ -629,7 +642,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
     nodes.push({
       id: "mother_3_4",
       type: "pigeonNode",
-      position: { x: 1150, y: 1550 },
+      position: { x: 960, y: 1660 },
       data: {
         name:
           subject.motherRingId.motherRingId.motherRingId.name || "Crimson Rose",
@@ -743,7 +756,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
   addGen4Node(
     subject.fatherRingId?.fatherRingId?.fatherRingId,
     "father_3_1",
-    { father: { x: 1500, y: 0 }, mother: { x: 1500, y: 110 } },
+    { father: { x: 1280, y: -200 }, mother: { x: 1280, y: -70 } },
     "Ancient",
     "#90EE90",
     "#90EE90"
@@ -751,7 +764,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
   addGen4Node(
     subject.fatherRingId?.fatherRingId?.motherRingId,
     "mother_3_1",
-    { father: { x: 1500, y: 220 }, mother: { x: 1500, y: 330 } },
+    { father: { x: 1280, y: 60 }, mother: { x: 1280, y: 190 } },
     "Storm",
     "#FFFFE0",
     "#FFFFE0"
@@ -759,31 +772,31 @@ export const convertBackendToExistingFormat = (backendResponse) => {
   addGen4Node(
     subject.fatherRingId?.motherRingId?.fatherRingId,
     "father_3_2",
-    { father: { x: 1500, y: 440 }, mother: { x: 1500, y: 550 } },
+    { father: { x: 1280, y: 330 }, mother: { x: 1280, y: 460 } },
     "Silver"
   );
   addGen4Node(
     subject.fatherRingId?.motherRingId?.motherRingId,
     "mother_3_2",
-    { father: { x: 1500, y: 660 }, mother: { x: 1500, y: 770 } },
+    { father: { x: 1280, y: 590 }, mother: { x: 1280, y: 720 } },
     "Purple"
   );
   addGen4Node(
     subject.motherRingId?.fatherRingId?.fatherRingId,
     "father_3_3",
-    { father: { x: 1500, y: 880 }, mother: { x: 1500, y: 990 } },
+    { father: { x: 1280, y: 870 }, mother: { x: 1280, y: 1000 } },
     "Golden"
   );
   addGen4Node(
     subject.motherRingId?.fatherRingId?.motherRingId,
     "mother_3_3",
-    { father: { x: 1500, y: 1100 }, mother: { x: 1500, y: 1210 } },
+    { father: { x: 1280, y: 1130 }, mother: { x: 1280, y: 1260 } },
     "Ruby"
   );
   addGen4Node(
     subject.motherRingId?.motherRingId?.fatherRingId,
     "father_3_4",
-    { father: { x: 1500, y: 1320 }, mother: { x: 1500, y: 1430 } },
+    { father: { x: 1280, y: 1400 }, mother: { x: 1280, y: 1530 } },
     "Crimson",
     "#90EE90",
     "#90EE90"
@@ -791,7 +804,7 @@ export const convertBackendToExistingFormat = (backendResponse) => {
   addGen4Node(
     subject.motherRingId?.motherRingId?.motherRingId,
     "mother_3_4",
-    { father: { x: 1500, y: 1540 }, mother: { x: 1500, y: 1650 } },
+    { father: { x: 1280, y: 1660 }, mother: { x: 1280, y: 1790 } },
     "Scarlet",
     "#FFFFE0",
     "#FFFFE0"
