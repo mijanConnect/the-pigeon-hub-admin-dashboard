@@ -368,7 +368,7 @@ const PigeonManagement = () => {
             </div>
           </Col>
 
-          <Col xs={24} sm={12} md={6} lg={4}>
+          {/* <Col xs={24} sm={12} md={6} lg={4}>
             <div className="flex flex-col">
               <label className="mb-1 text-gray-300">Color</label>
               <Select
@@ -386,7 +386,7 @@ const PigeonManagement = () => {
                 <Option value="Yellow">Yellow</Option>
               </Select>
             </div>
-          </Col>
+          </Col> */}
 
           <Col xs={24} sm={12} md={6} lg={4}>
             <div className="flex flex-col">
