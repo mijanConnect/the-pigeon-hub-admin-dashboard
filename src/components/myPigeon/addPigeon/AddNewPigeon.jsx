@@ -709,11 +709,19 @@ const AddNewPigeon = ({ visible, onSave }) => {
           <div className="flex flex-col md:flex-row gap-4 items-stretch w-full">
             {/* ===== PIGEON PHOTOS ===== */}
             <div className="md:w-1/2 p-4 border rounded-lg flex flex-col">
-              <p className="text-[14px] font-semibold mb-2">Pigeon Photos:</p>
-              <div className="border p-4 rounded-lg ">
-                <Row gutter={[10, 16]} justify="start" wrap>
+              <p className="text-[16px] font-semibold mb-2">Pigeon Photos:</p>
+              <div className="border p-4 rounded-lg overflow-x-auto">
+                <Row
+                  gutter={[10, 16]}
+                  justify="start"
+                  wrap={false}
+                  className="flex-nowrap"
+                >
                   <Col flex="none">
-                    <Upload {...commonUploadProps("pigeonPhoto")}>
+                    <Upload
+                      className="custom-upload-ant"
+                      {...commonUploadProps("pigeonPhoto")}
+                    >
                       {fileLists.pigeonPhoto?.length
                         ? null
                         : uploadButton("Upload Pigeon Photo")}
@@ -721,7 +729,10 @@ const AddNewPigeon = ({ visible, onSave }) => {
                   </Col>
 
                   <Col flex="none">
-                    <Upload {...commonUploadProps("eyePhoto")}>
+                    <Upload
+                      className="custom-upload-ant"
+                      {...commonUploadProps("eyePhoto")}
+                    >
                       {fileLists.eyePhoto?.length
                         ? null
                         : uploadButton("Upload Eye Photo")}
@@ -729,7 +740,10 @@ const AddNewPigeon = ({ visible, onSave }) => {
                   </Col>
 
                   <Col flex="none">
-                    <Upload {...commonUploadProps("ownershipPhoto")}>
+                    <Upload
+                      className="custom-upload-ant"
+                      {...commonUploadProps("ownershipPhoto")}
+                    >
                       {fileLists.ownershipPhoto?.length
                         ? null
                         : uploadButton("Upload Ownership Card")}
@@ -737,7 +751,10 @@ const AddNewPigeon = ({ visible, onSave }) => {
                   </Col>
 
                   <Col flex="none">
-                    <Upload {...commonUploadProps("pedigreePhoto")}>
+                    <Upload
+                      className="custom-upload-ant"
+                      {...commonUploadProps("pedigreePhoto")}
+                    >
                       {fileLists.pedigreePhoto?.length
                         ? null
                         : uploadButton("Upload Pedigree Photo")}
@@ -745,7 +762,10 @@ const AddNewPigeon = ({ visible, onSave }) => {
                   </Col>
 
                   <Col flex="none">
-                    <Upload {...commonUploadProps("DNAPhoto")}>
+                    <Upload
+                      className="custom-upload-ant"
+                      {...commonUploadProps("DNAPhoto")}
+                    >
                       {fileLists.DNAPhoto?.length
                         ? null
                         : uploadButton("Upload DNA Photo")}
@@ -763,7 +783,9 @@ const AddNewPigeon = ({ visible, onSave }) => {
                   checked={showRaceResults}
                   onChange={(checked) => setShowRaceResults(checked)}
                 />
-                <span className="font-bold text-[18px]">Pigeon Result</span>
+                <span className="text-[16px] font-semibold">
+                  Pigeon Result
+                </span>
               </div>
 
               {/* ===== Conditionally render race results + add button ===== */}
