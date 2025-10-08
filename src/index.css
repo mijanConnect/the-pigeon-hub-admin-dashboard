@@ -586,7 +586,7 @@ select {
 
 .ant-upload-list-picture-card img {
   width: 100%;
-  height: 172px; /* same as your div height */
+  height: 102px; /* same as your div height */
   object-fit: cover; /* cover the area */
 }
 /* Add this CSS to fix API-loaded image dimensions */
@@ -595,8 +595,8 @@ select {
 
 /* Fix for existing images loaded from API */
 .ant-upload-list-picture-card .ant-upload-list-item {
-  width: 172px !important;
-  height: 172px !important;
+  width: 102px !important;
+  height: 102px !important;
   margin-right: 8px !important;
   margin-bottom: 8px !important;
   border: 1px solid #d9d9d9 !important;
@@ -607,8 +607,8 @@ select {
 
 /* Fix the image container */
 .ant-upload-list-picture-card .ant-upload-list-item-thumbnail {
-  width: 170px !important; /* 2px less to account for border */
-  height: 170px !important; /* 2px less to account for border */
+  width: 100px !important; /* 2px less to account for border */
+  height: 100px !important; /* 2px less to account for border */
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -622,8 +622,8 @@ select {
 
 /* Fix the actual image element */
 .ant-upload-list-picture-card .ant-upload-list-item-thumbnail img {
-  max-width: 170px !important;
-  max-height: 170px !important;
+  max-width: 100px !important;
+  max-height: 100px !important;
   width: auto !important;
   height: auto !important;
   object-fit: contain !important;
@@ -645,8 +645,8 @@ select {
 
 /* Ensure upload button stays consistent */
 .ant-upload-select-picture-card {
-  width: 172px !important;
-  height: 172px !important;
+  width: 102px !important;
+  height: 102px !important;
   margin-right: 8px !important;
   margin-bottom: 8px !important;
   border: 1px dashed #d9d9d9 !important;
@@ -668,7 +668,7 @@ select {
 .single-photo-upload .ant-upload-select {
   display: flex !important;
   width: 100% !important;
-  height: 170px !important;
+  height: 100px !important;
 }
 
 .single-photo-upload .ant-upload-list-picture-card-container {
@@ -677,7 +677,7 @@ select {
 
 .single-photo-upload .ant-upload-list-picture-card .ant-upload-list-item {
   width: 100% !important;
-  height: 170px !important;
+  height: 100px !important;
 }
 
 /* This will affect all form labels globally */
@@ -696,26 +696,40 @@ select {
 } */
 
 .custom-upload-ant .ant-upload {
-  width: 172px !important;
-  height: 172px !important;
+  width: 102px !important;
+  height: 102px !important;
 }
 
 .custom-upload-ant .ant-upload-wrapper {
-  width: 172px !important;
-  height: 172px !important;
+  width: 102px !important;
+  height: 102px !important;
 }
 
 .custom-upload-ant .ant-upload-list-item-container {
-  width: 172px !important;
-  height: 172px !important;
+  width: 102px !important;
+  height: 102px !important;
 }
 
 /* .ant-upload {
-  width: 172px !important;
-  height: 172px !important;
+  width: 102px !important;
+  height: 102px !important;
 } */
 
 /* .ant-upload-wrapper {
-  width: 172px !important;
-  height: 172px !important;
+  width: 102px !important;
+  height: 102px !important;
 } */
+
+/* Custom CSS */
+.custom-textarea-pigeon {
+  height: 125px !important; /* Fixed height */
+  resize: none; /* Optional: Disable resizing */
+}
+
+.custom-form-item-ant-select-pattern {
+  margin-bottom: 0px !important; /* adjust as needed */
+}
+
+.ant-form-item-label > label {
+  white-space: nowrap !important;
+}

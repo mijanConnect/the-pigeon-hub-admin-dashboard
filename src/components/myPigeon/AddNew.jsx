@@ -14,15 +14,17 @@ import {
   Switch,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import { useParams } from "react-router-dom";
 import {
   useAddPigeonMutation,
   useGetBreederNamesQuery,
   useGetPigeonSearchQuery,
   useUpdatePigeonMutation,
-} from "../../redux/apiSlices/mypigeonSlice";
-import { getImageUrl } from "../common/imageUrl";
-import { useGetBreedersQuery } from "../../redux/apiSlices/breederSlice";
+  useGetSinglePigeonQuery,
+} from "../../../redux/apiSlices/mypigeonSlice";
+import { getImageUrl } from "../../common/imageUrl";
 import { getNames } from "country-list";
+import { useNavigate } from "react-router-dom";
 
 const { Option } = Select;
 
@@ -36,22 +38,70 @@ const colorPatternMap = {
   Mealy: ["Barless", "Bar", "Check", "T-Check", "White Flight"],
 };
 
-const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
+const AddNewPigeon = ({ visible, onSave }) => {
   const [form] = Form.useForm();
   const [selected, setSelected] = useState({ color: null, pattern: null });
   const [addPigeon, { isLoading: isAdding }] = useAddPigeonMutation();
   const [showResults, setShowResults] = useState(false);
   const [raceResults, setRaceResults] = useState([]);
   const countries = getNames();
-  // ✅ Fetch all pigeons
+  const navigate = useNavigate();
+  const [viewPigeonId, setViewPigeonId] = useState(null);
+  const { id } = useParams();
+  const [showAddButton, setShowAddButton] = useState(true); // initial state: visible
+  const [showRaceResults, setShowRaceResults] = useState(false); // Switch state
+  const currentYear = new Date().getFullYear(); // Get the current year
+
+  console.log("id", id);
+
+  // 🔎 Parents
   const [fatherSearch, setFatherSearch] = useState("");
   const [motherSearch, setMotherSearch] = useState("");
-
   const { data: fatherOptions = [], isLoading: fatherLoading } =
     useGetPigeonSearchQuery(fatherSearch, { skip: !fatherSearch });
-
   const { data: motherOptions = [], isLoading: motherLoading } =
     useGetPigeonSearchQuery(motherSearch, { skip: !motherSearch });
+
+  //   const [editingPigeonId, setEditingPigeonId] = useState(null);
+  const { data: editingPigeonData } = useGetSinglePigeonQuery(id, {
+    skip: !id, // don't fetch until ID is set
+  });
+
+  const pigeonData = editingPigeonData?.data;
+
+  console.log(pigeonData);
+  console.log("ring NUmber", pigeonData?.ringNumber);
+
+  // 📷 Images (File objects to send)
+  const [photos, setPhotos] = useState({
+    pigeonPhoto: null,
+    eyePhoto: null,
+    ownershipPhoto: null,
+    pedigreePhoto: null,
+    DNAPhoto: null,
+  });
+
+  // 📷 Upload component fileLists (controlled previews)
+  const [fileLists, setFileLists] = useState({
+    pigeonPhoto: [],
+    eyePhoto: [],
+    ownershipPhoto: [],
+    pedigreePhoto: [],
+    DNAPhoto: [],
+  });
+
+  // Convert a URL into antd Upload item
+  const toUploadItem = (url) =>
+    url
+      ? [
+          {
+            uid: `${Math.random()}`,
+            name: String(url).split("/").pop() || "image",
+            status: "done",
+            url: String(url).startsWith("http") ? url : getImageUrl(url),
+          },
+        ]
+      : [];
 
   useEffect(() => {
     if (visible) {
@@ -66,35 +116,55 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
         setRaceResults(
           pigeonData.results?.map((r) => ({
             ...r,
-            date: r.date ? r.date.split("T")[0] : "", // format for <input type="date">
+            date: r.date ? r.date.split("T")[0] : "",
           })) || []
         );
 
-        const photoList = pigeonData.photos
-          ? pigeonData.photos.map((url, index) => ({
-              uid: String(index),
-              name: `image-${index}.jpg`,
-              status: "done",
-              url: getImageUrl(url),
-              originFileObj: null,
-            }))
-          : [];
-
         form.setFieldsValue({
           ...pigeonData,
+          ringNumber: pigeonData.ringNumber,
           fatherRingId: pigeonData.fatherRingId?.ringNumber || "",
           motherRingId: pigeonData.motherRingId?.ringNumber || "",
           colorPattern: { color, pattern },
           verification: pigeonData.verified ? "verified" : "notverified",
           iconic: pigeonData.iconic ? "yes" : "no",
-          photos: photoList,
-          breeder: pigeonData.breeder?._id || pigeonData.breeder, // ✅ ensure ID is used
+          breeder: pigeonData.breeder?._id || pigeonData.breeder,
+        });
+
+        // Pre-fill uploads
+        setFileLists({
+          pigeonPhoto: toUploadItem(
+            pigeonData.pigeonPhotoUrl || pigeonData.pigeonPhoto
+          ),
+          eyePhoto: toUploadItem(pigeonData.eyePhotoUrl || pigeonData.eyePhoto),
+          ownershipPhoto: toUploadItem(
+            pigeonData.ownershipPhotoUrl || pigeonData.ownershipPhoto
+          ),
+          pedigreePhoto: toUploadItem(
+            pigeonData.pedigreePhotoUrl || pigeonData.pedigreePhoto
+          ),
+          DNAPhoto: toUploadItem(pigeonData.DNAPhotoUrl || pigeonData.DNAPhoto),
         });
       } else {
+        // reset on add new
         form.resetFields();
         setSelected({ color: null, pattern: null });
         setShowResults(false);
         setRaceResults([]);
+        setPhotos({
+          pigeonPhoto: null,
+          eyePhoto: null,
+          ownershipPhoto: null,
+          pedigreePhoto: null,
+          DNAPhoto: null,
+        });
+        setFileLists({
+          pigeonPhoto: [],
+          eyePhoto: [],
+          ownershipPhoto: [],
+          pedigreePhoto: [],
+          DNAPhoto: [],
+        });
       }
     }
   }, [pigeonData, visible, form]);
@@ -129,23 +199,6 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-      const fileList = values.photos || [];
-
-      const newFiles = fileList.filter((file) => file.originFileObj);
-      const existingFiles = fileList.filter((file) => !file.originFileObj);
-
-      const extractImagePath = (url) => {
-        if (!url) return "";
-        if (url.includes("/images/")) return url.split("/images/")[1];
-        return url;
-      };
-
-      const remainingImages = existingFiles
-        .map(
-          (file) =>
-            `/images/${extractImagePath(file.url || file.response?.url)}`
-        )
-        .filter(Boolean);
 
       const combinedColor =
         values.colorPattern?.color && values.colorPattern?.pattern
@@ -153,7 +206,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
           : values.colorPattern?.color || values.colorPattern?.pattern || "-";
 
       const filteredRaceResults = raceResults
-        .filter((r) => r.name || r.date || r.distance || r.total || r.place) // only non-empty results
+        .filter((r) => r.name || r.date || r.distance || r.total || r.place)
         .map((r) => ({
           name: r.name || "",
           date: r.date || "",
@@ -162,7 +215,6 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
           place: r.place || "",
         }));
 
-      // 🔥 Add remaining images to the main data payload
       const dataToSend = {
         ringNumber: values.ringNumber,
         name: values.name,
@@ -180,33 +232,26 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
         location: values.location,
         notes: values.notes || "",
         results:
-          filteredRaceResults.length > 0 ? filteredRaceResults : undefined, // send only if not empty
+          filteredRaceResults.length > 0 ? filteredRaceResults : undefined,
         verified: values.verification === "verified",
         iconic: values.iconic === "yes",
         fatherRingId: values.fatherRingId || "",
         motherRingId: values.motherRingId || "",
-        remaining: remainingImages, // ✅ here
       };
 
       const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("data", JSON.stringify(dataToSend));
 
-      // Append only new uploaded images
-      newFiles.forEach((file) => formData.append("image", file.originFileObj));
-
-      // 🔥 Console everything being sent
-      console.log("===== Sending Pigeon Data =====");
-      console.log("Data JSON (with remaining images):", dataToSend);
-      console.log(
-        "New files:",
-        newFiles.map((f) => f.name)
-      );
-      console.log("FormData entries:");
-      for (let pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
-      }
-      console.log("===== End of Data =====");
+      // Append files
+      if (photos.pigeonPhoto)
+        formData.append("pigeonPhoto", photos.pigeonPhoto);
+      if (photos.eyePhoto) formData.append("eyePhoto", photos.eyePhoto);
+      if (photos.ownershipPhoto)
+        formData.append("ownershipPhoto", photos.ownershipPhoto);
+      if (photos.pedigreePhoto)
+        formData.append("pedigreePhoto", photos.pedigreePhoto);
+      if (photos.DNAPhoto) formData.append("DNAPhoto", photos.DNAPhoto);
 
       if (pigeonData?._id) {
         await updatePigeon({ id: pigeonData._id, formData, token }).unwrap();
@@ -214,27 +259,33 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
       } else {
         await addPigeon({ formData, token }).unwrap();
         message.success("Pigeon added successfully!");
+        navigate("/my-pigeon");
       }
 
       form.resetFields();
       setSelected({ color: null, pattern: null });
       setShowResults(false);
       setRaceResults([]);
-      onCancel();
+      setPhotos({
+        pigeonPhoto: null,
+        eyePhoto: null,
+        ownershipPhoto: null,
+        pedigreePhoto: null,
+        DNAPhoto: null,
+      });
+      setFileLists({
+        pigeonPhoto: [],
+        eyePhoto: [],
+        ownershipPhoto: [],
+        pedigreePhoto: [],
+        DNAPhoto: [],
+      });
+      //   onCancel();
     } catch (err) {
       console.error(err);
       message.error(err?.data?.message || err.message);
     }
   };
-
-  useEffect(() => {
-    if (!visible) {
-      form.resetFields();
-      setSelected({ color: null, pattern: null });
-      setShowResults(false);
-      setRaceResults([]);
-    }
-  }, [visible, form]);
 
   const addRaceResult = () => {
     setRaceResults((prev) => [
@@ -255,45 +306,58 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
     setRaceResults(updated);
   };
 
+  // ---------- Upload helpers ----------
+  const uploadButton = (label) => (
+    <div style={{ color: "#666" }}>
+      <PlusOutlined />
+      <div style={{ marginTop: 8 }}>{label}</div>
+    </div>
+  );
+
+  const commonUploadProps = (key) => ({
+    listType: "picture-card",
+    maxCount: 1,
+    multiple: false,
+    fileList: fileLists[key],
+    showUploadList: { showPreviewIcon: true, showRemoveIcon: true },
+    beforeUpload: (file) => {
+      setPhotos((p) => ({ ...p, [key]: file }));
+      const previewUrl = URL.createObjectURL(file);
+      setFileLists((fl) => ({
+        ...fl,
+        [key]: [
+          {
+            uid: `${Math.random()}`,
+            name: file.name,
+            status: "done",
+            url: previewUrl,
+            originFileObj: file,
+          },
+        ],
+      }));
+      return false;
+    },
+    onRemove: () => {
+      setPhotos((p) => ({ ...p, [key]: null }));
+      setFileLists((fl) => ({ ...fl, [key]: [] }));
+    },
+    customRequest: ({ onSuccess }) => onSuccess && onSuccess(),
+  });
+
   return (
-    <Modal
-      title={pigeonData ? "Edit Pigeon" : "Add New Pigeon"}
-      open={visible}
-      onCancel={() => {
-        form.resetFields();
-        setSelected({ color: null, pattern: null });
-        setShowResults(false);
-        setRaceResults([]);
-        onCancel();
-      }}
-      width={1200}
-      footer={[
-        <Button
-          key="cancel"
-          onClick={onCancel}
-          disabled={isAdding || isUpdating}
-        >
-          Cancel
-        </Button>,
-        <Button
-          key="save"
-          type="primary"
-          onClick={handleSave}
-          loading={isAdding || isUpdating} // 🔥 spinner here
-        >
-          {pigeonData ? "Update Pigeon" : "Add New Pigeon"}
-        </Button>,
-      ]}
-    >
-      <Form form={form} layout="vertical" className="mb-6">
+    <div>
+      <Form
+        form={form}
+        layout="vertical"
+        className="mb-6 border rounded-lg border-primary px-[30px] py-[25px] mt-4"
+      >
         <Row gutter={[30, 20]}>
-          {/* existing form items here ... */}
           {/* Ring Number */}
           <Col xs={24} sm={12} md={8}>
             <Form.Item
               label="Ring Number"
               name="ringNumber"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant"
             >
               <Input
@@ -308,7 +372,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Name"
               name="name"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant"
             >
               <Input
@@ -321,9 +385,9 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
           {/* Country */}
           <Col xs={24} sm={12} md={8}>
             <Form.Item
-              label="Country"
+              label="Choose a Country"
               name="country"
-              rules={[{ required: true, message: "Please select country" }]}
+              // rules={[{ required: true, message: "Please select country" }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -334,6 +398,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
                 filterOption={(input, option) =>
                   option?.children?.toLowerCase().includes(input.toLowerCase())
                 }
+                allowClear // Adds the clear (cross) button
               >
                 {countries.map((country, index) => (
                   <Option key={index} value={country}>
@@ -349,13 +414,32 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Birth Year"
               name="birthYear"
-              rules={[{ required: true }]}
-              className="custom-form-item-ant"
+              // rules={[{ required: true, message: "Please select birth year" }]}
+              className="custom-form-item-ant-select"
             >
-              <Input
-                placeholder="Enter Birth Year"
-                className="custom-input-ant-modal"
-              />
+              <Select
+                placeholder="Select Birth Year"
+                className="custom-select-ant-modal"
+                showSearch
+                allowClear // Enables the clear button (cross icon)
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  // Ensure option.children is treated as a string
+                  String(option?.children)
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                onChange={(value) => {
+                  // You can handle clearing value here if necessary
+                }}
+              >
+                {/* Creating options from 1980 to the current year */}
+                {Array.from({ length: currentYear - 1980 + 1 }, (_, index) => (
+                  <Option key={1980 + index} value={1980 + index}>
+                    {1980 + index}
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
           </Col>
 
@@ -378,9 +462,9 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Color & Pattern"
               name="colorPattern"
-              rules={[
-                { required: true, message: "Please select color & pattern" },
-              ]}
+              // rules={[
+              //   { required: true, message: "Please select color & pattern" },
+              // ]}
               className="custom-form-item-ant-select color-pattern-custom"
             >
               <Dropdown overlay={menu} trigger={["click"]}>
@@ -405,7 +489,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Gender"
               name="gender"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -423,7 +507,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Breeder"
               name="breeder"
-              rules={[{ required: true, message: "Please select a breeder" }]}
+              // rules={[{ required: true, message: "Please select a breeder" }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -449,14 +533,23 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Breeder Rating"
               name="breederRating"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
                 placeholder="Select Rating"
                 className="custom-select-ant-modal"
+                showSearch // Enable search functionality
+                allowClear // Enable the clear button (cross icon)
+                optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)
+                filterOption={(input, option) =>
+                  option?.children
+                    ?.toString()
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
               >
-                {Array.from({ length: 10 }, (_, i) => (i + 1) * 10).map((v) => (
+                {Array.from({ length: 101 }, (_, i) => i).map((v) => (
                   <Option key={v} value={v}>
                     {v}
                   </Option>
@@ -470,7 +563,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Status"
               name="status"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -492,7 +585,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Location"
               name="location"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant"
             >
               <Input
@@ -507,14 +600,23 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Racing Rating"
               name="racingRating"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
                 placeholder="Select Rating"
                 className="custom-select-ant-modal"
+                showSearch // Enable search functionality
+                allowClear // Enable the clear button (cross icon)
+                optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)
+                filterOption={(input, option) =>
+                  option?.children
+                    ?.toString()
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
               >
-                {Array.from({ length: 10 }, (_, i) => (i + 1) * 10).map((v) => (
+                {Array.from({ length: 101 }, (_, i) => i).map((v) => (
                   <Option key={v} value={v}>
                     {v}
                   </Option>
@@ -528,7 +630,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Verification"
               name="verification"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -546,7 +648,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Iconic"
               name="iconic"
-              rules={[{ required: true }]}
+              // rules={[{ required: true }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -564,16 +666,23 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             <Form.Item
               label="Iconic Score"
               name="iconicScore"
-              rules={[
-                { required: true, message: "Please select iconic score" },
-              ]}
+              // rules={[{ required: true, message: "Please select iconic score" }]}
               className="custom-form-item-ant-select"
             >
               <Select
                 placeholder="Select Iconic Score"
                 className="custom-select-ant-modal"
+                showSearch // Enable search functionality
+                allowClear // Enable the clear button (cross icon)
+                optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)
+                filterOption={(input, option) =>
+                  option?.children
+                    ?.toString()
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
               >
-                {Array.from({ length: 10 }, (_, i) => (i + 1) * 10).map((v) => (
+                {Array.from({ length: 101 }, (_, i) => i).map((v) => (
                   <Option key={v} value={v}>
                     {v}
                   </Option>
@@ -598,7 +707,7 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
                 onSearch={setFatherSearch}
                 loading={fatherLoading}
                 options={fatherOptions.map((p) => ({
-                  label: p.ringNumber, // you can add name if needed
+                  label: p.ringNumber,
                   value: p.ringNumber,
                 }))}
               />
@@ -636,185 +745,220 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             </p>
           </Col>
 
-          {/* Father */}
-          {/* <Form.Item label="Father Ring Number" name="fatherRingId">
-            <Select
-              showSearch
-              allowClear
-              placeholder="Search Father by Ring Number"
-              filterOption={false}
-              onSearch={setFatherSearch}
-              loading={fatherLoading}
-              options={fatherOptions.map((p) => ({
-                label: p.ringNumber, // you can add name if needed
-                value: p.ringNumber,
-              }))}
-            />
-          </Form.Item> */}
-
-          {/* Mother */}
-          {/* <Form.Item label="Mother Ring Number" name="motherRingId">
-            <Select
-              showSearch
-              allowClear
-              placeholder="Search Mother by Ring Number"
-              filterOption={false}
-              onSearch={setMotherSearch}
-              loading={motherLoading}
-              options={motherOptions.map((p) => ({
-                label: p.ringNumber,
-                value: p.ringNumber,
-              }))}
-            />
-          </Form.Item> */}
-
-          {/* Render Race Results */}
-          {raceResults.map((race, index) => (
-            <Col xs={24} key={index} className="mb-4 p-4 border rounded-lg">
-              <div className="flex justify-between items-center mb-2">
-                <strong>Race Result #{index + 1}</strong>
-                <Button
-                  type="text"
-                  danger
-                  onClick={() => removeRaceResult(index)}
+          <div className="flex flex-col md:flex-row gap-4 items-stretch w-full">
+            {/* ===== PIGEON PHOTOS ===== */}
+            <div className="md:w-1/2 p-4 border rounded-lg flex flex-col">
+              <p className="text-[16px] font-semibold mb-2">Pigeon Photos:</p>
+              <div className="border p-4 rounded-lg overflow-x-auto">
+                <Row
+                  gutter={[10, 16]}
+                  justify="start"
+                  wrap={false}
+                  className="flex-nowrap"
                 >
-                  Remove
-                </Button>
+                  <Col flex="none">
+                    <Upload
+                      className="custom-upload-ant"
+                      {...commonUploadProps("pigeonPhoto")}
+                    >
+                      {fileLists.pigeonPhoto?.length
+                        ? null
+                        : uploadButton("Upload Pigeon Photo")}
+                    </Upload>
+                  </Col>
+
+                  <Col flex="none">
+                    <Upload
+                      className="custom-upload-ant"
+                      {...commonUploadProps("eyePhoto")}
+                    >
+                      {fileLists.eyePhoto?.length
+                        ? null
+                        : uploadButton("Upload Eye Photo")}
+                    </Upload>
+                  </Col>
+
+                  <Col flex="none">
+                    <Upload
+                      className="custom-upload-ant"
+                      {...commonUploadProps("ownershipPhoto")}
+                    >
+                      {fileLists.ownershipPhoto?.length
+                        ? null
+                        : uploadButton("Upload Ownership Card")}
+                    </Upload>
+                  </Col>
+
+                  <Col flex="none">
+                    <Upload
+                      className="custom-upload-ant"
+                      {...commonUploadProps("pedigreePhoto")}
+                    >
+                      {fileLists.pedigreePhoto?.length
+                        ? null
+                        : uploadButton("Upload Pedigree Photo")}
+                    </Upload>
+                  </Col>
+
+                  <Col flex="none">
+                    <Upload
+                      className="custom-upload-ant"
+                      {...commonUploadProps("DNAPhoto")}
+                    >
+                      {fileLists.DNAPhoto?.length
+                        ? null
+                        : uploadButton("Upload DNA Photo")}
+                    </Upload>
+                  </Col>
+                </Row>
               </div>
-              <Row gutter={[30, 0]}>
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item label="Race Name">
-                    <Input
-                      placeholder="Race Name"
-                      value={race.name}
-                      onChange={(e) =>
-                        handleRaceChange(index, "name", e.target.value)
-                      }
-                      className="custom-input-ant-modal"
-                    />
-                  </Form.Item>
-                </Col>
+            </div>
 
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item label="Date">
-                    <Input
-                      placeholder="Date"
-                      type="date"
-                      value={race.date}
-                      onChange={(e) =>
-                        handleRaceChange(index, "date", e.target.value)
-                      }
-                      className="custom-input-ant-modal"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item label="Distance">
-                    <Input
-                      placeholder="Distance"
-                      value={race.distance}
-                      onChange={(e) =>
-                        handleRaceChange(index, "distance", e.target.value)
-                      }
-                      className="custom-input-ant-modal"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item label="Total Birds">
-                    <Input
-                      placeholder="Total Birds"
-                      type="number"
-                      value={race.total}
-                      onChange={(e) =>
-                        handleRaceChange(index, "total", e.target.value)
-                      }
-                      className="custom-input-ant-modal"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item label="Place / Position">
-                    <Input
-                      placeholder="Place/Position"
-                      value={race.place}
-                      onChange={(e) =>
-                        handleRaceChange(index, "place", e.target.value)
-                      }
-                      className="custom-input-ant-modal"
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Col>
-          ))}
-
-          {/* Add Race Results Button */}
-          <Col xs={24}>
-            <Button
-              type="dashed"
-              onClick={addRaceResult}
-              className="mb-0 mt-0"
-              style={{ width: "100%" }}
-            >
-              + Add Race Results
-            </Button>
-          </Col>
-
-          {/* Pigeon Photos */}
-          <Form.Item
-            label="Pigeon Photos"
-            name="photos"
-            rules={[{ required: true }]}
-            valuePropName="fileList"
-            getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-          >
-            <Upload
-              name="files"
-              listType="picture-card"
-              fileList={form.getFieldValue("photos")}
-              onPreview={(file) => window.open(getImageUrl(file.url), "_blank")}
-              onChange={({ fileList }) =>
-                form.setFieldsValue({ photos: fileList })
-              }
-              multiple
-              className="border rounded-lg p-3 border-[#071952]"
-              maxCount={5}
-              showUploadList={{
-                showPreviewIcon: true,
-                showRemoveIcon: true,
-              }}
-              beforeUpload={(file) => {
-                const isJpgOrPng =
-                  file.type === "image/jpeg" || file.type === "image/png";
-                if (!isJpgOrPng)
-                  message.error("You can only upload JPG/PNG files!");
-                return false; // prevent auto upload
-              }}
-              accept=".jpg,.jpeg,.png"
-            >
-              <div
-                style={{
-                  width: 102,
-                  height: 102,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                }}
-              >
-                <PlusOutlined />
-                <div style={{ marginTop: 8 }}>Upload</div>
+            {/* ===== RACE RESULTS ===== */}
+            <div className="md:w-1/2 flex flex-col min-h-[300px] border rounded-lg p-4">
+              {/* ===== Switch to toggle entire race results column ===== */}
+              <div className="mb-4 flex items-center gap-2">
+                <Switch
+                  checked={showRaceResults}
+                  onChange={(checked) => setShowRaceResults(checked)}
+                />
+                <span className="text-[16px] font-semibold">Pigeon Result</span>
               </div>
-            </Upload>
-          </Form.Item>
+
+              {/* ===== Conditionally render race results + add button ===== */}
+              {showRaceResults && (
+                <div className=" gap-4">
+                  {raceResults.map((race, index) => (
+                    <Col xs={24} key={index}>
+                      <div className="flex justify-between items-center mb-2">
+                        <strong>Race Result #{index + 1}</strong>
+                        <Button
+                          type="text"
+                          danger
+                          onClick={() => removeRaceResult(index)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+
+                      <Row gutter={[30, 0]}>
+                        <Col xs={24} sm={12} md={8}>
+                          <Form.Item label="Race Name">
+                            <Input
+                              placeholder="Race Name"
+                              value={race.name}
+                              onChange={(e) =>
+                                handleRaceChange(index, "name", e.target.value)
+                              }
+                              className="custom-input-ant-modal"
+                            />
+                          </Form.Item>
+                        </Col>
+
+                        <Col xs={24} sm={12} md={8}>
+                          <Form.Item label="Date">
+                            <Input
+                              placeholder="Date"
+                              type="date"
+                              value={race.date}
+                              onChange={(e) =>
+                                handleRaceChange(index, "date", e.target.value)
+                              }
+                              className="custom-input-ant-modal"
+                            />
+                          </Form.Item>
+                        </Col>
+
+                        <Col xs={24} sm={12} md={8}>
+                          <Form.Item label="Distance">
+                            <Input
+                              placeholder="Distance"
+                              value={race.distance}
+                              onChange={(e) =>
+                                handleRaceChange(
+                                  index,
+                                  "distance",
+                                  e.target.value
+                                )
+                              }
+                              className="custom-input-ant-modal"
+                            />
+                          </Form.Item>
+                        </Col>
+
+                        <Col xs={24} sm={12} md={8}>
+                          <Form.Item label="Total Birds">
+                            <Input
+                              placeholder="Total Birds"
+                              type="number"
+                              value={race.total}
+                              onChange={(e) =>
+                                handleRaceChange(index, "total", e.target.value)
+                              }
+                              className="custom-input-ant-modal"
+                            />
+                          </Form.Item>
+                        </Col>
+
+                        <Col xs={24} sm={12} md={8}>
+                          <Form.Item label="Place / Position">
+                            <Input
+                              placeholder="Place/Position"
+                              value={race.place}
+                              onChange={(e) =>
+                                handleRaceChange(index, "place", e.target.value)
+                              }
+                              className="custom-input-ant-modal"
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </Col>
+                  ))}
+
+                  {/* Add Race Results Button at the bottom */}
+                  <Col xs={24} className="mt-auto w-full">
+                    <Button
+                      type="dashed"
+                      onClick={addRaceResult}
+                      style={{ width: "100%" }}
+                    >
+                      + Add Race Results
+                    </Button>
+                  </Col>
+                </div>
+              )}
+            </div>
+          </div>
         </Row>
       </Form>
-    </Modal>
+
+      <div className="flex justify-end">
+        {/* <Button
+          key="cancel"
+          onClick={onCancel}
+          disabled={isAdding || isUpdating}
+        >
+          Cancel
+        </Button> */}
+        <Button
+          onClick={() => navigate("/my-pigeon")} // Navigate on cancel
+          disabled={isAdding || isUpdating}
+          className="mr-[10px] bg-[#C33739] border border-[#C33739] text-white"
+        >
+          Cancel
+        </Button>
+
+        <Button
+          key="save"
+          type="primary"
+          onClick={handleSave}
+          loading={isAdding || isUpdating}
+        >
+          {pigeonData ? "Update Pigeon" : "Add New Pigeon"}
+        </Button>
+      </div>
+    </div>
   );
 };
 
@@ -833,17 +977,19 @@ export default AddNewPigeon;
 //   message,
 //   Menu,
 //   Dropdown,
-//   Switch,
 // } from "antd";
 // import { PlusOutlined } from "@ant-design/icons";
+// import { useParams } from "react-router-dom";
 // import {
 //   useAddPigeonMutation,
 //   useGetBreederNamesQuery,
+//   useGetPigeonSearchQuery,
 //   useUpdatePigeonMutation,
-// } from "../../redux/apiSlices/mypigeonSlice";
-// import { getImageUrl } from "../common/imageUrl";
-// import { useGetBreedersQuery } from "../../redux/apiSlices/breederSlice";
+//   useGetSinglePigeonQuery,
+// } from "../../../redux/apiSlices/mypigeonSlice";
+// import { getImageUrl } from "../../common/imageUrl";
 // import { getNames } from "country-list";
+// import { useNavigate } from "react-router-dom";
 
 // const { Option } = Select;
 
@@ -857,114 +1003,67 @@ export default AddNewPigeon;
 //   Mealy: ["Barless", "Bar", "Check", "T-Check", "White Flight"],
 // };
 
-// // Individual Photo Upload Component
-// const PhotoUploadBox = ({
-//   label,
-//   name,
-//   form,
-//   getImageUrl,
-//   required = false,
-// }) => {
-//   const fileList = form.getFieldValue(name) || [];
-//   const hasImage = fileList.length > 0;
-
-//   return (
-//     <div className={`photo-upload-container ${hasImage ? "has-image" : ""}`}>
-//       <Form.Item
-//         label={label}
-//         name={name}
-//         valuePropName="fileList"
-//         getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-//         rules={
-//           required
-//             ? [
-//                 {
-//                   required: true,
-//                   message: `Please upload ${label.toLowerCase()}`,
-//                 },
-//               ]
-//             : []
-//         }
-//         className="custom-form-item-ant"
-//       >
-//         <Upload
-//           name="file"
-//           listType="picture-card"
-//           fileList={fileList}
-//           onPreview={(file) => window.open(getImageUrl(file.url), "_blank")}
-//           onChange={({ fileList }) => {
-//             // Limit to 1 file per upload box
-//             const limitedFileList = fileList.slice(-1);
-//             form.setFieldsValue({ [name]: limitedFileList });
-//           }}
-//           className={`${
-//             hasImage
-//               ? ""
-//               : "border-2 border-dashed border-gray-300 rounded-lg hover:border-[#071952] transition-colors"
-//           } w-full`}
-//           maxCount={1}
-//           showUploadList={{
-//             showPreviewIcon: true,
-//             showRemoveIcon: true,
-//           }}
-//           beforeUpload={(file) => {
-//             const isJpgOrPng =
-//               file.type === "image/jpeg" || file.type === "image/png";
-//             if (!isJpgOrPng) {
-//               message.error("You can only upload JPG/PNG files!");
-//             }
-//             return false; // prevent auto upload
-//           }}
-//           accept=".jpg,.jpeg,.png"
-//         >
-//           {/* Only show upload button if no image is uploaded */}
-//           {!hasImage && (
-//             <div
-//               style={{
-//                 width: "100%",
-//                 height: 120,
-//                 display: "flex",
-//                 flexDirection: "column",
-//                 alignItems: "center",
-//                 justifyContent: "center",
-//                 padding: 16,
-//                 textAlign: "center",
-//               }}
-//             >
-//               <PlusOutlined
-//                 style={{ fontSize: 24, color: "#999", marginBottom: 8 }}
-//               />
-//               <div
-//                 style={{
-//                   color: "#999",
-//                   fontSize: "12px",
-//                   fontWeight: 500,
-//                 }}
-//               >
-//                 {label}
-//               </div>
-//             </div>
-//           )}
-//         </Upload>
-//       </Form.Item>
-
-//       {/* Custom CSS to hide upload area when image exists */}
-//       <style jsx>{`
-//         .photo-upload-container.has-image .ant-upload-select {
-//           display: none !important;
-//         }
-//       `}</style>
-//     </div>
-//   );
-// };
-
-// const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
+// const AddNewPigeon = ({ visible, onSave }) => {
 //   const [form] = Form.useForm();
 //   const [selected, setSelected] = useState({ color: null, pattern: null });
 //   const [addPigeon, { isLoading: isAdding }] = useAddPigeonMutation();
 //   const [showResults, setShowResults] = useState(false);
 //   const [raceResults, setRaceResults] = useState([]);
 //   const countries = getNames();
+//   const navigate = useNavigate();
+//   const [viewPigeonId, setViewPigeonId] = useState(null);
+//   const { id } = useParams();
+
+//   console.log("id", id);
+
+//   // 🔎 Parents
+//   const [fatherSearch, setFatherSearch] = useState("");
+//   const [motherSearch, setMotherSearch] = useState("");
+//   const { data: fatherOptions = [], isLoading: fatherLoading } =
+//     useGetPigeonSearchQuery(fatherSearch, { skip: !fatherSearch });
+//   const { data: motherOptions = [], isLoading: motherLoading } =
+//     useGetPigeonSearchQuery(motherSearch, { skip: !motherSearch });
+
+//   //   const [editingPigeonId, setEditingPigeonId] = useState(null);
+//   const { data: editingPigeonData } = useGetSinglePigeonQuery(id, {
+//     skip: !id, // don't fetch until ID is set
+//   });
+
+//   const pigeonData = editingPigeonData?.data;
+
+//   console.log(pigeonData);
+//   console.log("ring NUmber", pigeonData?.ringNumber);
+
+//   // 📷 Images (File objects to send)
+//   const [photos, setPhotos] = useState({
+//     pigeonPhoto: null,
+//     eyePhoto: null,
+//     ownershipPhoto: null,
+//     pedigreePhoto: null,
+//     DNAPhoto: null,
+//   });
+
+//   // 📷 Upload component fileLists (controlled previews)
+//   const [fileLists, setFileLists] = useState({
+//     pigeonPhoto: [],
+//     eyePhoto: [],
+//     ownershipPhoto: [],
+//     pedigreePhoto: [],
+//     DNAPhoto: [],
+//   });
+
+//   // Convert a URL into antd Upload item
+//   const toUploadItem = (url) =>
+//     url
+//       ? [
+//           {
+//             uid: `${Math.random()}`,
+//             name: String(url).split("/").pop() || "image",
+//             status: "done",
+//             url: String(url).startsWith("http") ? url : getImageUrl(url),
+//           },
+//         ]
+//       : [];
 
 //   useEffect(() => {
 //     if (visible) {
@@ -979,65 +1078,55 @@ export default AddNewPigeon;
 //         setRaceResults(
 //           pigeonData.results?.map((r) => ({
 //             ...r,
-//             date: r.date ? r.date.split("T")[0] : "", // format for <input type="date">
+//             date: r.date ? r.date.split("T")[0] : "",
 //           })) || []
 //         );
 
-//         // Handle individual photo uploads for editing
-//         const photos = pigeonData.photos || [];
-//         const pigeonPhoto = photos[0]
-//           ? [
-//               {
-//                 uid: "pigeon-0",
-//                 name: "pigeon-photo.jpg",
-//                 status: "done",
-//                 url: getImageUrl(photos[0]),
-//                 originFileObj: null,
-//               },
-//             ]
-//           : [];
-
-//         const eyePhoto = photos[1]
-//           ? [
-//               {
-//                 uid: "eye-0",
-//                 name: "eye-photo.jpg",
-//                 status: "done",
-//                 url: getImageUrl(photos[1]),
-//                 originFileObj: null,
-//               },
-//             ]
-//           : [];
-
-//         const ownershipCard = photos[2]
-//           ? [
-//               {
-//                 uid: "ownership-0",
-//                 name: "ownership-card.jpg",
-//                 status: "done",
-//                 url: getImageUrl(photos[2]),
-//                 originFileObj: null,
-//               },
-//             ]
-//           : [];
-
 //         form.setFieldsValue({
 //           ...pigeonData,
+//           ringNumber: pigeonData.ringNumber,
 //           fatherRingId: pigeonData.fatherRingId?.ringNumber || "",
 //           motherRingId: pigeonData.motherRingId?.ringNumber || "",
 //           colorPattern: { color, pattern },
 //           verification: pigeonData.verified ? "verified" : "notverified",
 //           iconic: pigeonData.iconic ? "yes" : "no",
-//           pigeonPhoto,
-//           eyePhoto,
-//           ownershipCard,
 //           breeder: pigeonData.breeder?._id || pigeonData.breeder,
 //         });
+
+//         // Pre-fill uploads
+//         setFileLists({
+//           pigeonPhoto: toUploadItem(
+//             pigeonData.pigeonPhotoUrl || pigeonData.pigeonPhoto
+//           ),
+//           eyePhoto: toUploadItem(pigeonData.eyePhotoUrl || pigeonData.eyePhoto),
+//           ownershipPhoto: toUploadItem(
+//             pigeonData.ownershipPhotoUrl || pigeonData.ownershipPhoto
+//           ),
+//           pedigreePhoto: toUploadItem(
+//             pigeonData.pedigreePhotoUrl || pigeonData.pedigreePhoto
+//           ),
+//           DNAPhoto: toUploadItem(pigeonData.DNAPhotoUrl || pigeonData.DNAPhoto),
+//         });
 //       } else {
+//         // reset on add new
 //         form.resetFields();
 //         setSelected({ color: null, pattern: null });
 //         setShowResults(false);
 //         setRaceResults([]);
+//         setPhotos({
+//           pigeonPhoto: null,
+//           eyePhoto: null,
+//           ownershipPhoto: null,
+//           pedigreePhoto: null,
+//           DNAPhoto: null,
+//         });
+//         setFileLists({
+//           pigeonPhoto: [],
+//           eyePhoto: [],
+//           ownershipPhoto: [],
+//           pedigreePhoto: [],
+//           DNAPhoto: [],
+//         });
 //       }
 //     }
 //   }, [pigeonData, visible, form]);
@@ -1072,34 +1161,6 @@ export default AddNewPigeon;
 //   const handleSave = async () => {
 //     try {
 //       const values = await form.validateFields();
-
-//       // Collect all photo files from individual upload boxes
-//       const pigeonPhotoFiles = values.pigeonPhoto || [];
-//       const eyePhotoFiles = values.eyePhoto || [];
-//       const ownershipCardFiles = values.ownershipCard || [];
-
-//       // Combine all files
-//       const allFiles = [
-//         ...pigeonPhotoFiles,
-//         ...eyePhotoFiles,
-//         ...ownershipCardFiles,
-//       ];
-
-//       const newFiles = allFiles.filter((file) => file.originFileObj);
-//       const existingFiles = allFiles.filter((file) => !file.originFileObj);
-
-//       const extractImagePath = (url) => {
-//         if (!url) return "";
-//         if (url.includes("/images/")) return url.split("/images/")[1];
-//         return url;
-//       };
-
-//       const remainingImages = existingFiles
-//         .map(
-//           (file) =>
-//             `/images/${extractImagePath(file.url || file.response?.url)}`
-//         )
-//         .filter(Boolean);
 
 //       const combinedColor =
 //         values.colorPattern?.color && values.colorPattern?.pattern
@@ -1138,23 +1199,21 @@ export default AddNewPigeon;
 //         iconic: values.iconic === "yes",
 //         fatherRingId: values.fatherRingId || "",
 //         motherRingId: values.motherRingId || "",
-//         remaining: remainingImages,
 //       };
 
 //       const token = localStorage.getItem("token");
 //       const formData = new FormData();
 //       formData.append("data", JSON.stringify(dataToSend));
 
-//       // Append only new uploaded images
-//       newFiles.forEach((file) => formData.append("image", file.originFileObj));
-
-//       console.log("===== Sending Pigeon Data =====");
-//       console.log("Data JSON (with remaining images):", dataToSend);
-//       console.log(
-//         "New files:",
-//         newFiles.map((f) => f.name)
-//       );
-//       console.log("===== End of Data =====");
+//       // Append files
+//       if (photos.pigeonPhoto)
+//         formData.append("pigeonPhoto", photos.pigeonPhoto);
+//       if (photos.eyePhoto) formData.append("eyePhoto", photos.eyePhoto);
+//       if (photos.ownershipPhoto)
+//         formData.append("ownershipPhoto", photos.ownershipPhoto);
+//       if (photos.pedigreePhoto)
+//         formData.append("pedigreePhoto", photos.pedigreePhoto);
+//       if (photos.DNAPhoto) formData.append("DNAPhoto", photos.DNAPhoto);
 
 //       if (pigeonData?._id) {
 //         await updatePigeon({ id: pigeonData._id, formData, token }).unwrap();
@@ -1162,27 +1221,33 @@ export default AddNewPigeon;
 //       } else {
 //         await addPigeon({ formData, token }).unwrap();
 //         message.success("Pigeon added successfully!");
+//         navigate("/my-pigeon");
 //       }
 
 //       form.resetFields();
 //       setSelected({ color: null, pattern: null });
 //       setShowResults(false);
 //       setRaceResults([]);
-//       onCancel();
+//       setPhotos({
+//         pigeonPhoto: null,
+//         eyePhoto: null,
+//         ownershipPhoto: null,
+//         pedigreePhoto: null,
+//         DNAPhoto: null,
+//       });
+//       setFileLists({
+//         pigeonPhoto: [],
+//         eyePhoto: [],
+//         ownershipPhoto: [],
+//         pedigreePhoto: [],
+//         DNAPhoto: [],
+//       });
+//       //   onCancel();
 //     } catch (err) {
 //       console.error(err);
 //       message.error(err?.data?.message || err.message);
 //     }
 //   };
-
-//   useEffect(() => {
-//     if (!visible) {
-//       form.resetFields();
-//       setSelected({ color: null, pattern: null });
-//       setShowResults(false);
-//       setRaceResults([]);
-//     }
-//   }, [visible, form]);
 
 //   const addRaceResult = () => {
 //     setRaceResults((prev) => [
@@ -1203,44 +1268,58 @@ export default AddNewPigeon;
 //     setRaceResults(updated);
 //   };
 
+//   // ---------- Upload helpers ----------
+//   const uploadButton = (label) => (
+//     <div style={{ color: "#666" }}>
+//       <PlusOutlined />
+//       <div style={{ marginTop: 8 }}>{label}</div>
+//     </div>
+//   );
+
+//   const commonUploadProps = (key) => ({
+//     listType: "picture-card",
+//     maxCount: 1,
+//     multiple: false,
+//     fileList: fileLists[key],
+//     showUploadList: { showPreviewIcon: true, showRemoveIcon: true },
+//     beforeUpload: (file) => {
+//       setPhotos((p) => ({ ...p, [key]: file }));
+//       const previewUrl = URL.createObjectURL(file);
+//       setFileLists((fl) => ({
+//         ...fl,
+//         [key]: [
+//           {
+//             uid: `${Math.random()}`,
+//             name: file.name,
+//             status: "done",
+//             url: previewUrl,
+//             originFileObj: file,
+//           },
+//         ],
+//       }));
+//       return false;
+//     },
+//     onRemove: () => {
+//       setPhotos((p) => ({ ...p, [key]: null }));
+//       setFileLists((fl) => ({ ...fl, [key]: [] }));
+//     },
+//     customRequest: ({ onSuccess }) => onSuccess && onSuccess(),
+//   });
+
 //   return (
-//     <Modal
-//       title={pigeonData ? "Edit Pigeon" : "Add New Pigeon"}
-//       open={visible}
-//       onCancel={() => {
-//         form.resetFields();
-//         setSelected({ color: null, pattern: null });
-//         setShowResults(false);
-//         setRaceResults([]);
-//         onCancel();
-//       }}
-//       width={1200}
-//       footer={[
-//         <Button
-//           key="cancel"
-//           onClick={onCancel}
-//           disabled={isAdding || isUpdating}
-//         >
-//           Cancel
-//         </Button>,
-//         <Button
-//           key="save"
-//           type="primary"
-//           onClick={handleSave}
-//           loading={isAdding || isUpdating}
-//         >
-//           {pigeonData ? "Update Pigeon" : "Add New Pigeon"}
-//         </Button>,
-//       ]}
-//     >
-//       <Form form={form} layout="vertical" className="mb-6">
+//     <div>
+//       <Form
+//         form={form}
+//         layout="vertical"
+//         className="mb-6 border rounded-lg border-primary px-[65px] py-[25px] mt-4"
+//       >
 //         <Row gutter={[30, 20]}>
 //           {/* Ring Number */}
 //           <Col xs={24} sm={12} md={8}>
 //             <Form.Item
 //               label="Ring Number"
 //               name="ringNumber"
-//               rules={[{ required: true }]}
+//               // rules={[{ required: true }]}
 //               className="custom-form-item-ant"
 //             >
 //               <Input
@@ -1255,7 +1334,7 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Name"
 //               name="name"
-//               rules={[{ required: true }]}
+//               // rules={[{ required: true }]}
 //               className="custom-form-item-ant"
 //             >
 //               <Input
@@ -1268,9 +1347,9 @@ export default AddNewPigeon;
 //           {/* Country */}
 //           <Col xs={24} sm={12} md={8}>
 //             <Form.Item
-//               label="Country"
+//               label="Choose a Country"
 //               name="country"
-//               rules={[{ required: true, message: "Please select country" }]}
+//               // rules={[{ required: true, message: "Please select country" }]}
 //               className="custom-form-item-ant-select"
 //             >
 //               <Select
@@ -1296,13 +1375,20 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Birth Year"
 //               name="birthYear"
-//               rules={[{ required: true }]}
-//               className="custom-form-item-ant"
+//               // rules={[{ required: true, message: "Please select birth year" }]}
+//               className="custom-form-item-ant-select"
 //             >
-//               <Input
-//                 placeholder="Enter Birth Year"
-//                 className="custom-input-ant-modal"
-//               />
+//               <Select
+//                 placeholder="Select Birth Year"
+//                 className="custom-select-ant-modal"
+//               >
+//                 {/* Creating options for 2015 to 2025 */}
+//                 {Array.from({ length: 11 }, (_, index) => (
+//                   <Option key={2015 + index} value={2015 + index}>
+//                     {2015 + index}
+//                   </Option>
+//                 ))}
+//               </Select>
 //             </Form.Item>
 //           </Col>
 
@@ -1325,9 +1411,9 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Color & Pattern"
 //               name="colorPattern"
-//               rules={[
-//                 { required: true, message: "Please select color & pattern" },
-//               ]}
+//               // rules={[
+//               //   { required: true, message: "Please select color & pattern" },
+//               // ]}
 //               className="custom-form-item-ant-select color-pattern-custom"
 //             >
 //               <Dropdown overlay={menu} trigger={["click"]}>
@@ -1352,7 +1438,7 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Gender"
 //               name="gender"
-//               rules={[{ required: true }]}
+//               // rules={[{ required: true }]}
 //               className="custom-form-item-ant-select"
 //             >
 //               <Select
@@ -1370,7 +1456,7 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Breeder"
 //               name="breeder"
-//               rules={[{ required: true, message: "Please select a breeder" }]}
+//               // rules={[{ required: true, message: "Please select a breeder" }]}
 //               className="custom-form-item-ant-select"
 //             >
 //               <Select
@@ -1396,7 +1482,7 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Breeder Rating"
 //               name="breederRating"
-//               rules={[{ required: true }]}
+//               // rules={[{ required: true }]}
 //               className="custom-form-item-ant-select"
 //             >
 //               <Select
@@ -1417,7 +1503,7 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Status"
 //               name="status"
-//               rules={[{ required: true }]}
+//               // rules={[{ required: true }]}
 //               className="custom-form-item-ant-select"
 //             >
 //               <Select
@@ -1439,7 +1525,7 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Location"
 //               name="location"
-//               rules={[{ required: true }]}
+//               // rules={[{ required: true }]}
 //               className="custom-form-item-ant"
 //             >
 //               <Input
@@ -1454,7 +1540,7 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Racing Rating"
 //               name="racingRating"
-//               rules={[{ required: true }]}
+//               // rules={[{ required: true }]}
 //               className="custom-form-item-ant-select"
 //             >
 //               <Select
@@ -1475,7 +1561,7 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Verification"
 //               name="verification"
-//               rules={[{ required: true }]}
+//               // rules={[{ required: true }]}
 //               className="custom-form-item-ant-select"
 //             >
 //               <Select
@@ -1493,7 +1579,7 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Iconic"
 //               name="iconic"
-//               rules={[{ required: true }]}
+//               // rules={[{ required: true }]}
 //               className="custom-form-item-ant-select"
 //             >
 //               <Select
@@ -1511,9 +1597,9 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Iconic Score"
 //               name="iconicScore"
-//               rules={[
-//                 { required: true, message: "Please select iconic score" },
-//               ]}
+//               // rules={[
+//               //   { required: true, message: "Please select iconic score" },
+//               // ]}
 //               className="custom-form-item-ant-select"
 //             >
 //               <Select
@@ -1534,13 +1620,26 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Father Ring Number"
 //               name="fatherRingId"
-//               className="custom-form-item-ant"
+//               className="custom-form-item-ant-select"
 //             >
-//               <Input
-//                 placeholder="Enter Father Ring Number"
-//                 className="custom-input-ant-modal"
+//               <Select
+//                 showSearch
+//                 allowClear
+//                 placeholder="Search by Father Ring Number"
+//                 className="custom-select-ant-modal"
+//                 filterOption={false}
+//                 onSearch={setFatherSearch}
+//                 loading={fatherLoading}
+//                 options={fatherOptions.map((p) => ({
+//                   label: p.ringNumber,
+//                   value: p.ringNumber,
+//                 }))}
 //               />
 //             </Form.Item>
+//             <p className="text-gray-400 font-normal text-[12px] pt-1">
+//               Enter a part of the ring or part of the name to search for the
+//               Corresponding Pigeon
+//             </p>
 //           </Col>
 
 //           {/* Mother */}
@@ -1548,13 +1647,26 @@ export default AddNewPigeon;
 //             <Form.Item
 //               label="Mother Ring Number"
 //               name="motherRingId"
-//               className="custom-form-item-ant"
+//               className="custom-form-item-ant-select"
 //             >
-//               <Input
-//                 placeholder="Enter Mother Ring Number"
-//                 className="custom-input-ant-modal"
+//               <Select
+//                 showSearch
+//                 allowClear
+//                 placeholder="Search by Mother Ring Number"
+//                 className="custom-select-ant-modal"
+//                 filterOption={false}
+//                 onSearch={setMotherSearch}
+//                 loading={motherLoading}
+//                 options={motherOptions.map((p) => ({
+//                   label: p.ringNumber,
+//                   value: p.ringNumber,
+//                 }))}
 //               />
 //             </Form.Item>
+//             <p className="text-gray-400 font-normal text-[12px] pt-1">
+//               Enter a part of the ring or part of the name to search for the
+//               Corresponding Pigeon
+//             </p>
 //           </Col>
 
 //           {/* Render Race Results */}
@@ -1653,53 +1765,82 @@ export default AddNewPigeon;
 //             </Button>
 //           </Col>
 
-//           {/* Individual Photo Upload Sections */}
-//           <Col xs={24}>
-//             <div className="mb-6">
-//               <h3 className="text-lg font-semibold mb-4 text-[#071952]">
-//                 Pigeon Photos <span className="text-red-500">*</span>
-//               </h3>
-
-//               <Row
-//                 gutter={[24, 16]}
-//                 className="p-6 border border-dashed border-gray-300 rounded-lg"
-//               >
-//                 {/* Main Pigeon Photo - Always show */}
-//                 <Col xs={24} sm={8}>
-//                   <PhotoUploadBox
-//                     label="Upload Pigeon Photo"
-//                     name="pigeonPhoto"
-//                     form={form}
-//                     getImageUrl={getImageUrl}
-//                     required={true}
-//                   />
+//           {/* ===== PIGEON PHOTOS ===== */}
+//           <div className="ml-4 p-4 border rounded-lg">
+//             <p className="text-[14px] font-semibold mb-2">Pigeon Photos:</p>
+//             <div className="border p-4 rounded-lg">
+//               <Row gutter={[10, 16]} justify="start" wrap>
+//                 <Col flex="none">
+//                   <Upload {...commonUploadProps("pigeonPhoto")}>
+//                     {fileLists.pigeonPhoto?.length
+//                       ? null
+//                       : uploadButton("Upload Pigeon Photo")}
+//                   </Upload>
 //                 </Col>
 
-//                 {/* Eye Photo - Always show */}
-//                 <Col xs={24} sm={8}>
-//                   <PhotoUploadBox
-//                     label="Upload Eye Photo"
-//                     name="eyePhoto"
-//                     form={form}
-//                     getImageUrl={getImageUrl}
-//                   />
+//                 <Col flex="none">
+//                   <Upload {...commonUploadProps("eyePhoto")}>
+//                     {fileLists.eyePhoto?.length
+//                       ? null
+//                       : uploadButton("Upload Eye Photo")}
+//                   </Upload>
 //                 </Col>
 
-//                 {/* Ownership Card - Always show */}
-//                 <Col xs={24} sm={8}>
-//                   <PhotoUploadBox
-//                     label="Upload Ownership Card"
-//                     name="ownershipCard"
-//                     form={form}
-//                     getImageUrl={getImageUrl}
-//                   />
+//                 <Col flex="none">
+//                   <Upload {...commonUploadProps("ownershipPhoto")}>
+//                     {fileLists.ownershipPhoto?.length
+//                       ? null
+//                       : uploadButton("Upload Ownership Card")}
+//                   </Upload>
+//                 </Col>
+
+//                 <Col flex="none">
+//                   <Upload {...commonUploadProps("pedigreePhoto")}>
+//                     {fileLists.pedigreePhoto?.length
+//                       ? null
+//                       : uploadButton("Upload Pedigree Photo")}
+//                   </Upload>
+//                 </Col>
+
+//                 <Col flex="none">
+//                   <Upload {...commonUploadProps("DNAPhoto")}>
+//                     {fileLists.DNAPhoto?.length
+//                       ? null
+//                       : uploadButton("Upload DNA Photo")}
+//                   </Upload>
 //                 </Col>
 //               </Row>
 //             </div>
-//           </Col>
+//           </div>
 //         </Row>
 //       </Form>
-//     </Modal>
+
+//       <div className="flex justify-end">
+//         {/* <Button
+//           key="cancel"
+//           onClick={onCancel}
+//           disabled={isAdding || isUpdating}
+//         >
+//           Cancel
+//         </Button> */}
+//         <Button
+//           onClick={() => navigate("/my-pigeon")} // Navigate on cancel
+//           disabled={isAdding || isUpdating}
+//           className="mr-[10px] bg-[#C33739] border border-[#C33739] text-white"
+//         >
+//           Cancel
+//         </Button>
+
+//         <Button
+//           key="save"
+//           type="primary"
+//           onClick={handleSave}
+//           loading={isAdding || isUpdating}
+//         >
+//           {pigeonData ? "Update Pigeon" : "Add New Pigeon"}
+//         </Button>
+//       </div>
+//     </div>
 //   );
 // };
 
