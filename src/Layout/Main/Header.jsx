@@ -99,7 +99,7 @@ const Header = () => {
             >
               {user?.profile ? (
                 <img
-                  src={getImageUrl(user.profile)}
+                  src={getImageUrl(user.profile)} // Display image if profile exists
                   alt="profile-pic"
                   style={{
                     width: "100%",
@@ -109,9 +109,9 @@ const Header = () => {
                   }}
                 />
               ) : user?.name ? (
-                user.name.charAt(0)
+                user.name.charAt(0).toUpperCase() // Display first letter of name
               ) : (
-                "U"
+                "U" // Fallback to "U" if no name or profile image
               )}
             </div>
           </div>

@@ -397,7 +397,7 @@ const AddNewPigeon = ({ visible, onSave }) => {
                 {/* Short Information of the Pigeon */}
                 <Form.Item
                   label="Short Information of the Pigeon"
-                  name="shortInformation"
+                  name="shortInfo"
                   className="custom-form-item-ant"
                 >
                   <Input.TextArea

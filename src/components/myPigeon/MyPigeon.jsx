@@ -148,41 +148,41 @@ const MyPigeon = () => {
       dataIndex: "image",
       key: "image",
       width: 100,
-      render: (src) => (
-        <img
-          src={getImageUrl(src)}
-          alt="pigeon"
-          style={{
-            width: 50,
-            height: 50,
-            borderRadius: "50%",
-            objectFit: "cover",
-          }}
-        />
-      ),
+      render: (src, record) => {
+        const imageExists = src && src.trim() !== ""; // Check if the image source is valid
+
+        return imageExists ? (
+          <img
+            src={getImageUrl(src)}
+            alt="pigeon"
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: "50%",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: "50%",
+              backgroundColor: "#f0f0f0", // Background color for placeholder
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              fontSize: "20px", // Adjust font size
+              fontWeight: "bold",
+              color: "#555",
+            }}
+          >
+            {record?.name?.[0]?.toUpperCase()} {/* Show first letter of name */}
+          </div>
+        );
+      },
     },
     { title: "Name", dataIndex: "name", key: "name" },
-    // {
-    //   title: "Country",
-    //   dataIndex: "country",
-    //   key: "country",
-    //   render: (country) => {
-    //     const countryCode = country ? getCode(country?.name || country) : null;
-    //     return countryCode ? (
-    //       <div className="flex items-center gap-2">
-    //         <img
-    //           src={`https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`}
-    //           alt={country?.name || country}
-    //           className="w-5 h-4 rounded-sm"
-    //         />
-    //         <p className="text-white">{countryCode}</p>
-    //       </div>
-    //     ) : (
-    //       <span>-</span>
-    //     );
-    //   },
-    // },
-
     {
       title: "Country",
       dataIndex: "country",

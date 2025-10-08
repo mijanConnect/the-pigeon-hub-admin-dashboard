@@ -100,6 +100,15 @@ const ViewPigeon = ({ visible, onCancel, pigeonData, loading }) => {
                 <Descriptions.Item label="Birth Year">
                   {safeValue(pigeonData.birthYear)}
                 </Descriptions.Item>
+                <Descriptions.Item label="Short Information">
+                  {safeValue(pigeonData.shortInfo)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Breeder">
+                  {safeValue(pigeonData.breeder?.breederName)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Breeder Rating">
+                  {safeValue(pigeonData.breederRating)}
+                </Descriptions.Item>
                 <Descriptions.Item label="Gender">
                   {safeValue(pigeonData.gender)}
                 </Descriptions.Item>
@@ -112,6 +121,22 @@ const ViewPigeon = ({ visible, onCancel, pigeonData, loading }) => {
                 <Descriptions.Item label="Location">
                   {safeValue(pigeonData.location)}
                 </Descriptions.Item>
+                <Descriptions.Item label="Iconic Score">
+                  {safeValue(pigeonData.iconicScore)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Father Ring Number">
+                  {safeValue(pigeonData.fatherRingId?.ringNumber)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Mother Ring Number">
+                  {safeValue(pigeonData.motherRingId?.ringNumber)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Racing Rating">
+                  {safeValue(pigeonData.racingRating)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Racer Rating">
+                  {safeValue(pigeonData.racherRating)}
+                </Descriptions.Item>
+
                 <Descriptions.Item label="Notes">
                   {safeValue(pigeonData.notes)}
                 </Descriptions.Item>

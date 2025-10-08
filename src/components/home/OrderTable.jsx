@@ -15,20 +15,39 @@ const getColumns = () => [
     dataIndex: "image",
     key: "image",
     width: 100,
-    render: (src) => (
-      <img
-        // src={src || "/assets/pigeon-image.png"}
-        // src={getImageUrl(item.image)}
-        src={getImageUrl(src)}
-        alt="pigeon"
-        style={{
-          width: 50,
-          height: 50,
-          borderRadius: "50%",
-          objectFit: "cover",
-        }}
-      />
-    ),
+    render: (src, record) => {
+      const imageExists = src && src.trim() !== ""; // Check if the image source is valid
+
+      return imageExists ? (
+        <img
+          src={getImageUrl(src)}
+          alt="pigeon"
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: "50%",
+            objectFit: "cover",
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: "50%",
+            backgroundColor: "#f0f0f0", // Background color for placeholder
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontSize: "20px", // Adjust font size
+            fontWeight: "bold",
+            color: "#555",
+          }}
+        >
+          {record?.name?.[0]?.toUpperCase()} {/* Show first letter of name */}
+        </div>
+      );
+    },
   },
   { title: "Name", dataIndex: "name", key: "name" },
   {
