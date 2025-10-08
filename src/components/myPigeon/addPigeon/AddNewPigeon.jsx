@@ -1,30 +1,28 @@
-import React, { useState, useEffect } from "react";
+import { PlusOutlined } from "@ant-design/icons";
 import {
-  Modal,
+  Button,
+  Col,
+  Dropdown,
   Form,
   Input,
-  Select,
+  Menu,
   Row,
-  Col,
-  Button,
+  Select,
+  Switch,
   Upload,
   message,
-  Menu,
-  Dropdown,
-  Switch,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
-import { useParams } from "react-router-dom";
+import { getNames } from "country-list";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   useAddPigeonMutation,
   useGetBreederNamesQuery,
   useGetPigeonSearchQuery,
-  useUpdatePigeonMutation,
   useGetSinglePigeonQuery,
+  useUpdatePigeonMutation,
 } from "../../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../../common/imageUrl";
-import { getNames } from "country-list";
-import { useNavigate } from "react-router-dom";
 
 const { Option } = Select;
 
@@ -38,7 +36,7 @@ const colorPatternMap = {
   Mealy: ["Barless", "Bar", "Check", "T-Check", "White Flight"],
 };
 
-const AddNewPigeon = ({ visible, onSave }) => {
+const AddNewPigeon = ({ onSave }) => {
   const [form] = Form.useForm();
   const [selected, setSelected] = useState({ color: null, pattern: null });
   const [addPigeon, { isLoading: isAdding }] = useAddPigeonMutation();
@@ -104,70 +102,68 @@ const AddNewPigeon = ({ visible, onSave }) => {
       : [];
 
   useEffect(() => {
-    if (visible) {
-      if (pigeonData) {
-        // Split color & pattern
-        const [color, pattern] = pigeonData.color?.includes("&")
-          ? pigeonData.color.split(" & ").map((v) => v.trim())
-          : [pigeonData.color, null];
+    if (pigeonData) {
+      // Split color & pattern
+      const [color, pattern] = pigeonData.color?.includes("&")
+        ? pigeonData.color.split(" & ").map((v) => v.trim())
+        : [pigeonData.color, null];
 
-        setSelected({ color, pattern });
-        setShowResults(Boolean(pigeonData.results));
-        setRaceResults(
-          pigeonData.results?.map((r) => ({
-            ...r,
-            date: r.date ? r.date.split("T")[0] : "",
-          })) || []
-        );
+      setSelected({ color, pattern });
+      setShowResults(Boolean(pigeonData.results));
+      setRaceResults(
+        pigeonData.results?.map((r) => ({
+          ...r,
+          date: r.date ? r.date.split("T")[0] : "",
+        })) || []
+      );
 
-        form.setFieldsValue({
-          ...pigeonData,
-          ringNumber: pigeonData.ringNumber,
-          fatherRingId: pigeonData.fatherRingId?.ringNumber || "",
-          motherRingId: pigeonData.motherRingId?.ringNumber || "",
-          colorPattern: { color, pattern },
-          verification: pigeonData.verified ? "verified" : "notverified",
-          iconic: pigeonData.iconic ? "yes" : "no",
-          breeder: pigeonData.breeder?._id || pigeonData.breeder,
-        });
+      form.setFieldsValue({
+        ...pigeonData,
+        ringNumber: pigeonData.ringNumber,
+        fatherRingId: pigeonData.fatherRingId?.ringNumber || "",
+        motherRingId: pigeonData.motherRingId?.ringNumber || "",
+        colorPattern: { color, pattern },
+        verification: pigeonData.verified ? "verified" : "notverified",
+        iconic: pigeonData.iconic ? "yes" : "no",
+        breeder: pigeonData.breeder?._id || pigeonData.breeder,
+      });
 
-        // Pre-fill uploads
-        setFileLists({
-          pigeonPhoto: toUploadItem(
-            pigeonData.pigeonPhotoUrl || pigeonData.pigeonPhoto
-          ),
-          eyePhoto: toUploadItem(pigeonData.eyePhotoUrl || pigeonData.eyePhoto),
-          ownershipPhoto: toUploadItem(
-            pigeonData.ownershipPhotoUrl || pigeonData.ownershipPhoto
-          ),
-          pedigreePhoto: toUploadItem(
-            pigeonData.pedigreePhotoUrl || pigeonData.pedigreePhoto
-          ),
-          DNAPhoto: toUploadItem(pigeonData.DNAPhotoUrl || pigeonData.DNAPhoto),
-        });
-      } else {
-        // reset on add new
-        form.resetFields();
-        setSelected({ color: null, pattern: null });
-        setShowResults(false);
-        setRaceResults([]);
-        setPhotos({
-          pigeonPhoto: null,
-          eyePhoto: null,
-          ownershipPhoto: null,
-          pedigreePhoto: null,
-          DNAPhoto: null,
-        });
-        setFileLists({
-          pigeonPhoto: [],
-          eyePhoto: [],
-          ownershipPhoto: [],
-          pedigreePhoto: [],
-          DNAPhoto: [],
-        });
-      }
+      // Pre-fill uploads
+      setFileLists({
+        pigeonPhoto: toUploadItem(
+          pigeonData.pigeonPhotoUrl || pigeonData.pigeonPhoto
+        ),
+        eyePhoto: toUploadItem(pigeonData.eyePhotoUrl || pigeonData.eyePhoto),
+        ownershipPhoto: toUploadItem(
+          pigeonData.ownershipPhotoUrl || pigeonData.ownershipPhoto
+        ),
+        pedigreePhoto: toUploadItem(
+          pigeonData.pedigreePhotoUrl || pigeonData.pedigreePhoto
+        ),
+        DNAPhoto: toUploadItem(pigeonData.DNAPhotoUrl || pigeonData.DNAPhoto),
+      });
+    } else if (id === undefined) {
+      // Only reset when we're in add mode (no ID in URL)
+      form.resetFields();
+      setSelected({ color: null, pattern: null });
+      setShowResults(false);
+      setRaceResults([]);
+      setPhotos({
+        pigeonPhoto: null,
+        eyePhoto: null,
+        ownershipPhoto: null,
+        pedigreePhoto: null,
+        DNAPhoto: null,
+      });
+      setFileLists({
+        pigeonPhoto: [],
+        eyePhoto: [],
+        ownershipPhoto: [],
+        pedigreePhoto: [],
+        DNAPhoto: [],
+      });
     }
-  }, [pigeonData, visible, form]);
+  }, [pigeonData, id, form]);
 
   const handleClick = (color, pattern) => {
     setSelected({ color, pattern });
@@ -257,6 +253,7 @@ const AddNewPigeon = ({ visible, onSave }) => {
       if (pigeonData?._id) {
         await updatePigeon({ id: pigeonData._id, formData, token }).unwrap();
         message.success("Pigeon updated successfully!");
+        navigate("/my-pigeon");
       } else {
         await addPigeon({ formData, token }).unwrap();
         message.success("Pigeon added successfully!");

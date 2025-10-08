@@ -1,45 +1,40 @@
-import React, { useState } from "react";
 import {
   Button,
-  Table,
-  Input,
-  Select,
-  Row,
   Col,
-  Tabs,
+  Input,
+  Row,
+  Select,
   Spin,
+  Table,
+  Tabs,
   Tooltip,
 } from "antd";
-import AddNewPigeon from "./AddNewPigeon";
+import { getCode, getNames } from "country-list";
+import { useState } from "react";
+import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
+import { PiDnaBold } from "react-icons/pi";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import AllIcon from "../../assets/all.png";
 import {
   useDeletePigeonMutation,
   useGetMyPigeonsQuery,
   useGetSinglePigeonQuery,
 } from "../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../common/imageUrl";
-import AllIcon from "../../assets/all.png";
-import { FaTrash, FaEdit, FaEye } from "react-icons/fa";
 import ViewPigeon from "./ViewPigeon"; // ✅ import
-import Swal from "sweetalert2";
-import { getNames } from "country-list";
-import { getCode } from "country-list";
-import { PiDnaBold } from "react-icons/pi";
-import { useNavigate } from "react-router-dom";
 
-import VerifyIcon from "../../assets/verify.png";
-import RacingIcon from "../../assets/Racing.png";
 import BreedingIcon from "../../assets/Breeding.png";
-import LostIcon from "../../assets/Lost.png";
-import SoldIcon from "../../assets/Sold.png";
-import RetiredIcon from "../../assets/Retired.png";
 import DeceasedIcon from "../../assets/Deceased.png";
+import LostIcon from "../../assets/Lost.png";
+import RacingIcon from "../../assets/Racing.png";
+import RetiredIcon from "../../assets/Retired.png";
+import SoldIcon from "../../assets/Sold.png";
 
 const { Option } = Select;
 const { TabPane } = Tabs;
 
 const MyPigeon = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingPigeon, setEditingPigeon] = useState(null); // ✅ For edit
   const [tabKey, setTabKey] = useState("all");
   const [filters, setFilters] = useState({
     search: "",
@@ -68,26 +63,13 @@ const MyPigeon = () => {
   const [pageSize] = useState(10);
   const countries = getNames();
 
-  const [editingPigeonId, setEditingPigeonId] = useState(null);
-  const { data: editingPigeonData } = useGetSinglePigeonQuery(editingPigeonId, {
-    skip: !editingPigeonId, // don't fetch until ID is set
-  });
-
   const showEditModal = (record) => {
-    setEditingPigeonId(record._id);
-    setIsModalVisible(true);
+    navigate(`/add-pigeon/${record._id}`);
   };
 
   const handleAddPigeon = () => {
     navigate("/add-pigeon");
   };
-
-  // const handleEditPigeon = (record) => {
-  //   // setEditingPigeonId(record._id);
-  //   navigate(`/add-pigeon/${record._id}`);
-
-  //   console.log("Record", record._id);
-  // };
 
   const { data, isLoading } = useGetMyPigeonsQuery({
     page,
@@ -133,10 +115,6 @@ const MyPigeon = () => {
       }
     });
   };
-  // const showEditModal = (record) => {
-  //   setEditingPigeon(record);
-  //   setIsModalVisible(true);
-  // };
 
   const showPedigreeChart = (record) => {
     navigate(`/pigeon-management/${record._id}`);
@@ -149,7 +127,7 @@ const MyPigeon = () => {
       key: "image",
       width: 100,
       render: (src, record) => {
-        const imageExists = src && src.trim() !== ""; // Check if the image source is valid
+        const imageExists = src && src.trim() !== "";
 
         return imageExists ? (
           <img
@@ -168,11 +146,11 @@ const MyPigeon = () => {
               width: 50,
               height: 50,
               borderRadius: "50%",
-              backgroundColor: "#f0f0f0", // Background color for placeholder
+              backgroundColor: "#f0f0f0",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              fontSize: "20px", // Adjust font size
+              fontSize: "20px",
               fontWeight: "bold",
               color: "#555",
             }}
@@ -285,11 +263,7 @@ const MyPigeon = () => {
         <Button
           type="primary"
           className="py-5 px-7 font-semibold text-[16px]"
-          onClick={() => {
-            // setEditingPigeonId(null); // ✅ reset ID
-            // setIsModalVisible(true); // ✅ open modal
-            handleAddPigeon();
-          }}
+          onClick={handleAddPigeon}
         >
           Add New Pigeon
         </Button>
@@ -572,20 +546,6 @@ const MyPigeon = () => {
           </div>
         </div>
       </div>
-
-      <AddNewPigeon
-        visible={isModalVisible}
-        onCancel={() => {
-          setIsModalVisible(false);
-          setEditingPigeonId(null); // clear edit ID
-        }}
-        onSave={(values) => {
-          console.log(editingPigeonId ? "Edit Pigeon:" : "Add Pigeon:", values);
-          setIsModalVisible(false);
-          setEditingPigeonId(null); // clear edit ID after save
-        }}
-        pigeonData={editingPigeonId ? editingPigeonData?.data : null} // ✅ Only pass data if editing
-      />
 
       <ViewPigeon
         visible={viewModalVisible}

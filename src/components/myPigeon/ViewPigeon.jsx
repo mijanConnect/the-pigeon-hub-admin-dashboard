@@ -136,7 +136,6 @@ const ViewPigeon = ({ visible, onCancel, pigeonData, loading }) => {
                 <Descriptions.Item label="Racer Rating">
                   {safeValue(pigeonData.racherRating)}
                 </Descriptions.Item>
-
                 <Descriptions.Item label="Notes">
                   {safeValue(pigeonData.notes)}
                 </Descriptions.Item>
