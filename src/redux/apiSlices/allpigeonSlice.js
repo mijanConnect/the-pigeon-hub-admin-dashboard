@@ -27,7 +27,7 @@ const allpigeonSlice = api.injectEndpoints({
         if (verified !== undefined) params.append("verified", verified);
         if (status) params.append("status", status);
         return {
-          url: `/pigeon?${params.toString()}`,
+          url: `/pigeon/getAllPigeonsAdmin?${params.toString()}`,
           method: "GET",
         };
       },
@@ -36,7 +36,13 @@ const allpigeonSlice = api.injectEndpoints({
 
         const pigeons = pigeonArray.map((pigeon) => ({
           _id: pigeon._id,
-          image: pigeon.photos?.[0] || "",
+          image:
+            pigeon.pigeonPhoto ||
+            pigeon?.eyePhoto ||
+            pigeon?.pedigreePhoto ||
+            pigeon?.DNAPhoto ||
+            pigeon?.ownershipPhoto ||
+            "",
           name: pigeon.name,
           country: pigeon.country || "-",
           breeder: pigeon.breeder?.breederName || "-",

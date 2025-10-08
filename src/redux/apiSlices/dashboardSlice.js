@@ -22,7 +22,13 @@ const dashboardSlice = api.injectEndpoints({
         const pigeonsRaw = response?.data?.recentPigeons || [];
         const pigeons = pigeonsRaw.map((pigeon) => ({
           key: pigeon?._id,
-          image: pigeon?.pigeonPhoto || "",
+          image:
+            pigeon.pigeonPhoto ||
+            pigeon?.eyePhoto ||
+            pigeon?.pedigreePhoto ||
+            pigeon?.DNAPhoto ||
+            pigeon?.ownershipPhoto ||
+            "",
           name: pigeon?.name,
           country: { name: pigeon?.country, icon: "" },
           breeder: pigeon?.breeder?.breederName,

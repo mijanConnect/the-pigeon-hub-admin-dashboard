@@ -36,7 +36,13 @@ const mypigeonSlice = api.injectEndpoints({
 
         const pigeons = pigeonArray.map((pigeon) => ({
           _id: pigeon._id,
-          image: pigeon.pigeonPhoto || "",
+          image:
+            pigeon.pigeonPhoto ||
+            pigeon?.eyePhoto ||
+            pigeon?.pedigreePhoto ||
+            pigeon?.DNAPhoto ||
+            pigeon?.ownershipPhoto ||
+            "",
           name: pigeon.name,
           country: { name: pigeon.country, icon: "" },
           breeder: pigeon.breeder?.breederName || "-",

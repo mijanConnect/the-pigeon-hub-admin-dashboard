@@ -202,18 +202,39 @@ const PigeonManagement = () => {
       dataIndex: "image",
       key: "image",
       width: 100,
-      render: (src) => (
-        <img
-          src={src ? getImageUrl(src) : PigeonImage}
-          alt="pigeon"
-          style={{
-            width: 50,
-            height: 50,
-            borderRadius: "50%",
-            objectFit: "cover",
-          }}
-        />
-      ),
+      render: (src, record) => {
+        const imageExists = src && src.trim() !== "";
+
+        return imageExists ? (
+          <img
+            src={getImageUrl(src)}
+            alt="pigeon"
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: "50%",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: "50%",
+              backgroundColor: "#f0f0f0",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              fontSize: "20px",
+              fontWeight: "bold",
+              color: "#555",
+            }}
+          >
+            {record?.name?.[0]?.toUpperCase()} {/* Show first letter of name */}
+          </div>
+        );
+      },
     },
     { title: "Name", dataIndex: "name", key: "name" },
     // { title: "Verified", dataIndex: "verified", key: "verified" },
