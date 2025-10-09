@@ -1,7 +1,6 @@
-import React from "react";
-import { Modal, Descriptions, Spin, Table } from "antd";
-import { getImageUrl } from "../common/imageUrl";
+import { Descriptions, Modal, Spin, Table } from "antd";
 import VerifyIcon from "../../assets/verify.png";
+import { getImageUrl } from "../common/imageUrl";
 
 const safeValue = (value) => {
   if (value === null || value === undefined) return "-";
@@ -121,6 +120,9 @@ const ViewPigeon = ({ visible, onCancel, pigeonData, loading }) => {
                 <Descriptions.Item label="Location">
                   {safeValue(pigeonData.location)}
                 </Descriptions.Item>
+                <Descriptions.Item label="Iconic">
+                  {pigeonData.iconic ? "Yes" : "No"}
+                </Descriptions.Item>
                 <Descriptions.Item label="Iconic Score">
                   {safeValue(pigeonData.iconicScore)}
                 </Descriptions.Item>
@@ -199,12 +201,6 @@ const ViewPigeon = ({ visible, onCancel, pigeonData, loading }) => {
                     </Descriptions.Item>
                     <Descriptions.Item label="Phone">
                       {safeValue(pigeonData.breeder.phone)}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Experience">
-                      {safeValue(pigeonData.breeder.experience)}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Score">
-                      {safeValue(pigeonData.breeder.score)}
                     </Descriptions.Item>
                   </Descriptions>
                 </>

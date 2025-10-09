@@ -1,34 +1,31 @@
-import React, { useState } from "react";
 import {
   Button,
-  Table,
-  Input,
-  Select,
-  Row,
   Col,
-  Tooltip,
-  Modal,
   Form,
+  Input,
+  Modal,
+  Row,
+  Select,
   Spin,
-  Switch,
+  Table,
+  Tooltip,
+  message,
 } from "antd";
-import { FaTrash, FaEye, FaEdit } from "react-icons/fa";
+import { getCode, getNames } from "country-list";
+import { useState } from "react";
+import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
+import { PiDnaBold } from "react-icons/pi";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import {
+  useDeletePigeonMutation,
   useGetAllPigeonsQuery,
   useGetSinglePigeonQuery,
-  useUpdatePigeonMutation,
-  useDeletePigeonMutation,
   useTogglePigeonStatusMutation,
+  useUpdatePigeonMutation,
 } from "../../redux/apiSlices/allpigeonSlice";
 import { getImageUrl } from "../common/imageUrl";
-import PigeonImage from "../../../src/assets/pigeon-image.png";
-import VerifyIcon from "../../assets/verify.png";
-import Swal from "sweetalert2";
 import ViewPigeon from "../myPigeon/ViewPigeon";
-import { getNames } from "country-list";
-import { getCode } from "country-list";
-import { useNavigate } from "react-router-dom";
-import { PiDnaBold } from "react-icons/pi";
 
 const { Option } = Select;
 
@@ -48,6 +45,10 @@ const PigeonManagement = () => {
   const [editingPigeonId, setEditingPigeonId] = useState(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [viewPigeonId, setViewPigeonId] = useState(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedPigeonForEdit, setSelectedPigeonForEdit] = useState(null);
+  const [editForm] = Form.useForm();
+  const [isIconicEnabled, setIsIconicEnabled] = useState(false);
   const countries = getNames();
   const navigate = useNavigate();
 
@@ -93,9 +94,74 @@ const PigeonManagement = () => {
     setViewModalVisible(true);
   };
 
-  const showEditModal = (record) => {
+  const showFullEditModal = (record) => {
     setEditingPigeonId(record._id);
     setIsModalVisible(true);
+  };
+
+  const showEditModal = (record) => {
+    setSelectedPigeonForEdit(record);
+
+    // Simple boolean check since API returns "verified": true/false
+    const isVerified = record.verified === "Yes";
+    const isIconic = record.iconic === true;
+
+    // Set initial iconic state for score field
+    setIsIconicEnabled(isIconic);
+
+    editForm.setFieldsValue({
+      verification: isVerified ? "verified" : "notverified",
+      iconic: isIconic ? "yes" : "no",
+      iconicScore: record.iconicScore || 0,
+    });
+    setEditModalVisible(true);
+  };
+
+  const handleEditUpdate = async () => {
+    try {
+      const values = await editForm.validateFields();
+
+      const dataToSend = {
+        verified: values.verification === "verified",
+        iconic: values.iconic === "yes",
+        iconicScore: parseInt(values.iconicScore) || 0,
+      };
+
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("data", JSON.stringify(dataToSend));
+
+      await updatePigeon({
+        id: selectedPigeonForEdit._id,
+        formData,
+        token,
+      }).unwrap();
+
+      message.success("Pigeon details updated successfully!");
+      setEditModalVisible(false);
+      setSelectedPigeonForEdit(null);
+      editForm.resetFields();
+    } catch (err) {
+      console.error(err);
+      message.error(err?.data?.message || "Failed to update pigeon details");
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditModalVisible(false);
+    setSelectedPigeonForEdit(null);
+    setIsIconicEnabled(false);
+    editForm.resetFields();
+  };
+
+  const handleIconicChange = (value) => {
+    const isIconic = value === "yes";
+    setIsIconicEnabled(isIconic);
+
+    // If iconic is set to "no", reset the score to 0
+    if (!isIconic) {
+      editForm.setFieldsValue({ iconicScore: 0 });
+    }
   };
 
   const handleModalCancel = () => {
@@ -303,6 +369,12 @@ const PigeonManagement = () => {
               <PiDnaBold
                 style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
                 onClick={() => showPedigreeChart(record)}
+              />
+            </Tooltip>
+            <Tooltip title="Edit Details">
+              <FaEdit
+                style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
+                onClick={() => showEditModal(record)}
               />
             </Tooltip>
             <Tooltip title="Delete">
@@ -694,7 +766,7 @@ const PigeonManagement = () => {
               </Col>
 
               <Col xs={24} sm={12}>
-                <Form.Item
+                {/* <Form.Item
                   label="Iconic Score"
                   name="iconicScore"
                   className="custom-form-item-ant"
@@ -704,6 +776,33 @@ const PigeonManagement = () => {
                     placeholder="Enter Iconic Score"
                     className="custom-input-ant-modal"
                   />
+                </Form.Item> */}
+
+                <Form.Item
+                  label="Iconic Score"
+                  name="iconicScore"
+                  // rules={[{ required: true, message: "Please select iconic score" }]}
+                  className="custom-form-item-ant-select"
+                >
+                  <Select
+                    placeholder="Select Iconic Score"
+                    className="custom-select-ant-modal"
+                    showSearch // Enable search functionality
+                    allowClear // Enable the clear button (cross icon)
+                    optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)
+                    filterOption={(input, option) =>
+                      option?.children
+                        ?.toString()
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                  >
+                    {Array.from({ length: 101 }, (_, i) => i).map((v) => (
+                      <Option key={v} value={v}>
+                        {v}
+                      </Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
 
@@ -740,6 +839,104 @@ const PigeonManagement = () => {
         pigeonData={viewPigeonData?.data || null}
         loading={viewLoading}
       />
+
+      {/* Edit Modal */}
+      <Modal
+        title="Edit Pigeon Details"
+        open={editModalVisible}
+        onCancel={handleEditCancel}
+        onOk={handleEditUpdate}
+        okText="Update"
+        cancelText="Cancel"
+        width={600}
+      >
+        <Form form={editForm} layout="vertical" className="custom-form-ant">
+          <Row gutter={16} className="mb-4">
+            <Col span={12}>
+              <Form.Item
+                label="Verification"
+                name="verification"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select verification status",
+                  },
+                ]}
+                className="custom-form-item-ant"
+              >
+                <Select
+                  placeholder="Select Verification Status"
+                  className="custom-select-ant-modal"
+                >
+                  <Option value="verified">Verified</Option>
+                  <Option value="notverified">Not Verified</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                label="Iconic Status"
+                name="iconic"
+                rules={[
+                  { required: true, message: "Please select iconic status" },
+                ]}
+                className="custom-form-item-ant"
+              >
+                <Select
+                  placeholder="Select Iconic Status"
+                  className="custom-select-ant-modal"
+                  onChange={handleIconicChange}
+                >
+                  <Option value="yes">Yes</Option>
+                  <Option value="no">No</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16} className="mb-4">
+            <Col span={24}>
+              <Form.Item
+                label="Iconic Score"
+                name="iconicScore"
+                rules={[
+                  {
+                    required: isIconicEnabled,
+                    message:
+                      "Please select iconic score when iconic is enabled",
+                  },
+                ]}
+                className="custom-form-item-ant"
+              >
+                <Select
+                  placeholder={
+                    isIconicEnabled
+                      ? "Select Iconic Score (0-100)"
+                      : "Score disabled (Iconic: No)"
+                  }
+                  className="custom-select-ant-modal"
+                  disabled={!isIconicEnabled}
+                  showSearch
+                  allowClear
+                  filterOption={(input, option) =>
+                    (option?.children ?? "")
+                      .toString()
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  {Array.from({ length: 101 }, (_, i) => i).map((score) => (
+                    <Option key={score} value={score}>
+                      {score}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
     </div>
   );
 };

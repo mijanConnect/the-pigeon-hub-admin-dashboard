@@ -48,6 +48,7 @@ const AddNewPigeon = ({ onSave }) => {
   const { id } = useParams();
   const [showAddButton, setShowAddButton] = useState(true); // initial state: visible
   const [showRaceResults, setShowRaceResults] = useState(false); // Switch state
+  const [isIconicEnabled, setIsIconicEnabled] = useState(false); // Track iconic status for enabling/disabling iconic score
   const currentYear = new Date().getFullYear(); // Get the current year
 
   console.log("id", id);
@@ -128,6 +129,9 @@ const AddNewPigeon = ({ onSave }) => {
         breeder: pigeonData.breeder?._id || pigeonData.breeder,
       });
 
+      // Set iconic enabled state based on existing data
+      setIsIconicEnabled(pigeonData.iconic === true);
+
       // Pre-fill uploads
       setFileLists({
         pigeonPhoto: toUploadItem(
@@ -148,6 +152,7 @@ const AddNewPigeon = ({ onSave }) => {
       setSelected({ color: null, pattern: null });
       setShowResults(false);
       setRaceResults([]);
+      setIsIconicEnabled(false); // Reset iconic state for new pigeon
       setPhotos({
         pigeonPhoto: null,
         eyePhoto: null,
@@ -191,6 +196,17 @@ const AddNewPigeon = ({ onSave }) => {
     useGetBreederNamesQuery();
 
   const [updatePigeon, { isLoading: isUpdating }] = useUpdatePigeonMutation();
+
+  // Handle iconic status change to enable/disable iconic score
+  const handleIconicChange = (value) => {
+    const enabled = value === "yes";
+    setIsIconicEnabled(enabled);
+
+    // Clear iconic score if iconic is disabled
+    if (!enabled) {
+      form.setFieldsValue({ iconicScore: undefined });
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -472,6 +488,7 @@ const AddNewPigeon = ({ onSave }) => {
                   <Select
                     placeholder="Select Iconic"
                     className="custom-select-ant-modal"
+                    onChange={handleIconicChange}
                   >
                     <Option value="yes">Yes</Option>
                     <Option value="no">No</Option>
@@ -647,12 +664,23 @@ const AddNewPigeon = ({ onSave }) => {
                 <Form.Item
                   label="Iconic Score"
                   name="iconicScore"
-                  // rules={[{ required: true, message: "Please select iconic score" }]}
+                  rules={[
+                    {
+                      required: isIconicEnabled,
+                      message:
+                        "Please select iconic score when iconic is enabled",
+                    },
+                  ]}
                   className="custom-form-item-ant-select"
                 >
                   <Select
-                    placeholder="Select Iconic Score"
+                    placeholder={
+                      isIconicEnabled
+                        ? "Select Iconic Score (0-100)"
+                        : "Score disabled (Please do Iconinc: Yes)"
+                    }
                     className="custom-select-ant-modal"
+                    disabled={!isIconicEnabled}
                     showSearch // Enable search functionality
                     allowClear // Enable the clear button (cross icon)
                     optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)
