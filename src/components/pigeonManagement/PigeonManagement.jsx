@@ -303,7 +303,7 @@ const PigeonManagement = () => {
       },
     },
     { title: "Name", dataIndex: "name", key: "name" },
-    // { title: "Verified", dataIndex: "verified", key: "verified" },
+    { title: "Verified", dataIndex: "verified", key: "verified" },
     // { title: "Iconic", dataIndex: "iconic", key: "iconic" },
     { title: "Iconic Score", dataIndex: "iconicScore", key: "iconicScore" },
     {
