@@ -1,16 +1,15 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Button, Table, Input, Select, Row, Col, Tooltip } from "antd";
-import { FaTrash, FaEye, FaEdit } from "react-icons/fa";
+import { Button, Col, Input, Row, Select, Table, Tooltip } from "antd";
+import { getCode, getNames } from "country-list";
+import { useEffect, useMemo, useState } from "react";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import Swal from "sweetalert2";
-import AddVerifyBreeder from "./AddVerifiedBreeder";
-import { getCode } from "country-list";
 import {
-  useGetBreedersQuery,
   useAddBreederMutation,
-  useUpdateBreederMutation,
   useDeleteBreederMutation,
+  useGetBreedersQuery,
+  useUpdateBreederMutation,
 } from "../../redux/apiSlices/breederSlice";
-import { getNames } from "country-list";
+import AddVerifyBreeder from "./AddVerifiedBreeder";
 
 const { Option } = Select;
 
@@ -269,8 +268,13 @@ const VerifyBreeder = () => {
                 placeholder="Select Country"
                 className="custom-select-ant"
                 style={{ width: "100%" }}
-                value={filters.country || "all"}
-                onChange={(value) => handleFilterChange("country", value)}
+                value={filterCountry}
+                onChange={(value) => {
+                  // keep individual filter state and the combined filters in sync
+                  setFilterCountry(value);
+                  setFilters((prev) => ({ ...prev, country: value }));
+                  setPage(1);
+                }}
                 showSearch
                 optionFilterProp="children"
                 filterOption={(input, option) =>
@@ -289,7 +293,7 @@ const VerifyBreeder = () => {
             </div>
           </Col>
 
-          <Col xs={24} sm={12} md={6} lg={4}>
+          {/* <Col xs={24} sm={12} md={6} lg={4}>
             <div className="flex flex-col">
               <label className="mb-1 text-gray-300">Gender</label>
               <Select
@@ -306,9 +310,9 @@ const VerifyBreeder = () => {
                 <Option value="Cock">Cock</Option>
               </Select>
             </div>
-          </Col>
+          </Col> */}
 
-          <Col xs={24} sm={12} md={6} lg={4}>
+          {/* <Col xs={24} sm={12} md={6} lg={4}>
             <div className="flex flex-col">
               <label className="mb-1 text-gray-300">Experience Level</label>
               <Select
@@ -326,7 +330,7 @@ const VerifyBreeder = () => {
                 <Option value="Expert">Expert</Option>
               </Select>
             </div>
-          </Col>
+          </Col> */}
 
           <Col xs={24} sm={12} md={6} lg={4}>
             <div className="flex flex-col">

@@ -12,6 +12,7 @@ export const packageSlice = api.injectEndpoints({
           title: pkg.title,
           description: pkg.description,
           price: pkg.price,
+          paymentType: pkg.paymentType,
           duration: pkg.duration,
           features: pkg.features,
           active: pkg.status === "Active",

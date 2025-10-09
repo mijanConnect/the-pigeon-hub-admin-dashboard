@@ -237,7 +237,7 @@ const PackagesPlans = () => {
                   <div className="mb-2">
                     <span className={getPriceStyle(pkg)}>
                       ${pkg.price}
-                      <span className={getDurationStyle(pkg)}>/year</span>
+                      <span className={getDurationStyle(pkg)}>/{pkg.paymentType}</span>
                     </span>
                   </div>
                   <p className={getDescriptionStyle(pkg)}>{pkg.description}</p>
@@ -406,7 +406,6 @@ const PackagesPlans = () => {
 };
 
 export default PackagesPlans;
-
 
 // import React, { useState, useEffect } from "react";
 // import {
