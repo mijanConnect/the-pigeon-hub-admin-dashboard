@@ -27,6 +27,7 @@ import AwardIcon from "../../../src/assets/win.png";
 import SubscriptionIcon from "../../../src/assets/subscription.png";
 import { Select } from "antd";
 import { useGetOverviewStatsQuery } from "../../redux/apiSlices/dashboardSlice";
+import Spinner from "../../components/common/Spinner";
 const { Option } = Select;
 
 ChartJS.register(
@@ -99,7 +100,12 @@ const Home = () => {
 
   const { data: stats, isLoading } = useGetOverviewStatsQuery();
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner />
+      </div>
+    );
 
   return (
     <div className="p-2 md:p-4 space-y-4 md:space-y-6">

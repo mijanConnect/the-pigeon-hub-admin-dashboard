@@ -5,6 +5,7 @@ import { getImageUrl } from "../common/imageUrl";
 import PigeonImage from "../../../src/assets/pigeon-image.png";
 import { useGetRecentPigeonsQuery } from "../../redux/apiSlices/dashboardSlice";
 import { getCode } from "country-list";
+import Spinner from "../common/Spinner";
 
 // const getImageUrlTable = (path) =>
 //   path ? `${getImageUrl}${path}` : PigeonImage;
@@ -125,7 +126,7 @@ const PigeonTable = () => {
     },
   };
 
-  if (isLoading) return <p>Loading pigeons...</p>;
+  if (isLoading) return <Spinner />;
   if (isError) return <p>Failed to load pigeons.</p>;
 
   return (

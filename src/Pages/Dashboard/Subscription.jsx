@@ -19,6 +19,7 @@ import {
 import Swal from "sweetalert2";
 import FeaturedInput from "../../components/common/PackageFeatureInput";
 import { CloseCircleFilled } from "@ant-design/icons";
+import Spinner from "../../components/common/Spinner";
 import {
   useGetPackagesQuery,
   useAddPackageMutation,
@@ -178,7 +179,11 @@ const PackagesPlans = () => {
       : "text-white text-[16px] font-thin";
 
   if (isLoading)
-    return <p className="text-center py-12">Loading packages...</p>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner />
+      </div>
+    );
   if (isError)
     return (
       <p className="text-center py-12 text-red-500">Failed to load packages</p>
@@ -237,7 +242,9 @@ const PackagesPlans = () => {
                   <div className="mb-2">
                     <span className={getPriceStyle(pkg)}>
                       ${pkg.price}
-                      <span className={getDurationStyle(pkg)}>/{pkg.paymentType}</span>
+                      <span className={getDurationStyle(pkg)}>
+                        /{pkg.paymentType}
+                      </span>
                     </span>
                   </div>
                   <p className={getDescriptionStyle(pkg)}>{pkg.description}</p>

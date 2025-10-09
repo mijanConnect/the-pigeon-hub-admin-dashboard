@@ -19,6 +19,7 @@ import "antd/dist/reset.css";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useGetAnalyticsQuery } from "../../redux/apiSlices/analysisSlice";
+import Spinner from "../../components/common/Spinner";
 
 // hook from RTK Query slice
 
@@ -96,7 +97,12 @@ export default function MonthlyStatsChart() {
     },
   ];
 
-  if (isLoading) return <p>Loading analytics…</p>;
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner />
+      </div>
+    );
   if (error)
     return (
       <p className="text-red-500">Failed: {error?.data || error?.error}</p>
