@@ -14,22 +14,36 @@
 //   },
 // });
 
-import react from "@vitejs/plugin-react";
+// import react from "@vitejs/plugin-react";
+// import { defineConfig } from "vite";
+
+// export default defineConfig({
+//   plugins: [react()],
+//   server: {
+//     // host: "50.6.200.33",
+//     // host: "ftp.thepigeonhub.com",
+//     host: "admin.thepigeonhub.com",
+//     // host: "admin.thepigeonhub.com",
+//     // host: "206.162.244.155",
+//     port: 4173,
+//     allowedHosts: [
+//       'admin.thepigeonhub.com'
+//     ],
+//   },
+// });
+
 import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    // host: "50.6.200.33",
-    // host: "ftp.thepigeonhub.com",
-    host: "admin.thepigeonhub.com",
-    // host: "admin.thepigeonhub.com",
-    // host: "206.162.244.155",
+  preview: {
+    host: "0.0.0.0", // সব interface থেকে access
     port: 4173,
-    allowedHosts: [
-      'admin.thepigeonhub.com'
-    ],
+    strictPort: true,
+  },
+  server: {
+    host: true, // dev server
+    allowedHosts: ["admin.thepigeonhub.com", "localhost", "127.0.0.1"],
   },
 });
-
-
