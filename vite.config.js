@@ -1,18 +1,18 @@
-// import react from "@vitejs/plugin-react";
-// import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
-// export default defineConfig({
-//   plugins: [react()],
-//   server: {
-//     // Local run
-//     host: "10.10.7.21",
-//     port: 3001,
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    // Local run
+    host: "10.10.7.21",
+    port: 3001,
 
-//     // Host run
-//     // host: "50.6.200.33",
-//     // port: 3001,
-//   },
-// });
+    // Host run
+    // host: "50.6.200.33",
+    // port: 3001,
+  },
+});
 
 // import react from "@vitejs/plugin-react";
 // import { defineConfig } from "vite";
@@ -32,18 +32,18 @@
 //   },
 // });
 
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+// import { defineConfig } from "vite";
+// import react from "@vitejs/plugin-react";
 
-export default defineConfig({
-  plugins: [react()],
-  preview: {
-    host: "0.0.0.0", // সব interface থেকে access
-    port: 4173,
-    strictPort: true,
-  },
-  server: {
-    host: true, // dev server
-    allowedHosts: ["admin.thepigeonhub.com", "localhost", "127.0.0.1"],
-  },
-});
+// export default defineConfig({
+//   plugins: [react()],
+//   preview: {
+//     host: "0.0.0.0", // সব interface থেকে access
+//     port: 4173,
+//     strictPort: true,
+//   },
+//   server: {
+//     host: true, // dev server
+//     allowedHosts: ["admin.thepigeonhub.com", "localhost", "127.0.0.1"],
+//   },
+// });

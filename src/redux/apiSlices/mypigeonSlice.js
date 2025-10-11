@@ -153,7 +153,7 @@ const mypigeonSlice = api.injectEndpoints({
 
     getPigeonSearch: builder.query({
       query: (searchTerm) => ({
-        url: `/pigeon`,
+        url: `/pigeon/getAllPigeonsAdmin`,
         method: "GET",
         params: { searchTerm },
       }),
