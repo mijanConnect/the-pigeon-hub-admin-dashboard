@@ -733,3 +733,10 @@ select {
 .ant-form-item-label > label {
   white-space: nowrap !important;
 }
+
+.ant-descriptions.ant-descriptions-bordered
+  > .ant-descriptions-view
+  .ant-descriptions-row
+  > .ant-descriptions-item-label {
+  white-space: nowrap !important;
+}
