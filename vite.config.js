@@ -24,7 +24,7 @@ export default defineConfig({
     host: "ftp.thepigeonhub.com",
     // host: "admin.thepigeonhub.com",
     // host: "206.162.244.155",
-    // port: 3035,
+    port: 4173,
     allowedHosts: [
       'admin.thepigeonhub.com'
     ],
