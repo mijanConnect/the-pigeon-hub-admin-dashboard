@@ -22,7 +22,13 @@ export default defineConfig({
   server: {
     // host: "50.6.200.33",
     host: "ftp.thepigeonhub.com",
+    // host: "admin.thepigeonhub.com",
     // host: "206.162.244.155",
     // port: 3035,
+    allowedHosts: [
+      'admin.thepigeonhub.com'
+    ],
   },
 });
+
+
