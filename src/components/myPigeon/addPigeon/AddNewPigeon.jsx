@@ -49,10 +49,10 @@ const AddNewPigeon = ({ onSave }) => {
   const navigate = useNavigate();
   const [viewPigeonId, setViewPigeonId] = useState(null);
   const { id } = useParams();
-  const [showAddButton, setShowAddButton] = useState(true); // initial state: visible
-  const [showRaceResults, setShowRaceResults] = useState(false); // Switch state
-  const [isIconicEnabled, setIsIconicEnabled] = useState(false); // Track iconic status for enabling/disabling iconic score
-  const currentYear = new Date().getFullYear(); // Get the current year
+  const [showAddButton, setShowAddButton] = useState(true);
+  const [showRaceResults, setShowRaceResults] = useState(false);
+  const [isIconicEnabled, setIsIconicEnabled] = useState(false);
+  const currentYear = new Date().getFullYear();
 
   console.log("id", id);
 
@@ -150,7 +150,6 @@ const AddNewPigeon = ({ onSave }) => {
         DNAPhoto: toUploadItem(pigeonData.DNAPhotoUrl || pigeonData.DNAPhoto),
       });
     } else if (id === undefined) {
-      // Only reset when we're in add mode (no ID in URL)
       form.resetFields();
       setSelected({ color: null, pattern: null });
       setShowResults(false);

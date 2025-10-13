@@ -67,7 +67,6 @@ const router = createBrowserRouter([
     ),
     // element: <Main />,
     children: [
-      // Pigeon start
       {
         path: "/",
         element: <Home />,
@@ -112,7 +111,6 @@ const router = createBrowserRouter([
         path: "/settings",
         element: <AdminProfile />,
       },
-      // Pigeon End
       {
         path: "/terms-and-conditions",
         element: <TermsAndConditions />,
