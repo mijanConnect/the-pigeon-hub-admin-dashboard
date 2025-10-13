@@ -88,7 +88,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     {
       key: "/my-pigeon",
       icon: renderIcon(MyPigeon, "/my-pigeon"),
-      label: <Link to="/my-pigeon">{collapsed ? "" : "My Pigeon"}</Link>,
+      label: <Link to="/my-pigeon">{collapsed ? "" : "My Pigeons"}</Link>,
     },
     {
       key: "/pigeon-management",

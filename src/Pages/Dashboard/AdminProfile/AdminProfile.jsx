@@ -1,7 +1,7 @@
 import { Tabs } from "antd";
-import React from "react";
-import UserProfile from "./UserProfile";
+import "./AdminProfile.css";
 import ChangePassword from "./ChangePassword";
+import UserProfile from "./UserProfile";
 
 const AdminProfile = () => {
   const items = [
@@ -12,14 +12,17 @@ const AdminProfile = () => {
     },
     {
       key: "2",
-      label: "Change Password ",
+      label: "Change Password",
       children: <ChangePassword />,
     },
   ];
 
   return (
-    <div>
-      <div className=" bg-white p-5 px-10 rounded-xl  w-[1000px] mx-auto">
+    <div className="px-4 sm:px-6 lg:px-8 admin-profile">
+      <div
+        className="bg-white p-4 sm:p-6 md:p-8 rounded-xl mx-auto w-full"
+        style={{ maxWidth: 1000 }}
+      >
         <Tabs defaultActiveKey="1" items={items} />
       </div>
     </div>

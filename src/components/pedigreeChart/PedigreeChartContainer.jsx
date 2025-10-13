@@ -511,12 +511,12 @@ export default function PigeonPedigreeChart() {
           <h2 className="text-black font-bold text-2xl">
             Pigeon pedigree chart
           </h2>
-          <p className="text-black">
+          {/* <p className="text-black">
             The Pedigree Chart displays your pigeon's lineage across multiple
             generations, showing key details like name, ring number, and
             birthdate. It helps you track breeding relationships and plan future
             pairings.
-          </p>
+          </p> */}
         </div>
         <div className="flex gap-5">
           <Button

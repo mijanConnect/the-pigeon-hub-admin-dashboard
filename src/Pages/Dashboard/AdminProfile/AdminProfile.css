@@ -1,0 +1,22 @@
+.admin-profile .ant-tabs-tab {
+  font-weight: 600;
+}
+
+.admin-profile label,
+.admin-profile .ant-form-item-label > label {
+  color: #494c52; /* slate-700 */
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.admin-profile .ant-form-item {
+  margin-bottom: 12px;
+}
+
+/* smaller screens: slightly smaller labels */
+@media (max-width: 640px) {
+  .admin-profile label,
+  .admin-profile .ant-form-item-label > label {
+    font-size: 13px;
+  }
+}

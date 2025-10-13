@@ -1,4 +1,4 @@
-import { PlusOutlined } from "@ant-design/icons";
+import { DownOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
   Col,
@@ -35,6 +35,9 @@ const colorPatternMap = {
   Grizzle: ["Barless", "Bar", "Check", "T-Check", "White Flight"],
   Mealy: ["Barless", "Bar", "Check", "T-Check", "White Flight"],
 };
+
+// Format color keys for display (replace underscores with spaces)
+const formatColor = (c) => (typeof c === "string" ? c.replace(/_/g, " ") : c);
 
 const AddNewPigeon = ({ onSave }) => {
   const [form] = Form.useForm();
@@ -178,7 +181,7 @@ const AddNewPigeon = ({ onSave }) => {
   const menu = (
     <Menu>
       {Object.entries(colorPatternMap).map(([color, patterns]) => (
-        <Menu.SubMenu key={color} title={color}>
+        <Menu.SubMenu key={color} title={formatColor(color)}>
           {patterns.map((pattern) => (
             <Menu.Item
               key={`${color}-${pattern}`}
@@ -214,7 +217,7 @@ const AddNewPigeon = ({ onSave }) => {
 
       const combinedColor =
         values.colorPattern?.color && values.colorPattern?.pattern
-          ? `${values.colorPattern.color} & ${values.colorPattern.pattern}`
+          ? `${values.colorPattern.color} ${values.colorPattern.pattern}`
           : values.colorPattern?.color || values.colorPattern?.pattern || "-";
 
       const filteredRaceResults = raceResults
@@ -365,8 +368,11 @@ const AddNewPigeon = ({ onSave }) => {
         layout="vertical"
         className="mb-6 border rounded-lg border-primary px-[30px] py-[25px] mt-4"
       >
-        <div className="flex justify-between mb-6">
-          <div className="w-[60%] flex flex-col gap-4">
+        <div className="add-pigeon-row flex justify-between mb-6">
+          <style>{`@media (max-width: 1179px) { .add-pigeon-row{flex-direction:column !important;} .add-pigeon-row .left-column, .add-pigeon-row .right-column{width:100% !important;}
+            .add-pigeon-row .right-column{margin-top:16px;}
+          }`}</style>
+          <div className="left-column w-[60%] flex flex-col gap-4">
             <div className="flex justify-between gap-10 border p-6 rounded-lg">
               <div className="left flex w-full justify-start flex-col gap-4">
                 <Form.Item
@@ -427,7 +433,7 @@ const AddNewPigeon = ({ onSave }) => {
                 >
                   <Dropdown overlay={menu} trigger={["click"]}>
                     <Button
-                      className="custom-select-ant-modal !h-[40px] flex items-center justify-start"
+                      className="custom-select-ant-modal !h-[40px] flex items-center justify-between"
                       style={{
                         width: "100%",
                         textAlign: "left",
@@ -435,9 +441,12 @@ const AddNewPigeon = ({ onSave }) => {
                           selected.color && selected.pattern ? "#000" : "#999",
                       }}
                     >
-                      {selected.color && selected.pattern
-                        ? `${selected.color} & ${selected.pattern}`
-                        : "Select Color & Pattern"}
+                      <span>
+                        {selected.color && selected.pattern
+                          ? `${formatColor(selected.color)} ${selected.pattern}`
+                          : "Select Color & Pattern"}
+                      </span>
+                      <DownOutlined />
                     </Button>
                   </Dropdown>
                 </Form.Item>
@@ -452,16 +461,16 @@ const AddNewPigeon = ({ onSave }) => {
                     placeholder="Select Status"
                     className="custom-select-ant-modal"
                   >
-                    <Option value="racing">Racing</Option>
-                    <Option value="breeding">Breeding</Option>
-                    <Option value="lost">Lost</Option>
-                    <Option value="sold">Sold</Option>
-                    <Option value="retired">Retired</Option>
-                    <Option value="deceased">Deceased</Option>
+                    <Option value="Racing">Racing</Option>
+                    <Option value="Breeding">Breeding</Option>
+                    <Option value="Lost">Lost</Option>
+                    <Option value="Sold">Sold</Option>
+                    <Option value="Retired">Retired</Option>
+                    <Option value="Deceased">Deceased</Option>
                   </Select>
                 </Form.Item>
 
-                <Form.Item
+                {/* <Form.Item
                   label="Racer Rating"
                   name="racerRating"
                   // rules={[{ required: true }]}
@@ -477,7 +486,7 @@ const AddNewPigeon = ({ onSave }) => {
                     <Option value="Good">Good</Option>
                     <Option value="Aboveaverage">Above Average</Option>
                   </Select>
-                </Form.Item>
+                </Form.Item> */}
 
                 <Form.Item
                   label="Iconic"
@@ -589,9 +598,9 @@ const AddNewPigeon = ({ onSave }) => {
                   <Select
                     placeholder="Select Rating"
                     className="custom-select-ant-modal"
-                    showSearch // Enable search functionality
-                    allowClear // Enable the clear button (cross icon)
-                    optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)
+                    showSearch
+                    allowClear
+                    optionFilterProp="children"
                     filterOption={(input, option) =>
                       option?.children
                         ?.toString()
@@ -599,7 +608,7 @@ const AddNewPigeon = ({ onSave }) => {
                         .includes(input.toLowerCase())
                     }
                   >
-                    {Array.from({ length: 101 }, (_, i) => i).map((v) => (
+                    {Array.from({ length: 99 }, (_, i) => 99 - i).map((v) => (
                       <Option key={v} value={v}>
                         {v}
                       </Option>
@@ -619,6 +628,7 @@ const AddNewPigeon = ({ onSave }) => {
                   >
                     <Option value="Cock">Cock</Option>
                     <Option value="Hen">Hen</Option>
+                    <Option value="Unspecified">Unspecified</Option>
                   </Select>
                 </Form.Item>
 
@@ -653,7 +663,7 @@ const AddNewPigeon = ({ onSave }) => {
                         .includes(input.toLowerCase())
                     }
                   >
-                    {Array.from({ length: 101 }, (_, i) => i).map((v) => (
+                    {Array.from({ length: 99 }, (_, i) => 99 - i).map((v) => (
                       <Option key={v} value={v}>
                         {v}
                       </Option>
@@ -677,7 +687,7 @@ const AddNewPigeon = ({ onSave }) => {
                     placeholder={
                       isIconicEnabled
                         ? "Select Iconic Score (0-100)"
-                        : "Score disabled (Please do Iconinc: Yes)"
+                        : "Select Iconic Score"
                     }
                     className="custom-select-ant-modal"
                     disabled={!isIconicEnabled}
@@ -691,7 +701,7 @@ const AddNewPigeon = ({ onSave }) => {
                         .includes(input.toLowerCase())
                     }
                   >
-                    {Array.from({ length: 101 }, (_, i) => i).map((v) => (
+                    {Array.from({ length: 99 }, (_, i) => 99 - i).map((v) => (
                       <Option key={v} value={v}>
                         {v}
                       </Option>
@@ -726,7 +736,7 @@ const AddNewPigeon = ({ onSave }) => {
                   <Select
                     showSearch
                     allowClear
-                    placeholder="Search by Father Ring Number"
+                    placeholder="Search by Father Ring No."
                     className="custom-select-ant-modal"
                     filterOption={false}
                     onSearch={setFatherSearch}
@@ -753,7 +763,7 @@ const AddNewPigeon = ({ onSave }) => {
                   <Select
                     showSearch
                     allowClear
-                    placeholder="Search by Mother Ring Number"
+                    placeholder="Search by Mother Ring No."
                     className="custom-select-ant-modal"
                     filterOption={false}
                     onSearch={setMotherSearch}
@@ -772,7 +782,7 @@ const AddNewPigeon = ({ onSave }) => {
             </div>
           </div>
 
-          <div className="w-[38%] flex flex-col gap-6 border p-4 rounded-lg">
+          <div className="right-column w-[38%] flex flex-col gap-6 border p-4 rounded-lg">
             {/* ===== PIGEON PHOTOS ===== */}
             <div className="p-4 border rounded-lg flex flex-col">
               <p className="text-[16px] font-semibold mb-2">Pigeon Photos:</p>

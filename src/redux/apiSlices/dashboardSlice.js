@@ -10,6 +10,8 @@ const dashboardSlice = api.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (response) => response.data,
+      // provide a simple tag so mutations can invalidate overview data
+      providesTags: (result) => [{ type: "OverviewStats", id: "LIST" }],
     }),
 
     // Get recent pigeons from dashboard stats
@@ -48,6 +50,18 @@ const dashboardSlice = api.injectEndpoints({
           pagination: {}, // No pagination info from /overview/stats
         };
       },
+      // Provide tags for the recent pigeons list and each item so callers can
+      // invalidate either the whole list or specific pigeon entries.
+      providesTags: (result) =>
+        result && result.pigeons
+          ? [
+              { type: "RecentPigeons", id: "LIST" },
+              ...result.pigeons.map((p) => ({
+                type: "RecentPigeons",
+                id: p.key,
+              })),
+            ]
+          : [{ type: "RecentPigeons", id: "LIST" }],
     }),
 
     // Monthly revenue endpoint
@@ -57,6 +71,10 @@ const dashboardSlice = api.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (response) => response.data || [],
+      // Tag monthly revenue by year so updates for a given year can invalidate it
+      providesTags: (result, error, year) => [
+        { type: "MonthlyRevenue", id: year ?? "ALL" },
+      ],
     }),
   }),
 });

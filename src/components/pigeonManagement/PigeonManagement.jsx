@@ -81,6 +81,15 @@ const PigeonManagement = () => {
   const [deletePigeon] = useDeletePigeonMutation();
   const [togglePigeonStatus] = useTogglePigeonStatusMutation();
 
+  // Track per-row updating state for inline edits
+  const [updatingVerifications, setUpdatingVerifications] = useState({});
+  // Optimistic values for inline verification so UI updates immediately
+  const [verifyingValues, setVerifyingValues] = useState({});
+  // Track per-row updating state for iconic score
+  const [updatingIconicScores, setUpdatingIconicScores] = useState({});
+  // Optimistic values for iconic score inline edits
+  const [iconicScoreValues, setIconicScoreValues] = useState({});
+
   const pigeons = data?.pigeons || [];
   const total = data?.pagination?.total || 0;
 
@@ -262,6 +271,84 @@ const PigeonManagement = () => {
     });
   };
 
+  // Inline Verified change from table
+  const handleInlineVerifiedChange = async (record, value) => {
+    const id = record._id;
+    try {
+      // optimistic update so select shows new value immediately
+      setVerifyingValues((prev) => ({ ...prev, [id]: value }));
+      // mark this row as updating
+      setUpdatingVerifications((prev) => ({ ...prev, [id]: true }));
+
+      const dataToSend = {
+        verified: value === "Yes",
+      };
+
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("data", JSON.stringify(dataToSend));
+
+      await updatePigeon({ id, formData, token }).unwrap();
+
+      message.success("Verification updated successfully");
+    } catch (err) {
+      console.error(err);
+      message.error(err?.data?.message || "Failed to update verification");
+    } finally {
+      setUpdatingVerifications((prev) => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+      // remove optimistic value once update completes; fresh data will come from refetch
+      setTimeout(() => {
+        setVerifyingValues((prev) => {
+          const copy = { ...prev };
+          delete copy[id];
+          return copy;
+        });
+      }, 300);
+    }
+  };
+
+  // Inline Iconic Score change from table
+  const handleInlineIconicScoreChange = async (record, value) => {
+    const id = record._id;
+    try {
+      // optimistic update
+      setIconicScoreValues((prev) => ({ ...prev, [id]: value }));
+      setUpdatingIconicScores((prev) => ({ ...prev, [id]: true }));
+
+      const numeric = parseInt(value, 10) || 0;
+      // If score is 0 => not iconic, otherwise iconic
+      const dataToSend = { iconicScore: numeric, iconic: numeric > 0 };
+
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("data", JSON.stringify(dataToSend));
+
+      await updatePigeon({ id, formData, token }).unwrap();
+
+      message.success("Iconic score updated");
+    } catch (err) {
+      console.error(err);
+      message.error(err?.data?.message || "Failed to update iconic score");
+    } finally {
+      setUpdatingIconicScores((prev) => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+      setTimeout(() => {
+        setIconicScoreValues((prev) => {
+          const copy = { ...prev };
+          delete copy[id];
+          return copy;
+        });
+      }, 300);
+    }
+  };
+
   const columns = [
     {
       title: "Image",
@@ -303,9 +390,62 @@ const PigeonManagement = () => {
       },
     },
     { title: "Name", dataIndex: "name", key: "name" },
-    { title: "Verified", dataIndex: "verified", key: "verified" },
+    {
+      title: "Verified",
+      dataIndex: "verified",
+      key: "verified",
+      width: 50,
+      render: (verified, record) => {
+        const optimistic = verifyingValues[record._id];
+        return (
+          <Select
+            value={optimistic ?? verified}
+            onChange={(val) => handleInlineVerifiedChange(record, val)}
+            disabled={!!updatingVerifications[record._id]}
+            style={{ width: 70 }}
+            options={[
+              {
+                label: <span style={{ color: "green" }}>Yes</span>,
+                value: "Yes",
+              },
+              { label: <span style={{ color: "red" }}>No</span>, value: "No" },
+            ]}
+          />
+        );
+      },
+    },
     // { title: "Iconic", dataIndex: "iconic", key: "iconic" },
-    { title: "Iconic Score", dataIndex: "iconicScore", key: "iconicScore" },
+    {
+      title: "Iconic Score",
+      dataIndex: "iconicScore",
+      key: "iconicScore",
+      width: 140,
+      render: (iconicScore, record) => {
+        const optimistic = iconicScoreValues[record._id];
+        const value = optimistic ?? iconicScore ?? 0;
+
+        return (
+          <Select
+            showSearch
+            allowClear
+            value={value}
+            onChange={(val) => handleInlineIconicScoreChange(record, val)}
+            disabled={!!updatingIconicScores[record._id]}
+            filterOption={(input, option) =>
+              option?.label
+                ?.toString()
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+            style={{ width: 60 }}
+            options={Array.from({ length: 99 }, (_, i) => ({
+              label: `${99 - i}`,
+              value: 99 - i,
+            }))}
+          />
+        );
+      },
+    },
     {
       title: "Country",
       dataIndex: "country",
@@ -365,7 +505,7 @@ const PigeonManagement = () => {
                 onClick={() => handleView(record)}
               />
             </Tooltip>
-            <Tooltip title="View & Update Details">
+            <Tooltip title="View Pedigree​">
               <PiDnaBold
                 style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
                 onClick={() => showPedigreeChart(record)}

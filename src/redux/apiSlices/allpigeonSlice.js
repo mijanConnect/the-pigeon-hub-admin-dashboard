@@ -100,6 +100,8 @@ const allpigeonSlice = api.injectEndpoints({
       invalidatesTags: (result, error, { id }) => [
         { type: "Pigeon", id },
         { type: "Pigeon", id: "LIST" },
+        { type: "RecentPigeons", id: "LIST" },
+        { type: "OverviewStats", id: "LIST" },
       ],
     }),
 
@@ -112,6 +114,8 @@ const allpigeonSlice = api.injectEndpoints({
       invalidatesTags: (result, error, id) => [
         { type: "Pigeon", id },
         { type: "Pigeon", id: "LIST" },
+        { type: "RecentPigeons", id: "LIST" },
+        { type: "OverviewStats", id: "LIST" },
       ],
     }),
 
@@ -125,6 +129,8 @@ const allpigeonSlice = api.injectEndpoints({
       invalidatesTags: (result, error, { _id }) => [
         { type: "Pigeon", id: _id },
         { type: "Pigeon", id: "LIST" },
+        { type: "RecentPigeons", id: "LIST" },
+        { type: "OverviewStats", id: "LIST" },
       ],
     }),
   }),

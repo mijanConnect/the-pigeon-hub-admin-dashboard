@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from "react";
+import { DownOutlined, PlusOutlined } from "@ant-design/icons";
 import {
-  Modal,
+  Button,
+  Col,
+  Dropdown,
   Form,
   Input,
-  Select,
+  Menu,
+  Modal,
   Row,
-  Col,
-  Button,
+  Select,
   Upload,
   message,
-  Menu,
-  Dropdown,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { getNames } from "country-list";
+import { useEffect, useState } from "react";
 import {
   useAddPigeonMutation,
   useGetBreederNamesQuery,
@@ -20,7 +21,6 @@ import {
   useUpdatePigeonMutation,
 } from "../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../common/imageUrl";
-import { getNames } from "country-list";
 
 const { Option } = Select;
 
@@ -33,6 +33,8 @@ const colorPatternMap = {
   Grizzle: ["Barless", "Bar", "Check", "T-Check", "White Flight"],
   Mealy: ["Barless", "Bar", "Check", "T-Check", "White Flight"],
 };
+
+const formatColor = (c) => (typeof c === "string" ? c.replace(/_/g, " ") : c);
 
 const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
   const [form] = Form.useForm();
@@ -450,16 +452,19 @@ const AddNewPigeon = ({ visible, onCancel, onSave, pigeonData }) => {
             >
               <Dropdown overlay={menu} trigger={["click"]}>
                 <Button
-                  className="custom-select-ant-modal !h-[40px] flex items-center justify-start"
+                  className="custom-select-ant-modal !h-[40px] flex items-center justify-between"
                   style={{
                     width: "100%",
                     textAlign: "left",
                     color: selected.color && selected.pattern ? "#000" : "#999",
                   }}
                 >
-                  {selected.color && selected.pattern
-                    ? `${selected.color} & ${selected.pattern}`
-                    : "Select Color & Pattern"}
+                  <span>
+                    {selected.color && selected.pattern
+                      ? `${formatColor(selected.color)} & ${selected.pattern}`
+                      : "Select Color & Pattern"}
+                  </span>
+                  <DownOutlined />
                 </Button>
               </Dropdown>
             </Form.Item>
