@@ -32,15 +32,19 @@ const dashboardSlice = api.injectEndpoints({
             pigeon?.DNAPhoto ||
             pigeon?.ownershipPhoto ||
             "",
-          name: pigeon?.name,
-          country: { name: pigeon?.country, icon: "" },
-          breeder: pigeon?.breeder?.breederName,
-          ringNumber: pigeon?.ringNumber,
-          birthYear: pigeon?.birthYear,
-          father: pigeon?.fatherRingId ? `${pigeon?.fatherRingId?.name}` : "-",
-          mother: pigeon?.motherRingId ? `${pigeon?.motherRingId?.name}` : "-",
-          gender: pigeon?.gender,
-          status: pigeon?.status,
+          name: pigeon?.name || "N/A",
+          country: { name: pigeon?.country, icon: "" } || { name: "N/A", icon: "" },
+          breeder: pigeon?.breeder?.breederName || "N/A",
+          ringNumber: pigeon?.ringNumber || "N/A",
+          birthYear: pigeon?.birthYear || "N/A",
+          father: pigeon?.fatherRingId
+            ? `${pigeon?.fatherRingId?.name}`
+            : "N/A",
+          mother: pigeon?.motherRingId
+            ? `${pigeon?.motherRingId?.name}`
+            : "N/A",
+          gender: pigeon?.gender || "N/A",
+          status: pigeon?.status || "N/A",
           verified: pigeon?.verified ? "Yes" : "No",
           icon: pigeon?.verified ? "/assets/verify.png" : "",
           iconic: pigeon?.iconic ? "Yes" : "No",

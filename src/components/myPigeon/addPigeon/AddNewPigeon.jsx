@@ -554,15 +554,15 @@ const AddNewPigeon = ({ onSave }) => {
                       // You can handle clearing value here if necessary
                     }}
                   >
-                    {/* Creating options from 1980 to the current year */}
+                    {/* Creating options from 1927 to the current year */}
                     {Array.from(
-                      { length: currentYear - 1980 + 1 },
-                      (_, index) => (
-                        <Option key={1980 + index} value={1980 + index}>
-                          {1980 + index}
-                        </Option>
-                      )
-                    )}
+                      { length: currentYear + 2 - 1927 + 1 }, // Same logic for generating the range
+                      (_, index) => currentYear + 2 - index // Reverse the order by subtracting index
+                    ).map((v) => (
+                      <Option key={v} value={v}>
+                        {v}
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
                 <Form.Item
@@ -741,7 +741,7 @@ const AddNewPigeon = ({ onSave }) => {
                     onSearch={setFatherSearch}
                     loading={fatherLoading}
                     options={fatherOptions.map((p) => ({
-                      label: p.ringNumber,
+                      label: `${p.ringNumber}(${p.name})`,
                       value: p.ringNumber,
                     }))}
                   />

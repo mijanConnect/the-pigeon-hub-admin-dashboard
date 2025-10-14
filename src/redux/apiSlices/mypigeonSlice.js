@@ -43,20 +43,20 @@ const mypigeonSlice = api.injectEndpoints({
             pigeon?.DNAPhoto ||
             pigeon?.ownershipPhoto ||
             "",
-          name: pigeon.name,
+          name: pigeon.name || "N/A",
           country: { name: pigeon.country, icon: "" },
-          breeder: pigeon.breeder?.breederName || "-",
-          ringNumber: pigeon.ringNumber,
-          birthYear: pigeon.birthYear,
+          breeder: pigeon.breeder?.breederName || "N/A",
+          ringNumber: pigeon.ringNumber || "N/A",
+          birthYear: pigeon.birthYear || "N/A",
           father: pigeon.fatherRingId
             ? `${pigeon.fatherRingId.ringNumber} (${pigeon.fatherRingId.name})`
-            : "-",
+            : "N/A",
           mother: pigeon.motherRingId
             ? `${pigeon.motherRingId.ringNumber} (${pigeon.motherRingId.name})`
-            : "-",
-          gender: pigeon.gender,
-          color: pigeon.color,
-          status: pigeon.status,
+            : "N/A",
+          gender: pigeon.gender || "N/A",
+          color: pigeon.color || "N/A",
+          status: pigeon.status || "N/A",
           verified: pigeon.verified ? "Yes" : "No",
           icon: pigeon.verified ? "/assets/verify.png" : "",
         }));
@@ -80,6 +80,15 @@ const mypigeonSlice = api.injectEndpoints({
     getSinglePigeon: builder.query({
       query: (id) => ({
         url: `/pigeon/${id}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, id) => [{ type: "Pigeon", id }],
+    }),
+
+    // ---------- GET SIBLINGS ----------
+    getSiblings: builder.query({
+      query: (id) => ({
+        url: `/pigeon/siblings/${id}`,
         method: "GET",
       }),
       providesTags: (result, error, id) => [{ type: "Pigeon", id }],
@@ -176,6 +185,7 @@ export const {
   useGetMyPigeonsQuery,
   useGetPigeonSearchQuery,
   useGetSinglePigeonQuery, // ✅ New hook
+  useGetSiblingsQuery, // ✅ New hook
   useAddPigeonMutation,
   useUpdatePigeonMutation, // ✅
   useDeletePigeonMutation,

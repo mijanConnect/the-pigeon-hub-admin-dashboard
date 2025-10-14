@@ -74,7 +74,7 @@ const getColumns = () => [
           <p className="text-white">{countryCode}</p>
         </div>
       ) : (
-        <span>-</span>
+        <span>N/A</span>
       );
     },
   },
@@ -100,7 +100,7 @@ const getColumns = () => [
           style={{ width: 24, height: 24, objectFit: "cover" }}
         />
       ) : (
-        "-"
+        "N/A"
       ),
   },
 ];

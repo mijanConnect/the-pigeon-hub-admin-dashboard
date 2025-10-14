@@ -43,24 +43,24 @@ const allpigeonSlice = api.injectEndpoints({
             pigeon?.DNAPhoto ||
             pigeon?.ownershipPhoto ||
             "",
-          name: pigeon.name,
-          country: pigeon.country || "-",
-          breeder: pigeon.breeder?.breederName || "-",
-          ringNumber: pigeon.ringNumber,
-          birthYear: pigeon.birthYear,
+          name: pigeon.name || "N/A",
+          country: pigeon.country || "N/A",
+          breeder: pigeon.breeder?.breederName || "N/A",
+          ringNumber: pigeon.ringNumber || "N/A",
+          birthYear: pigeon.birthYear || "N/A",
           father: pigeon.fatherRingId
             ? `${pigeon.fatherRingId.ringNumber} (${pigeon.fatherRingId.name})`
-            : "-",
+            : "N/A",
           mother: pigeon.motherRingId
             ? `${pigeon.motherRingId.ringNumber} (${pigeon.motherRingId.name})`
-            : "-",
-          gender: pigeon.gender,
-          color: pigeon.color,
-          status: pigeon.status,
+            : "N/A",
+          gender: pigeon.gender || "N/A",
+          color: pigeon.color || "N/A",
+          status: pigeon.status || "N/A",
           verified: pigeon.verified ? "Yes" : "No",
-          iconic: pigeon.iconic || "-",
+          iconic: pigeon.iconic || "N/A",
           iconicScore: pigeon.iconicScore || 0,
-          pigeonId: pigeon.pigeonId || "-",
+          pigeonId: pigeon.pigeonId || "N/A",
           icon: pigeon.verified ? "/assets/verify.png" : "",
         }));
 

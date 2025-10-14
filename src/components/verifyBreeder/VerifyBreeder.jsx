@@ -160,7 +160,7 @@ const VerifyBreeder = () => {
             <p className="text-white">{countryCode}</p>
           </div>
         ) : (
-          <span>-</span>
+          <span>N/A</span>
         );
       },
     },

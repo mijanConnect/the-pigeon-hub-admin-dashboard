@@ -19,6 +19,7 @@ import AllIcon from "../../assets/all.png";
 import {
   useDeletePigeonMutation,
   useGetMyPigeonsQuery,
+  useGetSiblingsQuery,
   useGetSinglePigeonQuery,
 } from "../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../common/imageUrl";
@@ -51,7 +52,12 @@ const MyPigeon = () => {
 
   const { data: viewPigeonData, isLoading: viewLoading } =
     useGetSinglePigeonQuery(viewPigeonId, {
-      skip: !viewPigeonId, // only fetch when ID exists
+      skip: !viewPigeonId,
+    });
+
+  const { data: viewSiblingsData, isLoading: siblingsLoading } =
+    useGetSiblingsQuery(viewPigeonId, {
+      skip: !viewPigeonId,
     });
 
   const handleView = (record) => {
@@ -184,7 +190,7 @@ const MyPigeon = () => {
             <p className="text-white">{countryCode}</p>
           </div>
         ) : (
-          <span>-</span>
+          <span>N/A</span>
         );
       },
     },
@@ -195,7 +201,12 @@ const MyPigeon = () => {
     { title: "Father", dataIndex: "father", key: "father" },
     { title: "Mother", dataIndex: "mother", key: "mother" },
     { title: "Gender", dataIndex: "gender", key: "gender" },
-    { title: "Color & Pattern", dataIndex: "color", key: "color" },
+    {
+      title: "Color & Pattern",
+      dataIndex: "color",
+      key: "color",
+      render: (color) => (color && color !== "-" ? color : "N/A"),
+    },
     // { title: "Status", dataIndex: "status", key: "status" },
     // { title: "Verified", dataIndex: "verified", key: "verified" },
     // {
@@ -554,6 +565,7 @@ const MyPigeon = () => {
           setViewPigeonId(null); // reset when closing
         }}
         pigeonData={viewPigeonData?.data || null}
+        siblingsData={viewSiblingsData?.data?.siblings || null}
         loading={viewLoading}
       />
     </div>

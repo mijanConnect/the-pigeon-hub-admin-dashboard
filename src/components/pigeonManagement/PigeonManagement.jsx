@@ -26,6 +26,7 @@ import {
 } from "../../redux/apiSlices/allpigeonSlice";
 import { getImageUrl } from "../common/imageUrl";
 import ViewPigeon from "../myPigeon/ViewPigeon";
+import { useGetSiblingsQuery } from "../../redux/apiSlices/mypigeonSlice";
 
 const { Option } = Select;
 
@@ -74,6 +75,11 @@ const PigeonManagement = () => {
 
   const { data: viewPigeonData, isLoading: viewLoading } =
     useGetSinglePigeonQuery(viewPigeonId, {
+      skip: !viewPigeonId,
+    });
+
+  const { data: viewSiblingsData, isLoading: siblingsLoading } =
+    useGetSiblingsQuery(viewPigeonId, {
       skip: !viewPigeonId,
     });
 
@@ -462,7 +468,7 @@ const PigeonManagement = () => {
             <p className="text-white">{countryCode}</p>
           </div>
         ) : (
-          <span>-</span>
+          <span>N/A</span>
         );
       },
     },
@@ -977,6 +983,7 @@ const PigeonManagement = () => {
         visible={viewModalVisible}
         onCancel={handleViewCancel}
         pigeonData={viewPigeonData?.data || null}
+        siblingsData={viewSiblingsData?.data?.siblings || null}
         loading={viewLoading}
       />
 

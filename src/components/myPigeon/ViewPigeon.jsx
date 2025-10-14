@@ -1,9 +1,11 @@
-import { Descriptions, Modal, Spin, Table } from "antd";
+import { Modal, Spin, Table } from "antd";
+import React, { useEffect, useState } from "react";
+import PlaceholderImg from "../../assets/placeholder.png";
 import VerifyIcon from "../../assets/verify.png";
 import { getImageUrl } from "../common/imageUrl";
 
 const safeValue = (value) => {
-  if (value === null || value === undefined) return "-";
+  if (value === null || value === undefined) return "N/A";
   if (typeof value === "object") {
     if (value?.name) return value.name;
     return JSON.stringify(value);
@@ -11,7 +13,229 @@ const safeValue = (value) => {
   return String(value);
 };
 
-const ViewPigeon = ({ visible, onCancel, pigeonData, loading }) => {
+// Lightweight image slider component (no external CSS required)
+const ImageSlider = ({
+  photos = [],
+  size = 320,
+  autoplay = false,
+  autoplayInterval = 3000,
+  showArrows = true,
+}) => {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (!photos || photos.length === 0) return;
+    if (index >= photos.length) setIndex(Math.max(0, photos.length - 1));
+  }, [photos, index]);
+
+  if (!photos || photos.length === 0) return null;
+
+  const prev = React.useCallback(() => {
+    // debug
+    try {
+      // eslint-disable-next-line no-console
+      console.debug("ImageSlider prev() called");
+    } catch (e) {}
+    setIndex((i) => (i - 1 + photos.length) % photos.length);
+  }, [photos.length]);
+
+  const next = React.useCallback(() => {
+    try {
+      // eslint-disable-next-line no-console
+      console.debug("ImageSlider next() called");
+    } catch (e) {}
+    setIndex((i) => (i + 1) % photos.length);
+  }, [photos.length]);
+
+  // keyboard navigation
+  useEffect(() => {
+    const handler = (e) => {
+      if (!photos || photos.length === 0) return;
+      if (e.key === "ArrowLeft") {
+        prev();
+      } else if (e.key === "ArrowRight") {
+        next();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [photos, prev, next]);
+
+  // autoplay
+  const autoplayRef = React.useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // drag/swipe support
+  const pointerRef = React.useRef({ active: false, startX: 0, currentX: 0 });
+
+  const onPointerDown = (e) => {
+    pointerRef.current.active = true;
+    pointerRef.current.startX =
+      e.clientX || (e.touches && e.touches[0]?.clientX) || 0;
+    pointerRef.current.currentX = pointerRef.current.startX;
+    setIsPaused(true);
+  };
+
+  const onPointerMove = (e) => {
+    if (!pointerRef.current.active) return;
+    pointerRef.current.currentX =
+      e.clientX ||
+      (e.touches && e.touches[0]?.clientX) ||
+      pointerRef.current.currentX;
+  };
+
+  const onPointerUp = () => {
+    if (!pointerRef.current.active) return;
+    const dx = pointerRef.current.currentX - pointerRef.current.startX;
+    const threshold = 40; // px
+    if (dx > threshold) {
+      prev();
+    } else if (dx < -threshold) {
+      next();
+    }
+    pointerRef.current.active = false;
+    setIsPaused(false);
+  };
+
+  useEffect(() => {
+    if (!autoplay || !photos || photos.length <= 1) return;
+    if (isPaused) return;
+    autoplayRef.current = setInterval(() => {
+      setIndex((i) => (i + 1) % photos.length);
+    }, autoplayInterval);
+    return () => clearInterval(autoplayRef.current);
+  }, [autoplay, autoplayInterval, photos, isPaused]);
+
+  return (
+    <div className="flex flex-col items-center">
+      <div
+        className="relative flex items-center justify-center"
+        style={{ width: size, height: size, overflow: "hidden" }}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={(e) => {
+          onPointerDown(e);
+        }}
+        onTouchMove={(e) => {
+          onPointerMove(e);
+        }}
+        onTouchEnd={() => {
+          onPointerUp();
+        }}
+        onPointerDown={(e) => {
+          onPointerDown(e);
+        }}
+        onPointerMove={(e) => {
+          onPointerMove(e);
+        }}
+        onPointerUp={() => {
+          onPointerUp();
+        }}
+      >
+        {showArrows && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              prev();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{
+              position: "absolute",
+              left: 8,
+              zIndex: 20,
+              background: "rgba(0,0,0,0.45)",
+              border: "none",
+              cursor: "pointer",
+              color: "white",
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              pointerEvents: "auto",
+            }}
+            aria-label="Previous image"
+          >
+            ◀
+          </button>
+        )}
+
+        <img
+          src={getImageUrl(photos[index].url)}
+          alt={photos[index].label}
+          style={{
+            width: "100%",
+            height: "100%",
+            borderRadius: 8,
+            objectFit: "cover",
+            userSelect: "none",
+            WebkitUserDrag: "none",
+          }}
+          draggable={false}
+        />
+
+        {showArrows && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              next();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{
+              position: "absolute",
+              right: 8,
+              zIndex: 20,
+              background: "rgba(0,0,0,0.45)",
+              border: "none",
+              cursor: "pointer",
+              color: "white",
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              pointerEvents: "auto",
+            }}
+            aria-label="Next image"
+          >
+            ▶
+          </button>
+        )}
+      </div>
+
+      <div className="flex gap-2 mt-2">
+        {photos.map((p, i) => (
+          <button
+            key={p.key}
+            type="button"
+            onClick={() => setIndex(i)}
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: "50%",
+              background: i === index ? "#111827" : "#d1d5db",
+              border: "none",
+              padding: 0,
+            }}
+            aria-label={`Show ${p.label}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const ViewPigeon = ({
+  visible,
+  onCancel,
+  pigeonData,
+  siblingsData,
+  loading,
+}) => {
   return (
     <Modal
       open={visible}
@@ -26,345 +250,547 @@ const ViewPigeon = ({ visible, onCancel, pigeonData, loading }) => {
         </div>
       ) : pigeonData ? (
         <div className="view-pigeon-wrap">
-          <style>{`.view-pigeon-wrap .ant-descriptions-item-label{white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important;}`}</style>
-          <>
-            {/* Main Image */}
-            {/* Pigeon Photos Gallery */}
-            {/* Pigeon Photos Gallery */}
-            {(pigeonData?.pigeonPhoto ||
-              pigeonData?.eyePhoto ||
-              pigeonData?.ownershipPhoto ||
-              pigeonData?.pedigreePhoto ||
-              pigeonData?.DNAPhoto) && (
-              <div className="mb-4">
-                <h3 className="mb-2 font-semibold">Pigeon Photos</h3>
-                <div className="flex flex-wrap justify-start gap-4 border p-4 rounded-lg">
-                  {[
-                    {
-                      key: "pigeonPhoto",
-                      label: "Pigeon Photo",
-                      url: pigeonData?.pigeonPhoto,
-                    },
-                    {
-                      key: "eyePhoto",
-                      label: "Eye Photo",
-                      url: pigeonData?.eyePhoto,
-                    },
-                    {
-                      key: "ownershipPhoto",
-                      label: "Ownership Card",
-                      url: pigeonData?.ownershipPhoto,
-                    },
-                    {
-                      key: "pedigreePhoto",
-                      label: "Pedigree",
-                      url: pigeonData?.pedigreePhoto,
-                    },
-                    {
-                      key: "DNAPhoto",
-                      label: "DNA",
-                      url: pigeonData?.DNAPhoto,
-                    },
-                  ]
-                    .filter((p) => p.url) // keep only those that exist
-                    .map((p) => (
-                      <div key={p.key} className="flex flex-col items-center">
-                        <img
-                          src={getImageUrl(p.url)}
-                          alt={p.label}
-                          style={{
-                            width: 120,
-                            height: 120,
-                            borderRadius: "8px",
-                            objectFit: "cover",
-                          }}
-                        />
-                        <span className="mt-1 text-sm text-gray-500">
-                          {p.label}
-                        </span>
-                      </div>
-                    ))}
+          <div>
+            {/* New Start */}
+            <div className="flex jsutify-between gap-8 flex-col md:flex-row">
+              <div>
+                {/* Check if any of the images exist */}
+                {pigeonData?.pigeonPhoto ||
+                pigeonData?.eyePhoto ||
+                pigeonData?.ownershipPhoto ||
+                pigeonData?.pedigreePhoto ||
+                pigeonData?.DNAPhoto ? (
+                  <div className="">
+                    {/* ImageSlider with available images */}
+                    <ImageSlider
+                      photos={[
+                        {
+                          key: "pigeonPhoto",
+                          label: "Pigeon Photo",
+                          url: pigeonData?.pigeonPhoto,
+                        },
+                        {
+                          key: "eyePhoto",
+                          label: "Eye Photo",
+                          url: pigeonData?.eyePhoto,
+                        },
+                        {
+                          key: "ownershipPhoto",
+                          label: "Ownership Card",
+                          url: pigeonData?.ownershipPhoto,
+                        },
+                        {
+                          key: "pedigreePhoto",
+                          label: "Pedigree",
+                          url: pigeonData?.pedigreePhoto,
+                        },
+                        {
+                          key: "DNAPhoto",
+                          label: "DNA",
+                          url: pigeonData?.DNAPhoto,
+                        },
+                      ].filter((p) => p.url)} // Only include images with valid URLs
+                      size={300}
+                      // autoplay={true}
+                      autoplayInterval={3000}
+                      showArrows={false}
+                    />
+                  </div>
+                ) : (
+                  // Show placeholder if no images are available
+                  <div className="placeholder-container">
+                    <img
+                      src={PlaceholderImg} // You can replace this with your own placeholder image path
+                      alt="No Images Available"
+                      style={{
+                        width: 300, // Same size as the slider images
+                        height: 300,
+                        objectFit: "cover",
+                        borderRadius: "8px", // Optional: add some styling
+                        background: "#f3f4f6", // Light gray background
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="border p-6 rounded-lg flex-1">
+                {/* Pigeon Info */}
+                <h3 className="font-bold text-[20px] text-primary">
+                  Basic Information
+                </h3>
+                <div className="space-y-2 mt-2">
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Name: </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.name)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Ring Number: </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.ringNumber)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Birth Year: </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.birthYear)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Gender: </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.gender)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Color: </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.color)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Status: </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.status)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Country: </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.country)}
+                    </p>
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
 
-            <div className="flex gap-10 flex-col md:flex-row">
-              <div className="flex-1">
-                {/* Pigeon Info */}
-                <h3 className="mt-6 mb-2 font-semibold">Pigeon Information</h3>
-                <Descriptions bordered column={1} size="middle">
-                  <Descriptions.Item
-                    label={<span style={{ whiteSpace: "nowrap" }}>Name</span>}
-                  >
-                    {safeValue(pigeonData.name)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>Ring Number</span>
-                    }
-                  >
-                    {safeValue(pigeonData.ringNumber)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>Country</span>
-                    }
-                  >
-                    {safeValue(pigeonData.country)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>Birth Year</span>
-                    }
-                  >
-                    {safeValue(pigeonData.birthYear)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>
-                        Short Information
-                      </span>
-                    }
-                  >
-                    {safeValue(pigeonData.shortInfo)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>Breeder</span>
-                    }
-                  >
-                    {safeValue(pigeonData.breeder?.breederName)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>
-                        Breeder Rating
-                      </span>
-                    }
-                  >
-                    {safeValue(pigeonData.breederRating)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={<span style={{ whiteSpace: "nowrap" }}>Gender</span>}
-                  >
-                    {safeValue(pigeonData.gender)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>
-                        Color &amp; Pattern
-                      </span>
-                    }
-                  >
-                    {safeValue(pigeonData.color)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={<span style={{ whiteSpace: "nowrap" }}>Status</span>}
-                  >
-                    {safeValue(pigeonData.status)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>Location</span>
-                    }
-                  >
-                    {safeValue(pigeonData.location)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={<span style={{ whiteSpace: "nowrap" }}>Iconic</span>}
-                  >
-                    {pigeonData.iconic ? "Yes" : "No"}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>Iconic Score</span>
-                    }
-                  >
-                    {safeValue(pigeonData.iconicScore)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>
-                        Father Ring Number
-                      </span>
-                    }
-                  >
-                    {safeValue(pigeonData.fatherRingId?.ringNumber)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>
-                        Mother Ring Number
-                      </span>
-                    }
-                  >
-                    {safeValue(pigeonData.motherRingId?.ringNumber)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>
-                        Racing Rating
-                      </span>
-                    }
-                  >
-                    {safeValue(pigeonData.racingRating)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>Racer Rating</span>
-                    }
-                  >
-                    {safeValue(pigeonData.racherRating)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={<span style={{ whiteSpace: "nowrap" }}>Notes</span>}
-                  >
-                    {safeValue(pigeonData.notes)}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <span style={{ whiteSpace: "nowrap" }}>Verified</span>
-                    }
-                  >
-                    {pigeonData.verified ? (
-                      <img
-                        src={VerifyIcon}
-                        alt="verified"
-                        style={{ width: 24, height: 24 }}
-                      />
+            {/* Additional Information */}
+            <div className="border p-6 rounded-lg mt-6">
+              <div className="flex flex-col md:flex-row gap-6 mb-4">
+                <div className="w-full">
+                  <p className="font-bold mb-2 text-primary">
+                    Father Information
+                  </p>
+
+                  {/* Father Information */}
+                  <p className="border p-4 rounded-lg">
+                    {pigeonData.fatherRingId?.name ? (
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Father: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(pigeonData.fatherRingId?.name)}
+                        </p>
+                      </div>
                     ) : (
-                      "No"
+                      <p className="font-normal text-[14px] text-gray-400">
+                        No Information Available
+                      </p>
                     )}
-                  </Descriptions.Item>
-                </Descriptions>
+                  </p>
+                </div>
+
+                <div className="w-full">
+                  <p className="font-bold mb-2 text-primary">
+                    Mother Information
+                  </p>
+
+                  {/* Mother Information */}
+                  <p className="border p-4 rounded-lg">
+                    {pigeonData.motherRingId?.name ? (
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Mother: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(pigeonData.motherRingId?.name)}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="font-normal text-[14px] text-gray-400">
+                        No Information Available
+                      </p>
+                    )}
+                  </p>
+                </div>
               </div>
+              {/* Pigeon Info */}
+              <div>
+                <h3 className="font-bold text-[20px] text-primary mt-6">
+                  Additional Information
+                </h3>
+                <div className="space-y-2 mt-2">
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Breeder: </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.breeder?.breederName)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">
+                      Breeder Loft Name:{" "}
+                    </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.breeder?.loftName)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Location: </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.location)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">
+                      Father Ring Number:{" "}
+                    </p>
+                    <p className="font-semibold text-[14px] flex items-center">
+                      {safeValue(pigeonData.fatherRingId?.ringNumber)}
+                      {pigeonData.fatherRingId?.verified && (
+                        <img
+                          src={VerifyIcon} // replace with the actual image path
+                          alt="Verified"
+                          style={{ width: 20, height: 20 }}
+                          className="ml-1"
+                        />
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">
+                      Mother Ring Number:{" "}
+                    </p>
+                    <p className="font-semibold text-[14px] flex items-center">
+                      {safeValue(pigeonData.motherRingId?.ringNumber)}
+                      {pigeonData.motherRingId?.verified && (
+                        <img
+                          src={VerifyIcon} // replace with the actual image path
+                          alt="Verified"
+                          style={{ width: 20, height: 20 }}
+                          className="ml-1"
+                        />
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Country: </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.country)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Status: </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.status)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-semibold text-[14px]">
+                      Your Story:{" "}
+                      <span className="font-normal text-[14px]">
+                        {safeValue(pigeonData.shortInfo) || "N/A"}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              {/* Siblings Information */}
+              {siblingsData?.length > 0 && (
+                <>
+                  <h3 className="font-bold text-[20px] text-primary mt-6 mb-1">
+                    Siblings Information
+                  </h3>
+                  <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+                    <div className="border rounded-lg shadow-md bg-gray-50">
+                      <div
+                        style={
+                          {
+                            // minWidth: pigeons.length > 0 ? "max-content" : "100%",
+                          }
+                        }
+                        className="bg-[#333D49] rounded-lg"
+                      >
+                        {loading ? (
+                          <div className="flex justify-center items-center p-6">
+                            <Spin size="large" />
+                          </div>
+                        ) : (
+                          <Table
+                            // rowSelection={rowSelection}
+                            dataSource={siblingsData}
+                            rowClassName={() => "hover-row"}
+                            bordered={false}
+                            size="small"
+                            // rowKey="_id"
+                            // scroll={
+                            //   pigeons.length > 0
+                            //     ? { x: "max-content" }
+                            //     : undefined
+                            // }
+                            columns={[
+                              // {
+                              //   title: "SL",
+                              //   key: "index",
+                              //   render: (_, __, index) => index + 1,
+                              //   width: 60,
+                              // },
+                              {
+                                title: "Name",
+                                dataIndex: "name",
+                                key: "name",
+                                render: (value) => value || "N/A",
+                              },
+                              {
+                                title: "Siblings Type",
+                                dataIndex: "type",
+                                key: "type",
+                                render: (value) => value || "N/A",
+                              },
+                              {
+                                title: "Ring Number",
+                                dataIndex: "ringNumber",
+                                key: "ringNumber",
+                                render: (value) => value || "N/A",
+                              },
+                              {
+                                title: "Birth Year",
+                                dataIndex: "birthYear",
+                                key: "birthYear",
+                                render: (value) => value || "N/A",
+                              },
+                              {
+                                title: "Breeder Rating",
+                                dataIndex: "breederRating",
+                                key: "breederRating",
+                                render: (value) => value || "N/A",
+                              },
+                              {
+                                title: "Racing Rating",
+                                dataIndex: "racingRating",
+                                key: "racingRating",
+                                render: (value) => value || "N/A",
+                              },
+                              {
+                                title: "Father",
+                                dataIndex: "fatherRingId",
+                                key: "fatherRingId",
+                                render: (value) => value || "N/A",
+                              },
+                              {
+                                title: "Mother",
+                                dataIndex: "motherRingId",
+                                key: "motherRingId",
+                                render: (value) => value || "N/A",
+                              },
+                              {
+                                title: "Gender",
+                                dataIndex: "gender",
+                                key: "gender",
+                                render: (value) => value || "N/A",
+                              },
+                            ]}
+                            // pagination={{
+                            //   current: page,
+                            //   pageSize,
+                            //   total,
+                            //   showSizeChanger: false,
+                            //   onChange: (newPage) => setPage(newPage),
+                            // }}
+                            pagination={false}
+                            components={{
+                              header: {
+                                cell: (props) => (
+                                  <th
+                                    {...props}
+                                    style={{
+                                      height: 70,
+                                      lineHeight: "70px",
+                                      background: "#333D49",
+                                      color: "#ffffff",
+                                      fontWeight: 600,
+                                      padding: "0 16px",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {props.children}
+                                  </th>
+                                ),
+                              },
+                              body: {
+                                cell: (props) => (
+                                  <td
+                                    {...props}
+                                    style={{
+                                      background: "#212B35",
+                                      padding: "12px 16px",
+                                      color: "#ffffff",
+                                      borderBottom: "none",
+                                    }}
+                                  >
+                                    {props.children}
+                                  </td>
+                                ),
+                              },
+                            }}
+                            locale={{
+                              emptyText: (
+                                <div className="py-10 text-gray-400 text-center">
+                                  No pigeons found 🕊️
+                                </div>
+                              ),
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
 
-              <div className="flex-1">
-                {/* User Info */}
-                {pigeonData.user && (
-                  <>
-                    <h3 className="mt-6 mb-2 font-semibold">
-                      Owner Information
-                    </h3>
-                    <Descriptions bordered column={1} size="small">
-                      {/* <Descriptions.Item label={<span style={{ whiteSpace: 'nowrap' }}>Name</span>}>
-                      {safeValue(pigeonData.user.name)}
-                    </Descriptions.Item> */}
-                      <Descriptions.Item
-                        label={
-                          <span style={{ whiteSpace: "nowrap" }}>Username</span>
+              {/* Race Results */}
+              {pigeonData.results?.length > 0 && (
+                <>
+                  <h3 className="font-bold text-[20px] text-primary mt-6 mb-1">
+                    Race Results
+                  </h3>
+                  <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+                    <div className="border rounded-lg shadow-md bg-gray-50">
+                      <div
+                        style={
+                          {
+                            // minWidth: pigeons.length > 0 ? "max-content" : "100%",
+                          }
                         }
+                        className="bg-[#333D49] rounded-lg"
                       >
-                        {safeValue(pigeonData.user.name)}
-                      </Descriptions.Item>
-                      <Descriptions.Item
-                        label={
-                          <span style={{ whiteSpace: "nowrap" }}>Email</span>
-                        }
-                      >
-                        {safeValue(pigeonData.user.email)}
-                      </Descriptions.Item>
-                      <Descriptions.Item
-                        label={
-                          <span style={{ whiteSpace: "nowrap" }}>Contact</span>
-                        }
-                      >
-                        {safeValue(pigeonData.user.contact)}
-                      </Descriptions.Item>
-                      {/* <Descriptions.Item label={<span style={{ whiteSpace: 'nowrap' }}>Role</span>}>
-                      {safeValue(pigeonData.user.role)}
-                    </Descriptions.Item> */}
-                    </Descriptions>
-                  </>
-                )}
-
-                {/* Breeder Info */}
-                {pigeonData.breeder && (
-                  <>
-                    <h3 className="mt-6 mb-2 font-semibold">
-                      Breeder Information
-                    </h3>
-                    <Descriptions bordered column={1} size="small">
-                      <Descriptions.Item
-                        label={
-                          <span style={{ whiteSpace: "nowrap" }}>
-                            Loft Name
-                          </span>
-                        }
-                      >
-                        {safeValue(pigeonData.breeder.loftName)}
-                      </Descriptions.Item>
-                      <Descriptions.Item
-                        label={
-                          <span style={{ whiteSpace: "nowrap" }}>
-                            Breeder Name
-                          </span>
-                        }
-                      >
-                        {safeValue(pigeonData.breeder.breederName)}
-                      </Descriptions.Item>
-                      <Descriptions.Item
-                        label={
-                          <span style={{ whiteSpace: "nowrap" }}>Country</span>
-                        }
-                      >
-                        {safeValue(pigeonData.breeder.country)}
-                      </Descriptions.Item>
-                      <Descriptions.Item
-                        label={
-                          <span style={{ whiteSpace: "nowrap" }}>Email</span>
-                        }
-                      >
-                        {safeValue(pigeonData.breeder.email)}
-                      </Descriptions.Item>
-                      <Descriptions.Item
-                        label={
-                          <span style={{ whiteSpace: "nowrap" }}>Phone</span>
-                        }
-                      >
-                        {safeValue(pigeonData.breeder.phone)}
-                      </Descriptions.Item>
-                    </Descriptions>
-                  </>
-                )}
+                        {loading ? (
+                          <div className="flex justify-center items-center p-6">
+                            <Spin size="large" />
+                          </div>
+                        ) : (
+                          <Table
+                            // rowSelection={rowSelection}
+                            dataSource={pigeonData.results}
+                            rowClassName={() => "hover-row"}
+                            bordered={false}
+                            size="small"
+                            // rowKey="_id"
+                            // scroll={
+                            //   pigeons.length > 0
+                            //     ? { x: "max-content" }
+                            //     : undefined
+                            // }
+                            columns={[
+                              {
+                                title: "SL",
+                                key: "index",
+                                render: (_, __, index) => index + 1,
+                                width: 60,
+                              },
+                              {
+                                title: "Name",
+                                dataIndex: "name",
+                                key: "name",
+                                render: (value) => value || "N/A",
+                              },
+                              {
+                                title: "Date",
+                                dataIndex: "date",
+                                key: "date",
+                                render: (d) =>
+                                  d ? new Date(d).toLocaleDateString() : "N/A",
+                              },
+                              {
+                                title: "Distance",
+                                dataIndex: "distance",
+                                key: "distance",
+                                render: (value) => value || "N/A",
+                              },
+                              {
+                                title: "Total",
+                                dataIndex: "total",
+                                key: "total",
+                                render: (value) => value || "N/A",
+                              },
+                              {
+                                title: "Place",
+                                dataIndex: "place",
+                                key: "place",
+                                render: (value) => value || "N/A",
+                              },
+                            ]}
+                            // pagination={{
+                            //   current: page,
+                            //   pageSize,
+                            //   total,
+                            //   showSizeChanger: false,
+                            //   onChange: (newPage) => setPage(newPage),
+                            // }}
+                            pagination={false}
+                            components={{
+                              header: {
+                                cell: (props) => (
+                                  <th
+                                    {...props}
+                                    style={{
+                                      height: 70,
+                                      lineHeight: "70px",
+                                      background: "#333D49",
+                                      color: "#ffffff",
+                                      fontWeight: 600,
+                                      padding: "0 16px",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {props.children}
+                                  </th>
+                                ),
+                              },
+                              body: {
+                                cell: (props) => (
+                                  <td
+                                    {...props}
+                                    style={{
+                                      background: "#212B35",
+                                      padding: "12px 16px",
+                                      color: "#ffffff",
+                                      borderBottom: "none",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {props.children}
+                                  </td>
+                                ),
+                              },
+                            }}
+                            locale={{
+                              emptyText: (
+                                <div className="py-10 text-gray-400 text-center">
+                                  No pigeons found 🕊️
+                                </div>
+                              ),
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+              <div className="flex gap-1 mt-4">
+                <p className="font-semibold text-[14px]">
+                  Additional Notes:{" "}
+                  <span className="font-normal text-[14px]">
+                    {safeValue(pigeonData.notes) || "N/A"}
+                  </span>
+                </p>
+                {/* <p className="font-normal text-[14px]">
+                  {safeValue(pigeonData.notes)}
+                </p> */}
               </div>
             </div>
-            {/* Race Results */}
-            {pigeonData.results?.length > 0 && (
-              <>
-                <h3 className="mt-6 mb-2 font-semibold">Race Results</h3>
-                <Table
-                  dataSource={pigeonData.results}
-                  rowKey="_id"
-                  pagination={false}
-                  size="small"
-                  bordered
-                  columns={[
-                    {
-                      title: "SL",
-                      key: "index",
-                      render: (_, __, index) => index + 1,
-                      width: 60,
-                    },
-                    { title: "Name", dataIndex: "name", key: "name" },
-                    {
-                      title: "Date",
-                      dataIndex: "date",
-                      key: "date",
-                      render: (d) => new Date(d).toLocaleDateString(),
-                    },
-                    {
-                      title: "Distance",
-                      dataIndex: "distance",
-                      key: "distance",
-                    },
-                    { title: "Total", dataIndex: "total", key: "total" },
-                    { title: "Place", dataIndex: "place", key: "place" },
-                  ]}
-                />
-              </>
-            )}
-          </>
+
+            {/* New End */}
+          </div>
         </div>
       ) : (
         <div className="text-center text-gray-400">No data found 🕊️</div>
