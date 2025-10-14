@@ -726,6 +726,11 @@ select {
   resize: none; /* Optional: Disable resizing */
 }
 
+.custom-textarea-pigeon2 {
+  height: 180px !important; /* Fixed height */
+  resize: none; /* Optional: Disable resizing */
+}
+
 .custom-form-item-ant-select-pattern {
   margin-bottom: 0px !important; /* adjust as needed */
 }

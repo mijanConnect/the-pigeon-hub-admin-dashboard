@@ -54,6 +54,12 @@ const AddNewPigeon = ({ onSave }) => {
   const [isIconicEnabled, setIsIconicEnabled] = useState(false);
   const currentYear = new Date().getFullYear();
 
+  const [value, setValue] = useState("");
+
+  const handleChangePlace = (e) => {
+    setValue(e.target.value);
+  };
+
   console.log("id", id);
 
   // 🔎 Parents
@@ -252,6 +258,7 @@ const AddNewPigeon = ({ onSave }) => {
         iconic: values.iconic === "yes",
         fatherRingId: values.fatherRingId || "",
         motherRingId: values.motherRingId || "",
+        addresults: values.addresults || "",
       };
 
       const token = localStorage.getItem("token");
@@ -851,8 +858,44 @@ const AddNewPigeon = ({ onSave }) => {
             </div>
 
             {/* ===== RACE RESULTS ===== */}
-            <div className=" flex flex-col min-h-[300px]">
-              {/* ===== Switch to toggle entire race results column ===== */}
+            <div>
+              <Form.Item
+                label="Pigeon Result"
+                name="addresults"
+                className="custom-form-item-ant"
+              >
+                <div style={{ position: "relative" }}>
+                  {/* Custom placeholder simulation */}
+                  {!value && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "8px",
+                        left: "10px",
+                        color: "#999",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      1st/828p Quiévrain 108km
+                      <br />
+                      4th/3265p Melun 287km
+                      <br />
+                      6th/3418p HotSpot 6 Dubai OLR
+                    </div>
+                  )}
+
+                  {/* Actual TextArea */}
+                  <Input.TextArea
+                    placeholder=""
+                    className="custom-input-ant-modal custom-textarea-pigeon2"
+                    style={{ paddingTop: "40px" }} // Adjust padding to prevent overlapping text
+                    value={value}
+                    onChange={handleChangePlace} // Track the input value
+                  />
+                </div>
+              </Form.Item>
+            </div>
+            {/* <div className=" flex flex-col min-h-[300px]">
               <div className="mb-4 flex items-center gap-2">
                 <Switch
                   checked={showRaceResults}
@@ -862,7 +905,6 @@ const AddNewPigeon = ({ onSave }) => {
                 <span className="text-[16px] font-semibold">Pigeon Result</span>
               </div>
 
-              {/* ===== Conditionally render race results + add button ===== */}
               {showRaceResults && (
                 <div className=" gap-4">
                   {raceResults.map((race, index) => (
@@ -956,8 +998,6 @@ const AddNewPigeon = ({ onSave }) => {
                       </div>
                     </div>
                   ))}
-
-                  {/* Add Race Results Button at the bottom */}
                   <Button
                     type="dashed"
                     onClick={addRaceResult}
@@ -967,7 +1007,7 @@ const AddNewPigeon = ({ onSave }) => {
                   </Button>
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
         </div>
       </Form>
