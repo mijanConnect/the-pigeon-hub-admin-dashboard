@@ -495,6 +495,20 @@ const AddNewPigeon = ({ onSave }) => {
                 </Form.Item> */}
 
                 <Form.Item
+                  label="Verification"
+                  name="verification"
+                  // rules={[{ required: true }]}
+                  className="custom-form-item-ant-select"
+                >
+                  <Select
+                    placeholder="Select Verification"
+                    className="custom-select-ant-modal"
+                  >
+                    <Option value="verified">Verified</Option>
+                    <Option value="notverified">Not Verified</Option>
+                  </Select>
+                </Form.Item>
+                <Form.Item
                   label="Iconic"
                   name="iconic"
                   // rules={[{ required: true }]}
@@ -507,21 +521,6 @@ const AddNewPigeon = ({ onSave }) => {
                   >
                     <Option value="yes">Yes</Option>
                     <Option value="no">No</Option>
-                  </Select>
-                </Form.Item>
-
-                <Form.Item
-                  label="Verification"
-                  name="verification"
-                  // rules={[{ required: true }]}
-                  className="custom-form-item-ant-select"
-                >
-                  <Select
-                    placeholder="Select Verification"
-                    className="custom-select-ant-modal"
-                  >
-                    <Option value="verified">Verified</Option>
-                    <Option value="notverified">Not Verified</Option>
                   </Select>
                 </Form.Item>
               </div>

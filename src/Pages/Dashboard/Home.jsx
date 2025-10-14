@@ -131,6 +131,7 @@ const Home = () => {
                 style={{ width: 140 }}
                 className="custom-select-ant-modal"
               >
+                <Option value="3year">Last 3 Year</Option>
                 <Option value="1year">Last 1 Year</Option>
                 <Option value="6months"> Last 6 Months</Option>
                 <Option value="3months"> Last 3 Months</Option>

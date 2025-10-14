@@ -33,7 +33,10 @@ const dashboardSlice = api.injectEndpoints({
             pigeon?.ownershipPhoto ||
             "",
           name: pigeon?.name || "N/A",
-          country: { name: pigeon?.country, icon: "" } || { name: "N/A", icon: "" },
+          country: { name: pigeon?.country, icon: "" } || {
+            name: "N/A",
+            icon: "",
+          },
           breeder: pigeon?.breeder?.breederName || "N/A",
           ringNumber: pigeon?.ringNumber || "N/A",
           birthYear: pigeon?.birthYear || "N/A",
