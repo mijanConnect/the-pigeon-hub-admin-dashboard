@@ -645,7 +645,7 @@ const PigeonManagement = () => {
         <div className="border rounded-lg shadow-md bg-gray-50">
           <div
             style={{ minWidth: pigeons.length > 0 ? "max-content" : "100%" }}
-            className="bg-[#333D49] rounded-lg"
+            className="bg-[#333D49] rounded-lg scale-x-70"
           >
             {isLoading ? (
               <div className="flex justify-center items-center p-6">
@@ -1082,5 +1082,3 @@ const PigeonManagement = () => {
 };
 
 export default PigeonManagement;
-
-

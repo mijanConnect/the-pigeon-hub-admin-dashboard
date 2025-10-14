@@ -5,8 +5,9 @@ const dashboardSlice = api.injectEndpoints({
   endpoints: (builder) => ({
     // Get overall dashboard stats
     getOverviewStats: builder.query({
-      query: () => ({
-        url: "/overview/stats",
+      // accept an optional filterBy param (e.g. '1month', '7days')
+      query: (filterBy) => ({
+        url: `/overview/stats${filterBy ? `?filterBy=${filterBy}` : ""}`,
         method: "GET",
       }),
       transformResponse: (response) => response.data,

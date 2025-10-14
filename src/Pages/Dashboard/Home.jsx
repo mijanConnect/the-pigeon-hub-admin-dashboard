@@ -1,33 +1,22 @@
-import React from "react";
-import { FaCalendarDay, FaDollarSign } from "react-icons/fa";
-import { HiMiniUsers } from "react-icons/hi2";
-import { MdArrowUpward, MdOutlineHome } from "react-icons/md";
-import { PiHouseLine } from "react-icons/pi";
-import { Bar } from "react-chartjs-2";
-import LineChart from "./LineChart";
+import { Select } from "antd";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
-import OrderTable from "../../components/home/OrderTable";
-import SalesLeaderBoard from "../../components/home/SalesLeaderBoard";
-import HomeCard from "../../components/home/HomeCard";
-import { Marchant } from "../../components/common/Svg";
-import { People } from "../../components/common/Svg";
-import { Pending } from "../../components/common/Svg";
-import { SubscriptionManagement } from "../../components/common/Svg";
+import React from "react";
 import PigeonIcon from "../../../src/assets/pigeon.png";
+import SubscriptionIcon from "../../../src/assets/subscription.png";
 import VerifyIcon from "../../../src/assets/verify.png";
 import AwardIcon from "../../../src/assets/win.png";
-import SubscriptionIcon from "../../../src/assets/subscription.png";
-import { Select } from "antd";
-import { useGetOverviewStatsQuery } from "../../redux/apiSlices/dashboardSlice";
 import Spinner from "../../components/common/Spinner";
+import OrderTable from "../../components/home/OrderTable";
+import { useGetOverviewStatsQuery } from "../../redux/apiSlices/dashboardSlice";
+import LineChart from "./LineChart";
 const { Option } = Select;
 
 ChartJS.register(
@@ -98,7 +87,11 @@ const Home = () => {
     },
   };
 
-  const { data: stats, isLoading } = useGetOverviewStatsQuery();
+  const [rangeFilter, setRangeFilter] = React.useState("1month");
+  const { data: stats, isLoading } = useGetOverviewStatsQuery(rangeFilter, {
+    // ensure RTK Query refetches when the argument (rangeFilter) changes
+    refetchOnMountOrArgChange: true,
+  });
 
   if (isLoading)
     return (
@@ -129,10 +122,22 @@ const Home = () => {
 
         {/* Card Section */}
         <div className="w-full lg:w-1/3 border border-primary p-6 rounded-lg">
-          <div className="flex justify-between items-center mb-4 text-white">
+          <div className="flex justify-between items-center mb-6 text-white">
             <h2 className="text-secondary text-[24px] font-bold">Statistics</h2>
-            <div className="border border-primary text-primary px-4 py-1 rounded-md">
-              <p>7 Days</p>
+            <div className="flex items-center gap-2">
+              <Select
+                value={rangeFilter}
+                onChange={(val) => setRangeFilter(val)}
+                style={{ width: 140 }}
+                className="custom-select-ant-modal"
+              >
+                <Option value="1year">Last 1 Year</Option>
+                <Option value="6months"> Last 6 Months</Option>
+                <Option value="3months"> Last 3 Months</Option>
+                <Option value="1month">Last 1 Month</Option>
+                <Option value="7days"> Last 7 Days</Option>
+                <Option value="today">Today</Option>
+              </Select>
             </div>
             {/* <Select
               defaultValue="7days"

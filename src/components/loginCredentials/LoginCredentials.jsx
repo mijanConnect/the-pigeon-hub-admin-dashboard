@@ -231,6 +231,12 @@ const LoginCredentials = () => {
   const columns = [
     { title: "User Name", dataIndex: "name", key: "name", align: "center" },
     { title: "Email", dataIndex: "email", key: "email", align: "center" },
+    {
+      title: "Current Plan",
+      dataIndex: "currentPlan",
+      key: "currentPlan",
+      align: "center",
+    },
     { title: "Role", dataIndex: "role", key: "role", align: "center" },
     {
       title: "Phone Number",

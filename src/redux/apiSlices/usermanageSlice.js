@@ -31,6 +31,7 @@ const usermanageSlice = api.injectEndpoints({
             pages: user.pages || [],
             profile: user.profile || null,
             verified: user.verified || false,
+            currentPlan: user.currentPlan || "N/A",
             raw: user,
           })),
           pagination: response.data.pagination,
