@@ -143,7 +143,12 @@ const AddNewPigeon = ({ onSave }) => {
         colorPattern: { color, pattern },
         verification: pigeonData.verified ? "verified" : "notverified",
         iconic: pigeonData.iconic ? "yes" : "no",
-        breeder: pigeonData.breeder?._id || pigeonData.breeder,
+        breeder:
+          pigeonData.breeder && typeof pigeonData.breeder === "object"
+            ? pigeonData.breeder.breederName ||
+              pigeonData.breeder.name ||
+              pigeonData.breeder._id
+            : pigeonData.breeder,
       });
 
       // show father ring in the input (keep typed value if user entered)
@@ -239,8 +244,9 @@ const AddNewPigeon = ({ onSave }) => {
           (b) => b._id === current || b.breederName === current
         );
         if (match) {
+          // show the breeder name in the input; keep the form value as the name
           setBreederDisplay(match.breederName);
-          form.setFieldsValue({ breeder: match._id });
+          form.setFieldsValue({ breeder: match.breederName });
         }
       }
     } catch (e) {

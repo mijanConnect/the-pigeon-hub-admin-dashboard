@@ -27,5 +27,3 @@ export const api = createApi({
 
 export const imageUrl = "http://75.119.138.163:5006";
 // export const imageUrl = "http://50.6.200.33:5001";
-
-
