@@ -5,7 +5,8 @@ import VerifyIcon from "../../assets/verify.png";
 import { getImageUrl } from "../common/imageUrl";
 
 const safeValue = (value) => {
-  if (value === null || value === undefined) return "N/A";
+  if (value === null || value === undefined || value === "" || value === "-")
+    return "N/A";
   if (typeof value === "object") {
     if (value?.name) return value.name;
     return JSON.stringify(value);
@@ -207,23 +208,36 @@ const ImageSlider = ({
         )}
       </div>
 
-      <div className="flex gap-2 mt-2">
-        {photos.map((p, i) => (
-          <button
-            key={p.key}
-            type="button"
-            onClick={() => setIndex(i)}
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: "50%",
-              background: i === index ? "#111827" : "#d1d5db",
-              border: "none",
-              padding: 0,
-            }}
-            aria-label={`Show ${p.label}`}
-          />
-        ))}
+      <div className="flex gap-2 mt-2 items-center">
+        {photos.map((p, i) => {
+          const isActive = i === index;
+          const inactiveSize = 10; // px
+          const activeWidth = 25; // px (requested)
+          const activeHeight = 10; // px (requested)
+          const width = isActive ? activeWidth : inactiveSize;
+          const height = isActive ? activeHeight : inactiveSize;
+          const background = isActive ? "#111827" : "#d1d5db";
+          const borderRadius = isActive ? `${activeHeight / 2}px` : "50%";
+
+          return (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => setIndex(i)}
+              style={{
+                width,
+                height,
+                borderRadius,
+                background,
+                border: "none",
+                padding: 0,
+                transition: "all 140ms cubic-bezier(.2,.8,.2,1)",
+                cursor: "pointer",
+              }}
+              aria-label={`Show ${p.label}`}
+            />
+          );
+        })}
       </div>
     </div>
   );
@@ -492,6 +506,15 @@ const ViewPigeon = ({
                     </p>
                   </div>
                 </div>
+              </div>
+
+              <div className="flex gap-1 mt-6 border p-4 rounded-lg">
+                <p className="font-semibold text-[14px]">
+                  Race Results:{" "}
+                  <span className="font-normal text-[14px]">
+                    {safeValue(pigeonData.addresults) || "N/A"}
+                  </span>
+                </p>
               </div>
               {/* Siblings Information */}
               {siblingsData?.length > 0 && (

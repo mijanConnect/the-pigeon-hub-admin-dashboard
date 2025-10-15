@@ -745,3 +745,7 @@ select {
   > .ant-descriptions-item-label {
   white-space: nowrap !important;
 }
+
+.react-flow__pane {
+  left: -200px !important;
+}

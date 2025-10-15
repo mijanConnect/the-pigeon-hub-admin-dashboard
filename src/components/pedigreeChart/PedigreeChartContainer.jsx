@@ -17,6 +17,8 @@ import {
   InfoCircleOutlined,
   DownloadOutlined,
 } from "@ant-design/icons";
+
+import { useGetProfileQuery } from "../../redux/apiSlices/profileSlice";
 // import { useParams } from "next/navigation";
 // import Spinner from "@/app/(commonLayout)/Spinner";
 import { getCode } from "country-list";
@@ -30,6 +32,7 @@ import { useParams } from "react-router-dom";
 import { convertBackendToExistingFormat } from "./PedigreeData";
 import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
 import Spinner from "../common/Spinner";
+import { useProfileQuery } from "../../redux/apiSlices/authSlice";
 
 const PigeonNode = ({ data }) => {
   const countryCode = data.country ? getCode(data.country) : null;
@@ -83,7 +86,7 @@ const PigeonNode = ({ data }) => {
       className={`${getCardSize(data?.generation)}
        
         border-b-8  border-r-8 border-black
-          text-white rounded-none transition-all duration-300 px-4 py-2
+          text-white rounded-none transition-all duration-300 px-2 py-2
           ${getGenerationColor(data?.generation)} border`}
     >
       <Handle
@@ -92,45 +95,53 @@ const PigeonNode = ({ data }) => {
         className=" !bg-slate-400"
       />
       <div className="flex items-center justify-between ">
-        {countryCode && (
-          <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1">
+          {" "}
+          {countryCode && (
+            <div className="flex items-center gap-1">
+              <img
+                src={`https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`}
+                alt={data.country}
+                className="w-6 h-5 rounded-sm"
+              />
+              <p className="text-black">{countryCode}</p>
+            </div>
+          )}
+          {/* <Crown className="w-3 h-3 text-amber-600" /> */}
+          {data.birthYear && (
+            <span className="text-black">
+              {data.birthYear.toString().slice(-2)}
+            </span>
+          )}
+          {data.ringNumber && (
+            <span className=" font-bold text-[#C33739]">{data.ringNumber}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {data.gender && (
+            <span className="text-black text-xl">
+              {getGenderIcon(data.gender)}
+            </span>
+          )}
+          {data.ringNumber && (
             <img
-              src={`https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`}
-              alt={data.country}
-              className="w-6 h-5 rounded-sm"
+              src="/assets/Letter-P.png"
+              alt="Letter P"
+              width={24}
+              height={24}
+              className="w-6 h-6"
             />
-            <p className="text-black">{countryCode}</p>
-          </div>
-        )}
-
-        {/* <Crown className="w-3 h-3 text-amber-600" /> */}
-        {data.birthYear && (
-          <span className="text-black">
-            {data.birthYear.toString().slice(-2)}
-          </span>
-        )}
-        {data.ringNumber && (
-          <span className=" font-bold text-[#C33739]">{data.ringNumber}</span>
-        )}
-        {data.gender && (
-          <span className="text-black text-xl">
-            {getGenderIcon(data.gender)}
-          </span>
-        )}
-        <img
-          src="/assets/Letter-P.png"
-          alt="Letter P"
-          width={24}
-          height={24}
-          className="w-6 h-6"
-        />
-        <img
-          src="/assets/GoldCup.png"
-          alt="Letter P"
-          width={30}
-          height={30}
-          className="w-7 h-7"
-        />
+          )}
+          {data.ringNumber && (
+            <img
+              src="/assets/GoldCup.png"
+              alt="Letter P"
+              width={30}
+              height={30}
+              className="w-7 h-7"
+            />
+          )}
+        </div>
 
         {/* <WinnerPedigree /> */}
       </div>
@@ -168,7 +179,7 @@ const PigeonNode = ({ data }) => {
 
         {data.description && (
           <div className="">
-            <p className="text-sm text-slate-700">{data.description}</p>
+            <p className="text-sm text-slate-700">{data.description.slice(0, 600)}</p>
           </div>
         )}
         {data.colorName && (
@@ -214,11 +225,17 @@ export default function PigeonPedigreeChart() {
   console.log("id", id);
 
   const { data: pedigreeData, isLoading } = useGetPigeonPedigreeDataQuery(id);
-  console.log("pedigreeData", pedigreeData);
+  // console.log("pedigreeData", pedigreeData);
   const chartRef = useRef(null);
 
+  const { data, isLoading: isLoadingProfile } = useGetProfileQuery();
+
+  const role = data?.role;
+
+  console.log("user data", role);
+
   const { nodes: dynamicNodes, edges: dynamicEdges } = useMemo(() => {
-    return convertBackendToExistingFormat(pedigreeData);
+    return convertBackendToExistingFormat(pedigreeData, role);
   }, [pedigreeData]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(dynamicNodes);
@@ -504,6 +521,8 @@ export default function PigeonPedigreeChart() {
       </div>
     );
 
+  // if (isLoadingProfile) return <Spinner />;
+
   return (
     <div className="container  mx-auto">
       <div className="flex flex-col md:flex-row items-center justify-between mt-12">
@@ -540,7 +559,7 @@ export default function PigeonPedigreeChart() {
       </div>
       <div
         ref={chartRef}
-        className="w-full h-[1700px] flex justify-start items-center mt-0"
+        className="w-full h-[2000px] bg-transparent flex justify-start items-center mt-0 rounded-3xl"
       >
         {/* --- ReactFlow (now dynamic) --- */}
         <ReactFlow

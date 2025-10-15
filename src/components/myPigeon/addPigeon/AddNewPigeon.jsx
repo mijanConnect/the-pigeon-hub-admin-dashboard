@@ -1,5 +1,6 @@
 import { DownOutlined, PlusOutlined } from "@ant-design/icons";
 import {
+  AutoComplete,
   Button,
   Col,
   Dropdown,
@@ -8,7 +9,6 @@ import {
   Menu,
   Row,
   Select,
-  Switch,
   Upload,
   message,
 } from "antd";
@@ -55,12 +55,20 @@ const AddNewPigeon = ({ onSave }) => {
   const currentYear = new Date().getFullYear();
 
   const [value, setValue] = useState("");
+  const [value2, setValue2] = useState("");
+  const [breederDisplay, setBreederDisplay] = useState("");
+  const [fatherDisplay, setFatherDisplay] = useState("");
+  const [motherDisplay, setMotherDisplay] = useState("");
 
   const handleChangePlace = (e) => {
     setValue(e.target.value);
   };
 
-  console.log("id", id);
+  const handleChangePlace2 = (e) => {
+    setValue2(e.target.value);
+  };
+
+  // console.log("id", id);
 
   // 🔎 Parents
   const [fatherSearch, setFatherSearch] = useState("");
@@ -138,6 +146,24 @@ const AddNewPigeon = ({ onSave }) => {
         breeder: pigeonData.breeder?._id || pigeonData.breeder,
       });
 
+      // show father ring in the input (keep typed value if user entered)
+      if (pigeonData.fatherRingId) {
+        setFatherDisplay(pigeonData.fatherRingId?.ringNumber || "");
+      }
+
+      // show breeder name/string in the input (resolve later when breederNames arrive)
+      if (pigeonData.breeder) {
+        if (typeof pigeonData.breeder === "object")
+          setBreederDisplay(
+            pigeonData.breeder.breederName || pigeonData.breeder.name || ""
+          );
+        else setBreederDisplay(pigeonData.breeder);
+      }
+      // show mother ring in the input (keep typed value if user entered)
+      if (pigeonData.motherRingId) {
+        setMotherDisplay(pigeonData.motherRingId?.ringNumber || "");
+      }
+
       // Set iconic enabled state based on existing data
       setIsIconicEnabled(pigeonData.iconic === true);
 
@@ -175,6 +201,8 @@ const AddNewPigeon = ({ onSave }) => {
         pedigreePhoto: [],
         DNAPhoto: [],
       });
+      // reset breederDisplay for new form
+      setBreederDisplay("");
     }
   }, [pigeonData, id, form]);
 
@@ -202,6 +230,55 @@ const AddNewPigeon = ({ onSave }) => {
 
   const { data: breederNames = [], isLoading: breedersLoading } =
     useGetBreederNamesQuery();
+
+  useEffect(() => {
+    try {
+      const current = form.getFieldValue("breeder");
+      if (current) {
+        const match = breederNames.find(
+          (b) => b._id === current || b.breederName === current
+        );
+        if (match) {
+          setBreederDisplay(match.breederName);
+          form.setFieldsValue({ breeder: match._id });
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [breederNames]);
+
+  // Resolve fatherRingId to display value when fatherOptions change (editing scenario)
+  useEffect(() => {
+    try {
+      const current = form.getFieldValue("fatherRingId");
+      if (current) {
+        const match = fatherOptions.find(
+          (p) => p.ringNumber === current || p.ringNumber === String(current)
+        );
+        if (match) setFatherDisplay(match.ringNumber);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [fatherOptions]);
+
+  // Resolve motherRingId to display value when motherOptions change (editing scenario)
+  useEffect(() => {
+    try {
+      const current = form.getFieldValue("motherRingId");
+      if (current) {
+        const match = motherOptions.find(
+          (p) => p.ringNumber === current || p.ringNumber === String(current)
+        );
+        if (match) setMotherDisplay(match.ringNumber);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [motherOptions]);
+
+  // NOTE: we sync breederDisplay via Form's onValuesChange below instead of subscribing.
 
   const [updatePigeon, { isLoading: isUpdating }] = useUpdatePigeonMutation();
 
@@ -373,6 +450,19 @@ const AddNewPigeon = ({ onSave }) => {
         form={form}
         layout="vertical"
         className="mb-6 border rounded-lg border-primary px-[30px] py-[25px] mt-4"
+        onValuesChange={(changedValues, allValues) => {
+          if (Object.prototype.hasOwnProperty.call(changedValues, "breeder")) {
+            const current = changedValues.breeder;
+            if (typeof current === "string") {
+              const match = breederNames.find(
+                (b) => b._id === current || b.breederName === current
+              );
+              setBreederDisplay(match ? match.breederName : current || "");
+            } else {
+              setBreederDisplay("");
+            }
+          }
+        }}
       >
         <div className="add-pigeon-row flex justify-between mb-6">
           <style>{`@media (max-width: 1179px) { .add-pigeon-row{flex-direction:column !important;} .add-pigeon-row .left-column, .add-pigeon-row .right-column{width:100% !important;}
@@ -384,7 +474,7 @@ const AddNewPigeon = ({ onSave }) => {
                 <Form.Item
                   label="Ring Number"
                   name="ringNumber"
-                  // rules={[{ required: true }]}
+                  rules={[{ required: true }]}
                   className="custom-form-item-ant"
                 >
                   <Input
@@ -421,14 +511,41 @@ const AddNewPigeon = ({ onSave }) => {
 
                 {/* Short Information of the Pigeon */}
                 <Form.Item
-                  label="Short Information of the Pigeon"
+                  label="Story Line"
                   name="shortInfo"
                   className="custom-form-item-ant"
                 >
-                  <Input.TextArea
+                  <div style={{ position: "relative" }}>
+                    {/* Custom placeholder simulation */}
+                    {!value2 && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "8px",
+                          left: "10px",
+                          color: "#999",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        (Son of Burj Khalifa)
+                        <br />
+                        Winner of the Dubai OLR
+                      </div>
+                    )}
+
+                    {/* Actual TextArea */}
+                    <Input.TextArea
+                      placeholder=""
+                      className="custom-input-ant-modal custom-textarea-pigeon"
+                      style={{ paddingTop: "40px" }} // Adjust padding to prevent overlapping text
+                      value={value2}
+                      onChange={handleChangePlace2} // Track the input value
+                    />
+                  </div>
+                  {/* <Input.TextArea
                     placeholder="Enter short information about the pigeon"
                     className="custom-input-ant-modal custom-textarea-pigeon"
-                  />
+                  /> */}
                 </Form.Item>
 
                 <Form.Item
@@ -529,7 +646,7 @@ const AddNewPigeon = ({ onSave }) => {
                 <Form.Item
                   label="Name"
                   name="name"
-                  // rules={[{ required: true }]}
+                  rules={[{ required: true }]}
                   className="custom-form-item-ant"
                 >
                   <Input
@@ -571,27 +688,60 @@ const AddNewPigeon = ({ onSave }) => {
                     ))}
                   </Select>
                 </Form.Item>
+
                 <Form.Item
                   label="Breeder"
                   name="breeder"
                   // rules={[{ required: true, message: "Please select a breeder" }]}
                   className="custom-form-item-ant-select"
                 >
-                  <Select
+                  <AutoComplete
+                    options={breederNames.map((b) => ({
+                      value: b.breederName,
+                      label: b.breederName,
+                      id: b._id,
+                    }))}
                     placeholder={
                       breedersLoading ? "Loading breeders..." : "Select Breeder"
                     }
                     className="custom-select-ant-modal"
-                    loading={breedersLoading}
-                    showSearch
-                    optionFilterProp="children"
-                  >
-                    {breederNames.map((b) => (
-                      <Option key={b._id} value={b._id}>
-                        {b.breederName}
-                      </Option>
-                    ))}
-                  </Select>
+                    value={breederDisplay}
+                    filterOption={(inputValue, option) =>
+                      option.value
+                        .toLowerCase()
+                        .includes(inputValue.toLowerCase())
+                    }
+                    onSelect={(value, option) => {
+                      const selected = breederNames.find(
+                        (b) => b.breederName === value || b._id === option?.id
+                      );
+                      if (selected) {
+                        form.setFieldsValue({ breeder: selected.breederName });
+                        setBreederDisplay(selected.breederName);
+                      } else {
+                        form.setFieldsValue({ breeder: value });
+                        setBreederDisplay(value);
+                      }
+                    }}
+                    onChange={(val) => {
+                      form.setFieldsValue({ breeder: val });
+                      setBreederDisplay(val);
+                    }}
+                    onBlur={() => {
+                      try {
+                        const current = form.getFieldValue("breeder");
+                        if (current && typeof current === "string")
+                          setBreederDisplay(current);
+                      } catch (e) {
+                        // ignore
+                      }
+                    }}
+                    allowClear
+                    onClear={() => {
+                      form.setFieldsValue({ breeder: undefined });
+                      setBreederDisplay("");
+                    }}
+                  />
                 </Form.Item>
 
                 <Form.Item
@@ -738,18 +888,44 @@ const AddNewPigeon = ({ onSave }) => {
                   name="fatherRingId"
                   className="custom-form-item-ant-select"
                 >
-                  <Select
-                    showSearch
-                    allowClear
+                  <AutoComplete
+                    options={fatherOptions.map((p) => ({
+                      value: p.ringNumber,
+                      label: `${p.ringNumber}(${p.name})`,
+                    }))}
                     placeholder="Search by Father Ring No."
                     className="custom-select-ant-modal"
-                    filterOption={false}
                     onSearch={setFatherSearch}
-                    loading={fatherLoading}
-                    options={fatherOptions.map((p) => ({
-                      label: `${p.ringNumber}(${p.name})`,
-                      value: p.ringNumber,
-                    }))}
+                    value={fatherDisplay}
+                    filterOption={(inputValue, option) =>
+                      String(option.value)
+                        .toLowerCase()
+                        .includes(String(inputValue).toLowerCase())
+                    }
+                    onSelect={(value) => {
+                      // when selecting suggestion, store selected ring number
+                      form.setFieldsValue({ fatherRingId: value });
+                      setFatherDisplay(value);
+                    }}
+                    onChange={(val) => {
+                      // keep typed value in field and form
+                      form.setFieldsValue({ fatherRingId: val });
+                      setFatherDisplay(val);
+                    }}
+                    onBlur={() => {
+                      try {
+                        const current = form.getFieldValue("fatherRingId");
+                        if (current && typeof current === "string")
+                          setFatherDisplay(current);
+                      } catch (e) {
+                        // ignore
+                      }
+                    }}
+                    allowClear
+                    onClear={() => {
+                      form.setFieldsValue({ fatherRingId: undefined });
+                      setFatherDisplay("");
+                    }}
                   />
                 </Form.Item>
                 <p className="text-gray-400 font-normal text-[12px] pt-1">
@@ -765,18 +941,42 @@ const AddNewPigeon = ({ onSave }) => {
                   name="motherRingId"
                   className="custom-form-item-ant-select"
                 >
-                  <Select
-                    showSearch
-                    allowClear
+                  <AutoComplete
+                    options={motherOptions.map((p) => ({
+                      value: p.ringNumber,
+                      label: `${p.ringNumber}(${p.name})`,
+                    }))}
                     placeholder="Search by Mother Ring No."
                     className="custom-select-ant-modal"
-                    filterOption={false}
                     onSearch={setMotherSearch}
-                    loading={motherLoading}
-                    options={motherOptions.map((p) => ({
-                      label: p.ringNumber,
-                      value: p.ringNumber,
-                    }))}
+                    value={motherDisplay}
+                    filterOption={(inputValue, option) =>
+                      String(option.value)
+                        .toLowerCase()
+                        .includes(String(inputValue).toLowerCase())
+                    }
+                    onSelect={(value) => {
+                      form.setFieldsValue({ motherRingId: value });
+                      setMotherDisplay(value);
+                    }}
+                    onChange={(val) => {
+                      form.setFieldsValue({ motherRingId: val });
+                      setMotherDisplay(val);
+                    }}
+                    onBlur={() => {
+                      try {
+                        const current = form.getFieldValue("motherRingId");
+                        if (current && typeof current === "string")
+                          setMotherDisplay(current);
+                      } catch (e) {
+                        // ignore
+                      }
+                    }}
+                    allowClear
+                    onClear={() => {
+                      form.setFieldsValue({ motherRingId: undefined });
+                      setMotherDisplay("");
+                    }}
                   />
                 </Form.Item>
                 <p className="text-gray-400 font-normal text-[12px] pt-1">

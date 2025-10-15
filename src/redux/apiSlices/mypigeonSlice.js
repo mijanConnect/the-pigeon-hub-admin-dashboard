@@ -49,10 +49,10 @@ const mypigeonSlice = api.injectEndpoints({
           ringNumber: pigeon.ringNumber || "N/A",
           birthYear: pigeon.birthYear || "N/A",
           father: pigeon.fatherRingId
-            ? `${pigeon.fatherRingId.ringNumber} (${pigeon.fatherRingId.name})`
+            ? `${pigeon.fatherRingId.ringNumber}`
             : "N/A",
           mother: pigeon.motherRingId
-            ? `${pigeon.motherRingId.ringNumber} (${pigeon.motherRingId.name})`
+            ? `${pigeon.motherRingId.ringNumber}`
             : "N/A",
           gender: pigeon.gender || "N/A",
           color: pigeon.color || "N/A",

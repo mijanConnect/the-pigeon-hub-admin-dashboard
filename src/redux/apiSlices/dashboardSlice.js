@@ -41,10 +41,10 @@ const dashboardSlice = api.injectEndpoints({
           ringNumber: pigeon?.ringNumber || "N/A",
           birthYear: pigeon?.birthYear || "N/A",
           father: pigeon?.fatherRingId
-            ? `${pigeon?.fatherRingId?.name}`
+            ? `${pigeon?.fatherRingId?.ringNumber}`
             : "N/A",
           mother: pigeon?.motherRingId
-            ? `${pigeon?.motherRingId?.name}`
+            ? `${pigeon?.motherRingId?.ringNumber}`
             : "N/A",
           gender: pigeon?.gender || "N/A",
           status: pigeon?.status || "N/A",

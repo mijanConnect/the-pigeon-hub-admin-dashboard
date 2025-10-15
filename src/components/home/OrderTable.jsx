@@ -126,8 +126,14 @@ const PigeonTable = () => {
     },
   };
 
-  if (isLoading) return <Spinner />;
-  if (isError) return <p>Failed to load pigeons.</p>;
+  // if (isLoading) return <Spinner />;
+  if (isError)
+    return (
+      <div className="text-center text-gray-500">
+        <p>Oops! Something went wrong. Please try again later.</p>
+      </div>
+      // <p>Failed to load pigeons.</p>
+    );
 
   return (
     <div className="w-full">
@@ -148,6 +154,7 @@ const PigeonTable = () => {
               // rowSelection={rowSelection}
               columns={columns}
               dataSource={pigeons}
+              loading={isLoading}
               rowClassName={() => "hover-row"}
               components={{
                 header: {

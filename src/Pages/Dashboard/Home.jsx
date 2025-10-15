@@ -95,7 +95,9 @@ const Home = () => {
 
   if (isLoading)
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div
+        className="flex justify-center items-center h-screen"
+      >
         <Spinner />
       </div>
     );

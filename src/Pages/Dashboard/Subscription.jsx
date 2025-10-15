@@ -186,7 +186,11 @@ const PackagesPlans = () => {
     );
   if (isError)
     return (
-      <p className="text-center py-12 text-red-500">Failed to load packages</p>
+      <div className="text-center text-gray-500">
+        <p>Oops! Something went wrong. Please try again later.</p>
+      </div>
+      // <p>Failed to load pigeons.</p>
+      // <p className="text-center py-12 text-red-500">Failed to load packages</p>
     );
 
   return (

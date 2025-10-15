@@ -105,7 +105,11 @@ export default function MonthlyStatsChart() {
     );
   if (error)
     return (
-      <p className="text-red-500">Failed: {error?.data || error?.error}</p>
+      // <p className="text-red-500">Failed: {error?.data || error?.error}</p>
+      <div className="text-center text-gray-500">
+        <p>Oops! Something went wrong. Please try again later.</p>
+      </div>
+      // <p>Failed to load pigeons.</p>
     );
 
   return (

@@ -378,6 +378,7 @@ const LoginCredentials = () => {
               // rowSelection={rowSelection}
               columns={columns}
               dataSource={data}
+              loading={isUsersLoading}
               rowClassName={() => "hover-row"}
               components={{
                 header: {
