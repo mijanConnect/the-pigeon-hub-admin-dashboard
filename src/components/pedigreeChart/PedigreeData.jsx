@@ -140,7 +140,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       type: "pigeonNode",
       position: { x: 320, y: window.screen?.height - -130 || 1000 },
       data: {
-        name: subject.motherRingId.name || "Unknown Mother",
+        name: subject.motherRingId.name,
         ringNumber: subject.motherRingId.ringNumber,
         owner: getBreederInfo(subject.motherRingId.breeder),
         country: subject.motherRingId.country,
@@ -152,8 +152,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         colorName: subject.motherRingId.color,
         description:
           subject.motherRingId.notes ||
-          subject.motherRingId.shortInfo ||
-          "No description available",
+          subject.motherRingId.shortInfo,
         achievements: formatResults(subject.motherRingId.addresults),
         verified: getBreederVerification(subject.motherRingId.breeder),
         handles: "right-only",
@@ -194,7 +193,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       type: "pigeonNode",
       position: { x: 640, y: -200 },
       data: {
-        name: subject.fatherRingId.fatherRingId.name || "Unknown GF (FP)",
+        name: subject.fatherRingId.fatherRingId.name,
         ringNumber: subject.fatherRingId.fatherRingId.ringNumber,
         owner: getBreederInfo(subject.fatherRingId.fatherRingId.breeder),
         country: subject.fatherRingId.fatherRingId.country,
@@ -203,14 +202,12 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         position: "Grandfather (FP)",
         birthYear: subject.fatherRingId.fatherRingId.birthYear?.toString(),
         color: "#fff",
-        colorName: subject.fatherRingId.fatherRingId.color || "Blue",
+        colorName: subject.fatherRingId.fatherRingId.color,
         description:
           subject.fatherRingId.fatherRingId.notes ||
-          subject.fatherRingId.fatherRingId.shortInfo ||
-          "Top racing cock.",
+          subject.fatherRingId.fatherRingId.shortInfo,
         achievements:
-          formatResults(subject.fatherRingId.fatherRingId.addresults) ||
-          "Multiple race winner",
+          formatResults(subject.fatherRingId.fatherRingId.addresults),
         verified: getBreederVerification(
           subject.fatherRingId.fatherRingId.breeder
         ),
@@ -238,7 +235,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       type: "pigeonNode",
       position: { x: 640, y: 330 },
       data: {
-        name: subject.fatherRingId.motherRingId.name || "Unknown GM (FP)",
+        name: subject.fatherRingId.motherRingId.name,
         ringNumber: subject.fatherRingId.motherRingId.ringNumber,
         owner: getBreederInfo(subject.fatherRingId.motherRingId.breeder),
         country: subject.fatherRingId.motherRingId.country,
@@ -247,14 +244,12 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         position: "Grandmother (FP)",
         birthYear: subject.fatherRingId.motherRingId.birthYear?.toString(),
         color: "#fff",
-        colorName: subject.fatherRingId.motherRingId.color || "Sky Blue",
+        colorName: subject.fatherRingId.motherRingId.color,
         description:
           subject.fatherRingId.motherRingId.notes ||
-          subject.fatherRingId.motherRingId.shortInfo ||
-          "Excellent breeding hen.",
+          subject.fatherRingId.motherRingId.shortInfo,
         achievements:
-          formatResults(subject.fatherRingId.motherRingId.addresults) ||
-          "Top producer",
+          formatResults(subject.fatherRingId.motherRingId.addresults),
         verified: getBreederVerification(
           subject.fatherRingId.motherRingId.breeder
         ),
@@ -282,7 +277,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       type: "pigeonNode",
       position: { x: 640, y: 870 },
       data: {
-        name: subject.motherRingId.fatherRingId.name || "Unknown GF (MP)",
+        name: subject.motherRingId.fatherRingId.name,
         ringNumber: subject.motherRingId.fatherRingId.ringNumber,
         owner: getBreederInfo(subject.motherRingId.fatherRingId.breeder),
         country: subject.motherRingId.fatherRingId.country,
@@ -291,11 +286,10 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         position: "Grandfather (MP)",
         birthYear: subject.motherRingId.fatherRingId.birthYear?.toString(),
         color: "#fff",
-        colorName: subject.motherRingId.fatherRingId.color || "Royal Blue",
+        colorName: subject.motherRingId.fatherRingId.color,
         description:
           subject.motherRingId.fatherRingId.notes ||
-          subject.motherRingId.fatherRingId.shortInfo ||
-          "Champion racer.",
+          subject.motherRingId.fatherRingId.shortInfo,
         achievements:
           formatResults(subject.motherRingId.fatherRingId.addresults) ||
           "National ace",
@@ -326,7 +320,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       type: "pigeonNode",
       position: { x: 640, y: 1400 },
       data: {
-        name: subject.motherRingId.motherRingId.name || "Unknown GM (MP)",
+        name: subject.motherRingId.motherRingId.name,
         ringNumber: subject.motherRingId.motherRingId.ringNumber,
         owner: getBreederInfo(subject.motherRingId.motherRingId.breeder),
         country: subject.motherRingId.motherRingId.country,
@@ -335,14 +329,12 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         position: "Grandmother (MP)",
         birthYear: subject.motherRingId.motherRingId.birthYear?.toString(),
         color: "#fff",
-        colorName: subject.motherRingId.motherRingId.color || "Powder Blue",
+        colorName: subject.motherRingId.motherRingId.color,
         description:
           subject.motherRingId.motherRingId.notes ||
-          subject.motherRingId.motherRingId.shortInfo ||
-          "Foundation hen.",
+          subject.motherRingId.motherRingId.shortInfo,
         achievements:
-          formatResults(subject.motherRingId.motherRingId.addresults) ||
-          "Mother of champions",
+          formatResults(subject.motherRingId.motherRingId.addresults),
         verified: getBreederVerification(
           subject.motherRingId.motherRingId.breeder
         ),

@@ -1,16 +1,20 @@
+import { ConfigProvider } from "antd";
 import i18next from "i18next";
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { Toaster } from "react-hot-toast";
 import { I18nextProvider } from "react-i18next";
+import { Provider } from "react-redux";
 import App from "./App.jsx";
 import global_en from "./Translation/en/en.global.json";
 import global_es from "./Translation/es/es.global.json";
 import "./index.css";
-import { Provider } from "react-redux";
-import store from "./redux/store.js";
-import { Toaster } from "react-hot-toast";
 import { UserProvider } from "./provider/User.jsx";
-import { ConfigProvider } from "antd";
+import store from "./redux/store.js";
+// Enable global hide of browser vertical scrollbar (visual only). Remove if undesired.
+if (typeof document !== "undefined" && document?.body) {
+  document.body.classList.add("hide-browser-vertical-scroll");
+}
 
 i18next.init({
   interpolation: {

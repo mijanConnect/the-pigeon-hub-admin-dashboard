@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from "react";
 import {
-  Table,
   Button,
-  Modal,
+  Checkbox,
+  Col,
   Form,
   Input,
-  Tooltip,
-  Switch,
-  Select,
+  Modal,
   Row,
-  Col,
-  Checkbox,
+  Select,
+  Switch,
+  Table,
+  Tooltip,
 } from "antd";
+import { useEffect, useState } from "react";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { FaTrash, FaEdit } from "react-icons/fa";
 import Swal from "sweetalert2";
 import {
-  useGetUsersQuery,
-  useAddUserMutation,
-  useUpdateUserMutation,
-  useDeleteUserMutation,
   useAddRoleMutation,
+  useAddUserMutation,
+  useDeleteUserMutation,
   useGetRolesQuery,
+  useGetUsersQuery,
   useToggleUserStatusMutation,
+  useUpdateUserMutation,
 } from "../../redux/apiSlices/usermanageSlice";
 
 const { Option } = Select;
@@ -368,7 +368,7 @@ const LoginCredentials = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar">
         <div className="border rounded-lg shadow-md bg-gray-50">
           <div
             style={{ minWidth: "max-content" }}

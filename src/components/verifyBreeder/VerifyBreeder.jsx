@@ -354,7 +354,7 @@ const VerifyBreeder = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar">
         <div
           style={{ minWidth: "max-content" }}
           className="bg-[#333D49] rounded-lg"

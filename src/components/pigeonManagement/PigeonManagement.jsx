@@ -24,9 +24,9 @@ import {
   useTogglePigeonStatusMutation,
   useUpdatePigeonMutation,
 } from "../../redux/apiSlices/allpigeonSlice";
+import { useGetSiblingsQuery } from "../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../common/imageUrl";
 import ViewPigeon from "../myPigeon/ViewPigeon";
-import { useGetSiblingsQuery } from "../../redux/apiSlices/mypigeonSlice";
 
 const { Option } = Select;
 
@@ -647,7 +647,7 @@ const PigeonManagement = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar">
         <div className="border rounded-lg shadow-md bg-gray-50">
           <div
             style={{ minWidth: pigeons.length > 0 ? "max-content" : "100%" }}

@@ -234,6 +234,32 @@ input[type="number"]::-webkit-inner-spin-button {
   background: #555;
 }
 
+/* Reusable custom scrollbar utility */
+.custom-scrollbar {
+  /* For Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #333d49 #f1f1f1;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 /* Add this to your global CSS file */
 
 /* Ensure the root container is responsive */
@@ -243,6 +269,24 @@ body {
   width: 100%;
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+/* Optional: hide the browser's right-side vertical scrollbar globally (visual only).
+   Add the class `hide-browser-vertical-scroll` on the <body> or #root to enable.
+   This keeps scrolling functional (mouse wheel, touch, keyboard) but removes the
+   visual scrollbar in most modern browsers. */
+.hide-browser-vertical-scroll,
+body.hide-browser-vertical-scroll,
+#root.hide-browser-vertical-scroll {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-browser-vertical-scroll::-webkit-scrollbar,
+body.hide-browser-vertical-scroll::-webkit-scrollbar,
+#root.hide-browser-vertical-scroll::-webkit-scrollbar {
+  width: 0px; /* Hide vertical scrollbar in WebKit */
+  background: transparent;
 }
 
 /* Media queries for responsive components */

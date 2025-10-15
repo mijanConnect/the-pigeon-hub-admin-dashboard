@@ -522,7 +522,7 @@ const ViewPigeon = ({
                   <h3 className="font-bold text-[20px] text-primary mt-6 mb-1">
                     Siblings Information
                   </h3>
-                  <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+                  <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar">
                     <div className="border rounded-lg shadow-md bg-gray-50">
                       <div
                         style={
@@ -675,7 +675,7 @@ const ViewPigeon = ({
                   <h3 className="font-bold text-[20px] text-primary mt-6 mb-1">
                     Race Results
                   </h3>
-                  <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+                  <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar">
                     <div className="border rounded-lg shadow-md bg-gray-50">
                       <div
                         style={

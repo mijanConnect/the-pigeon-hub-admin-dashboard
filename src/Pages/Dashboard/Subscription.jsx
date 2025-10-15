@@ -1,30 +1,25 @@
-import React, { useState, useEffect } from "react";
+import { CheckCircleFilled, EditOutlined } from "@ant-design/icons";
 import {
-  Card,
   Button,
-  Modal,
+  Card,
+  Col,
   Form,
   Input,
   List,
   message,
-  Select,
+  Modal,
   Row,
-  Col,
+  Select,
 } from "antd";
-import {
-  EditOutlined,
-  PlusOutlined,
-  CheckCircleFilled,
-} from "@ant-design/icons";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import FeaturedInput from "../../components/common/PackageFeatureInput";
-import { CloseCircleFilled } from "@ant-design/icons";
 import Spinner from "../../components/common/Spinner";
 import {
-  useGetPackagesQuery,
   useAddPackageMutation,
-  useUpdatePackageMutation,
   useDeletePackageMutation,
+  useGetPackagesQuery,
+  useUpdatePackageMutation,
 } from "../../redux/apiSlices/packageSlice";
 
 const PackagesPlans = () => {
@@ -334,10 +329,20 @@ const PackagesPlans = () => {
                   rules={[{ required: true, message: "Title is required" }]}
                   className="custom-form-item-ant"
                 >
-                  <Input
-                    placeholder="e.g. Basic Plan"
-                    className="custom-input-ant-modal"
-                  />
+                  <Select
+                    placeholder="Select Package"
+                    className="custom-select-ant-modal"
+                  >
+                    <Select.Option value="Free Trial -1 Month">
+                      Free Trial -1 Month
+                    </Select.Option>
+                    <Select.Option value="Monthly Plan">
+                      Monthly Plan
+                    </Select.Option>
+                    <Select.Option value="Yearly Plan (Best Value)">
+                      Yearly Plan (Best Value)
+                    </Select.Option>
+                  </Select>
                 </Form.Item>
               </Col>
 

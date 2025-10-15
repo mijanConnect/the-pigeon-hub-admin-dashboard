@@ -1,11 +1,9 @@
-import React, { useState } from "react";
 import { Table } from "antd";
-import VerifyIcon from "../../../src/assets/verify.png";
-import { getImageUrl } from "../common/imageUrl";
-import PigeonImage from "../../../src/assets/pigeon-image.png";
-import { useGetRecentPigeonsQuery } from "../../redux/apiSlices/dashboardSlice";
 import { getCode } from "country-list";
-import Spinner from "../common/Spinner";
+import { useState } from "react";
+import VerifyIcon from "../../../src/assets/verify.png";
+import { useGetRecentPigeonsQuery } from "../../redux/apiSlices/dashboardSlice";
+import { getImageUrl } from "../common/imageUrl";
 
 // const getImageUrlTable = (path) =>
 //   path ? `${getImageUrl}${path}` : PigeonImage;
@@ -144,7 +142,7 @@ const PigeonTable = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar">
         <div className="border rounded-lg shadow-md bg-gray-50">
           <div
             style={{ minWidth: "max-content" }}
