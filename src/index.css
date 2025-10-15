@@ -790,6 +790,6 @@ select {
   white-space: nowrap !important;
 }
 
-.react-flow__pane {
+/* .react-flow__pane {
   left: -200px !important;
-}
+} */
