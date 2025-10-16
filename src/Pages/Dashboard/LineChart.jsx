@@ -38,6 +38,36 @@ const months = [
   "Dec",
 ];
 
+// Custom plugin to draw dotted vertical line on hover
+const crosshairPlugin = {
+  id: "crosshair",
+  afterDatasetsDraw(chart) {
+    const {
+      ctx,
+      tooltip,
+      chartArea: { top, bottom },
+    } = chart;
+
+    if (tooltip && tooltip.getActiveElements().length > 0) {
+      const activePoint = tooltip.getActiveElements()[0];
+      const x = activePoint.element.x;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.setLineDash([5, 5]); // Dotted pattern
+      ctx.strokeStyle = "#088395";
+      ctx.lineWidth = 1.5;
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bottom);
+      ctx.stroke();
+      ctx.restore();
+    }
+  },
+};
+
+// Register the plugin
+ChartJS.register(crosshairPlugin);
+
 const LineChart = () => {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -123,12 +153,19 @@ const LineChart = () => {
     },
     scales: {
       x: {
-        grid: { display: true, color: "#088395" },
+        grid: {
+          display: true,
+          color: "#088395",
+          drawOnChartArea: true,
+          drawTicks: false,
+          offset: false,
+        },
         ticks: {
           color: "#181818",
           maxRotation: 45,
           minRotation: 0,
           autoSkip: true,
+          padding: 12,
           font: { size: window.innerWidth < 768 ? 8 : 12 },
         },
       },
@@ -137,7 +174,7 @@ const LineChart = () => {
         beginAtZero: false,
         ticks: {
           color: "#181818",
-          padding: window.innerWidth < 768 ? 10 : 32,
+          padding: window.innerWidth < 768 ? 5 : 10,
           callback: (value) => `$${value.toLocaleString()}`,
           font: { size: window.innerWidth < 768 ? 8 : 12 },
         },
