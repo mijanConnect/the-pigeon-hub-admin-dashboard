@@ -95,9 +95,7 @@ const Home = () => {
 
   if (isLoading)
     return (
-      <div
-        className="flex justify-center items-center h-screen"
-      >
+      <div className="flex justify-center items-center h-screen">
         <Spinner />
       </div>
     );
@@ -153,11 +151,11 @@ const Home = () => {
             </Select> */}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-auto lg:h-[240px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-auto">
             {/* Total Pigeons */}
-            <div className="bg-white border border-primary rounded-lg flex items-center justify-center">
+            <div className="bg-white border border-primary rounded-lg flex items-center p-6">
               <div className="flex flex-col items-baseline">
-                <h2 className="text-center text-[16px] font-semibold mb-1">
+                <h2 className="text-start text-[16px] font-semibold mb-1">
                   Total Pigeon
                 </h2>
                 <h3 className="text-secondary text-[24px] text-center font-semibold flex items-center gap-3">
@@ -167,9 +165,9 @@ const Home = () => {
             </div>
 
             {/* Verified Pigeons */}
-            <div className="bg-white border border-primary rounded-lg flex items-center justify-center">
+            <div className="bg-white border border-primary rounded-lg flex items-center p-6">
               <div className="flex flex-col items-baseline">
-                <h2 className="text-center text-[16px] font-semibold mb-1">
+                <h2 className="text-start text-[16px] font-semibold mb-1">
                   Verified Pigeon
                 </h2>
                 <h3 className="text-secondary text-[24px] text-center font-semibold flex items-center gap-3">
@@ -180,9 +178,9 @@ const Home = () => {
             </div>
 
             {/* Iconic Pigeons */}
-            <div className="bg-white border border-primary rounded-lg flex items-center justify-center">
+            <div className="bg-white border border-primary rounded-lg flex items-center p-6">
               <div className="flex flex-col items-baseline">
-                <h2 className="text-center text-[16px] font-semibold mb-1">
+                <h2 className="text-start text-[16px] font-semibold mb-1">
                   Iconic Pigeon
                 </h2>
                 <h3 className="text-secondary text-[24px] text-center font-semibold flex items-center gap-3">
@@ -192,9 +190,9 @@ const Home = () => {
             </div>
 
             {/* Subscription Revenue */}
-            <div className="bg-white border border-primary rounded-lg flex items-center justify-center">
+            <div className="bg-white border border-primary rounded-lg flex items-center p-6">
               <div className="flex flex-col items-baseline">
-                <h2 className="text-center text-[16px] font-semibold mb-1">
+                <h2 className="text-start text-[16px] font-semibold mb-1">
                   Subscription Revenue
                 </h2>
                 <h3 className="text-secondary text-[24px] text-center font-semibold flex items-center gap-3">

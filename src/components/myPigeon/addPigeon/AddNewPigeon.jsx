@@ -341,7 +341,7 @@ const AddNewPigeon = ({ onSave }) => {
         iconic: values.iconic === "yes",
         fatherRingId: values.fatherRingId || "",
         motherRingId: values.motherRingId || "",
-        addresults: values.addresults || "",
+        addresults: values.addresults ? values.addresults.split("\n") : [],
       };
 
       const token = localStorage.getItem("token");
@@ -486,6 +486,7 @@ const AddNewPigeon = ({ onSave }) => {
                   <Input
                     placeholder="Enter Ring Number"
                     className="custom-input-ant-modal"
+                    // required
                   />
                 </Form.Item>
 
@@ -658,6 +659,7 @@ const AddNewPigeon = ({ onSave }) => {
                   <Input
                     placeholder="Enter Name"
                     className="custom-input-ant-modal"
+                    // required
                   />
                 </Form.Item>
 

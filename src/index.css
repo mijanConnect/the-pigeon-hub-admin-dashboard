@@ -793,3 +793,8 @@ select {
 /* .react-flow__pane {
   left: -200px !important;
 } */
+
+/* Make input text inside Ant Select white */
+.custom-select-ant-table-select .ant-select-selection-search-input {
+  color: white !important;
+}

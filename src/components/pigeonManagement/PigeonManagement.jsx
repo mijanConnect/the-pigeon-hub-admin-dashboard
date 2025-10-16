@@ -568,7 +568,7 @@ const PigeonManagement = () => {
               <label className="mb-1 text-gray-300">Country</label>
               <Select
                 placeholder="Select Country"
-                className="custom-select-ant"
+                className="custom-select-ant custom-select-ant-table-select"
                 style={{ width: "100%" }}
                 value={filters.country || "all"}
                 onChange={(value) => handleFilterChange("country", value)}

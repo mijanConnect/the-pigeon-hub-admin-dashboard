@@ -498,6 +498,33 @@ const ViewPigeon = ({
                     </p>
                   </div>
                   <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Verified: </p>
+                    <p className="font-semibold text-[14px]">
+                      {pigeonData?.verified === true ? (
+                        <img
+                          src={VerifyIcon} // replace with the actual image path
+                          alt="Verified"
+                          style={{ width: 20, height: 20 }}
+                          className="ml-1"
+                        />
+                      ) : (
+                        "N/A"
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Iconic: </p>
+                    <p className="font-semibold text-[14px]">
+                      {pigeonData?.iconic === true ? "Yes" : "No"}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <p className="font-normal text-[14px]">Iconic Score: </p>
+                    <p className="font-semibold text-[14px]">
+                      {safeValue(pigeonData.iconicScore) || "N/A"}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
                     <p className="font-semibold text-[14px]">
                       Your Story:{" "}
                       <span className="font-normal text-[14px]">
@@ -508,14 +535,28 @@ const ViewPigeon = ({
                 </div>
               </div>
 
-              <div className="flex gap-1 mt-6 border p-4 rounded-lg">
+              {/* <div className="flex gap-1 mt-6 border p-4 rounded-lg">
                 <p className="font-semibold text-[14px]">
                   Race Results:{" "}
                   <span className="font-normal text-[14px]">
                     {safeValue(pigeonData.addresults) || "N/A"}
                   </span>
                 </p>
+              </div> */}
+              <div className="flex gap-1 mt-6 border p-4 rounded-lg">
+                <p className="font-semibold text-[14px]">
+                  Race Results:{" "}
+                  <span className="font-normal text-[14px]">
+                    {Array.isArray(pigeonData.addresults) &&
+                    pigeonData.addresults.length > 0
+                      ? pigeonData.addresults.map((result, index) => (
+                          <div key={index}>{result}</div>
+                        ))
+                      : "N/A"}
+                  </span>
+                </p>
               </div>
+
               {/* Siblings Information */}
               {siblingsData?.length > 0 && (
                 <>
