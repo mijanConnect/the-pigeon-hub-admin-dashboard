@@ -1,18 +1,16 @@
 // LineChart.jsx
-import React, { useState, useEffect } from "react";
-import { Line } from "react-chartjs-2";
 import {
-  Chart as ChartJS,
   CategoryScale,
+  Chart as ChartJS,
   LinearScale,
-  PointElement,
   LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
+import { useEffect, useState } from "react";
+import { Line } from "react-chartjs-2";
 import { useGetMonthlyRevenueQuery } from "../../redux/apiSlices/dashboardSlice";
-import { data } from "autoprefixer";
 
 // Registering chart.js components
 ChartJS.register(
@@ -90,6 +88,11 @@ const LineChart = () => {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: {
+      mode: "nearest",
+      intersect: false,
+      axis: "x",
+    },
     plugins: {
       legend: {
         display: false,
