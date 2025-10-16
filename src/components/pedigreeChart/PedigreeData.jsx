@@ -25,17 +25,20 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
   // };
 
   const formatResults = (results) => {
-    if (!results || typeof results !== "string" || results.trim() === "")
+    if (!results || !Array.isArray(results) || results.length === 0) {
       return null;
-    return results;
+    }
+    return results.join("\n");
   };
-
   // Helper function to get gender from data
   const getGender = (genderData) => {
     if (typeof genderData === "string") {
-      return genderData.toLowerCase() === "hen" ? "Hen" : "Cock";
+      const gender = genderData.toLowerCase();
+      if (gender === "hen") return "Hen";
+      if (gender === "cock") return "Cock";
+      if (gender === "unspecified") return "Unspecified";
     }
-    return "Cock";
+    return "Unspecified"; // Default case
   };
 
   // Helper function to get breeder name with status check
@@ -85,7 +88,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       color: "#FFFFE0",
       colorName: subject.color,
       description:
-        subject.notes || subject.shortInfo || "No description available",
+        subject.notes || subject.shortInfo,
       achievements: formatResults(subject.addresults),
       verified: getBreederVerification(subject.breeder),
       handles: "top-bottom",
@@ -112,8 +115,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         colorName: subject.fatherRingId.color,
         description:
           subject.fatherRingId.notes ||
-          subject.fatherRingId.shortInfo ||
-          "No description available",
+          subject.fatherRingId.shortInfo,
         achievements: formatResults(subject.fatherRingId.addresults),
         verified: getBreederVerification(subject.fatherRingId.breeder),
         handles: "right-only",
@@ -151,8 +153,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         color: "#fff",
         colorName: subject.motherRingId.color,
         description:
-          subject.motherRingId.notes ||
-          subject.motherRingId.shortInfo,
+          subject.motherRingId.notes || subject.motherRingId.shortInfo,
         achievements: formatResults(subject.motherRingId.addresults),
         verified: getBreederVerification(subject.motherRingId.breeder),
         handles: "right-only",
@@ -206,8 +207,9 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         description:
           subject.fatherRingId.fatherRingId.notes ||
           subject.fatherRingId.fatherRingId.shortInfo,
-        achievements:
-          formatResults(subject.fatherRingId.fatherRingId.addresults),
+        achievements: formatResults(
+          subject.fatherRingId.fatherRingId.addresults
+        ),
         verified: getBreederVerification(
           subject.fatherRingId.fatherRingId.breeder
         ),
@@ -248,8 +250,9 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         description:
           subject.fatherRingId.motherRingId.notes ||
           subject.fatherRingId.motherRingId.shortInfo,
-        achievements:
-          formatResults(subject.fatherRingId.motherRingId.addresults),
+        achievements: formatResults(
+          subject.fatherRingId.motherRingId.addresults
+        ),
         verified: getBreederVerification(
           subject.fatherRingId.motherRingId.breeder
         ),
@@ -333,8 +336,9 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         description:
           subject.motherRingId.motherRingId.notes ||
           subject.motherRingId.motherRingId.shortInfo,
-        achievements:
-          formatResults(subject.motherRingId.motherRingId.addresults),
+        achievements: formatResults(
+          subject.motherRingId.motherRingId.addresults
+        ),
         verified: getBreederVerification(
           subject.motherRingId.motherRingId.breeder
         ),
@@ -385,8 +389,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
             colorName: parentPath.color,
             description:
               parentPath.notes ||
-              parentPath.shortInfo ||
-              "No description available",
+              parentPath.shortInfo,
             achievements: formatResults(parentPath.addresults),
             verified: getBreederVerification(parentPath.breeder),
             isEmpty: false,

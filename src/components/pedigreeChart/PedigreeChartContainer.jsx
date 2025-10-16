@@ -1,49 +1,44 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import ReactFlow, {
-  useNodesState,
-  useEdgesState,
   addEdge,
   Handle,
   Position,
+  useEdgesState,
+  useNodesState,
 } from "reactflow";
 
+import { DownloadOutlined } from "@ant-design/icons";
+import { Button } from "antd";
 import "reactflow/dist/style.css";
-import { Card, Button, Modal, Spin } from "antd";
-import {
-  UserOutlined,
-  CalendarOutlined,
-  CrownOutlined,
-  TrophyOutlined,
-  InfoCircleOutlined,
-  DownloadOutlined,
-} from "@ant-design/icons";
 
 import { useGetProfileQuery } from "../../redux/apiSlices/profileSlice";
 // import { useParams } from "next/navigation";
 // import Spinner from "@/app/(commonLayout)/Spinner";
 import { getCode } from "country-list";
 // import { WinnerPedigree } from "../share/svg/howItWorkSvg";
-import * as XLSX from "xlsx";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import * as XLSX from "xlsx";
 // import { convertBackendToExistingFormat } from "./PigeonData";
 // import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
 import { useParams } from "react-router-dom";
-import { convertBackendToExistingFormat } from "./PedigreeData";
 import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
 import Spinner from "../common/Spinner";
-import { useProfileQuery } from "../../redux/apiSlices/authSlice";
+import { convertBackendToExistingFormat } from "./PedigreeData";
 
 const PigeonNode = ({ data }) => {
   const countryCode = data.country ? getCode(data.country) : null;
   // Remove console logs in production
-  console.log(data.gender);
-  console.log(data.verified);
+  // console.log(data.gender);
+  // console.log(data.verified);
 
   // Gender is already properly formatted as "Hen" or "Cock" from PedigreeData.jsx
   // Just use the gender icon function directly
   const getGenderIcon = (gender) => {
-    return gender === "Cock" ? "♂" : "♀";
+    if (gender === "Cock") return "♂";
+    if (gender === "Hen") return "♀";
+    if (gender === "Unspecified") return "⚪";
+    return "⚪"; // default fallback
   };
 
   const getGenerationColor = (generation) => {
@@ -147,9 +142,9 @@ const PigeonNode = ({ data }) => {
       </div>
 
       <div className="">
-        <div className="flex items-center justify-start gap-2 space-y-2">
+        <div className="flex items-center justify-start gap-2">
           {data.name && (
-            <h3 className="font-bold text-black pb-2 truncate">{data.name}</h3>
+            <h3 className="font-bold text-black truncate">{data.name}</h3>
           )}
         </div>
         <div className="flex items-center justify-start gap-2">
@@ -163,7 +158,7 @@ const PigeonNode = ({ data }) => {
           {data.owner && (
             <div className="flex items-center gap-2  italic text-black">
               {/* <UserOutlined className="w-3 h-3" /> */}
-              <span className="truncate pb-2">{data.owner}</span>
+              <span className="truncate">{data.owner}</span>
               {data.verified && (
                 <img
                   src="/assets/Letter-B.png"
@@ -179,7 +174,9 @@ const PigeonNode = ({ data }) => {
 
         {data.description && (
           <div className="">
-            <p className="text-sm text-slate-700">{data.description.slice(0, 600)}</p>
+            <p className="text-sm text-slate-700">
+              {data.description.slice(0, 600)}
+            </p>
           </div>
         )}
         {data.colorName && (
@@ -188,16 +185,18 @@ const PigeonNode = ({ data }) => {
           </div>
         )}
         {data.achievements && (
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-black">Results : </p>
-            <img
-              src="/assets/GoldTrophy.png"
-              alt="Letter P"
-              width={30}
-              height={30}
-              className="w-7 h-7"
-            />
-            <p className="text-xs text-black">{data.achievements}</p>
+          <div className="flex flex-col gap-1">
+            <p className="text-xs text-black inline-flex items-center flex-wrap gap-1 mt-1">
+              Results :
+              <img
+                src="/assets/GoldTrophy.png"
+                alt="Trophy"
+                width={20}
+                height={20}
+                className="w-5 h-5 inline-block"
+              />
+              <span className="inline-block">{data.achievements}</span>
+            </p>
           </div>
         )}
         {/* {data.position && (
@@ -222,7 +221,7 @@ const nodeTypes = {
 
 export default function PigeonPedigreeChart() {
   const { id } = useParams();
-  console.log("id", id);
+  // console.log("id", id);
 
   const { data: pedigreeData, isLoading } = useGetPigeonPedigreeDataQuery(id);
   // console.log("pedigreeData", pedigreeData);
@@ -232,7 +231,7 @@ export default function PigeonPedigreeChart() {
 
   const role = data?.role;
 
-  console.log("user data", role);
+  // console.log("user data", role);
 
   const { nodes: dynamicNodes, edges: dynamicEdges } = useMemo(() => {
     return convertBackendToExistingFormat(pedigreeData, role);
@@ -421,6 +420,40 @@ export default function PigeonPedigreeChart() {
       // Apply lab color replacements
       const styleBackups = temporarilyReplaceLabColors(chartRef.current);
 
+      // --- Temporarily remove truncation/overflow styles so html2canvas captures full text ---
+      const truncationBackups = [];
+      const removeTruncation = (el) => {
+        if (!el) return;
+        const elements = el.querySelectorAll(
+          ".truncate, .overflow-hidden, .whitespace-nowrap"
+        );
+        elements.forEach((e) => {
+          const original = {
+            element: e,
+            classList: Array.from(e.classList),
+            style: e.getAttribute("style"),
+          };
+          truncationBackups.push(original);
+          // remove classes that cause clipping
+          e.classList.remove(
+            "truncate",
+            "overflow-hidden",
+            "whitespace-nowrap"
+          );
+          // also remove inline overflow styles that could clip text
+          const oldStyle = e.getAttribute("style") || "";
+          const newStyle = oldStyle
+            .replace(/overflow:\s*hidden;?/g, "")
+            .replace(/text-overflow:\s*ellipsis;?/g, "")
+            .replace(/white-space:\s*nowrap;?/g, "");
+          if (newStyle.trim()) e.setAttribute("style", newStyle);
+          else e.removeAttribute("style");
+        });
+      };
+
+      // run removal
+      removeTruncation(chartRef.current);
+
       // Wait a moment for DOM updates
       await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -449,6 +482,16 @@ export default function PigeonPedigreeChart() {
         } else if (!backup.hasStyle) {
           backup.element.removeAttribute("style");
         }
+      });
+
+      // Restore truncation/overflow classes and inline styles
+      truncationBackups.forEach((b) => {
+        // restore class list
+        b.element.className = ""; // clear then re-add to keep order predictable
+        b.classList.forEach((c) => b.element.classList.add(c));
+        // restore inline style
+        if (b.style) b.element.setAttribute("style", b.style);
+        else b.element.removeAttribute("style");
       });
 
       const imgData = canvas.toDataURL("image/png", 1.0); // Full quality

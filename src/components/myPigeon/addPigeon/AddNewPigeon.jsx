@@ -322,7 +322,7 @@ const AddNewPigeon = ({ onSave }) => {
       const combinedColor =
         values.colorPattern?.color && values.colorPattern?.pattern
           ? `${values.colorPattern.color} ${values.colorPattern.pattern}`
-          : values.colorPattern?.color || values.colorPattern?.pattern || "-";
+          : values.colorPattern?.color || values.colorPattern?.pattern;
 
       const filteredRaceResults = raceResults
         .filter((r) => r.name || r.date || r.distance || r.total || r.place)

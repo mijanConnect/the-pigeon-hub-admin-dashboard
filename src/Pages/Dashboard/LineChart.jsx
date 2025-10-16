@@ -125,6 +125,11 @@ const LineChart = () => {
     ],
   };
 
+  // Determine if there's any non-zero revenue to show
+  const dataValues = chartData.datasets[0].data;
+  const hasRevenue = dataValues.some((v) => v && Number(v) > 0);
+  const maxRevenue = Math.max(...dataValues.map((v) => Number(v) || 0));
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -170,8 +175,13 @@ const LineChart = () => {
         },
       },
       y: {
+        // Keep chart height and axis range but hide horizontal gridlines for the previous design
         grid: { display: false },
-        beginAtZero: false,
+        beginAtZero: true,
+        suggestedMin: 0,
+        suggestedMax: hasRevenue
+          ? undefined
+          : Math.max(1, Math.ceil(maxRevenue || 100)),
         ticks: {
           color: "#181818",
           padding: window.innerWidth < 768 ? 5 : 10,

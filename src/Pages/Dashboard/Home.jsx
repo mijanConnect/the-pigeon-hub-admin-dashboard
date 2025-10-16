@@ -101,7 +101,7 @@ const Home = () => {
     );
 
   return (
-    <div className="p-2 md:p-4 space-y-4 md:space-y-6">
+    <div className="space-y-4 md:space-y-6 mt-4">
       {/* Home Card */}
       {/* <div>
         <HomeCard />

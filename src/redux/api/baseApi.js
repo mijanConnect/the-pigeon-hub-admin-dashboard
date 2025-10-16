@@ -3,8 +3,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://10.10.7.41:5001/api/v1",
-    // baseUrl: "https://ftp.thepigeonhub.com/api/v1",
+    // baseUrl: "http://10.10.7.41:5001/api/v1",
+    baseUrl: "https://ftp.thepigeonhub.com/api/v1",
 
     prepareHeaders: (headers, { endpoint }) => {
       // headers.set("ngrok-skip-browser-warning", "true");
@@ -13,7 +13,7 @@ export const api = createApi({
       if (!headers.has("Authorization")) {
         const token = localStorage.getItem("token");
 
-        console.log("📤 Sending token in headers:", token);
+        // console.log("📤 Sending token in headers:", token);
         if (token) {
           headers.set("Authorization", `Bearer ${token}`);
         }

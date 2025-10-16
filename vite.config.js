@@ -47,3 +47,4 @@ export default defineConfig({
     allowedHosts: ["admin.thepigeonhub.com", "localhost", "127.0.0.1"],
   },
 });
+
