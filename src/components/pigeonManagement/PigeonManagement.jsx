@@ -409,6 +409,7 @@ const PigeonManagement = () => {
             onChange={(val) => handleInlineVerifiedChange(record, val)}
             disabled={!!updatingVerifications[record._id]}
             style={{ width: 70 }}
+            className="iconic-score-select"
             options={[
               {
                 label: <span style={{ color: "green" }}>Yes</span>,
@@ -444,6 +445,7 @@ const PigeonManagement = () => {
                 .includes(input.toLowerCase())
             }
             style={{ width: 60 }}
+            className="iconic-score-select"
             options={Array.from({ length: 99 }, (_, i) => ({
               label: `${99 - i}`,
               value: 99 - i,
@@ -932,7 +934,7 @@ const PigeonManagement = () => {
                 >
                   <Select
                     placeholder="Select Iconic Score"
-                    className="custom-select-ant-modal"
+                    className="custom-select-ant-modal custom-select-ant-modal-2"
                     showSearch // Enable search functionality
                     allowClear // Enable the clear button (cross icon)
                     optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)

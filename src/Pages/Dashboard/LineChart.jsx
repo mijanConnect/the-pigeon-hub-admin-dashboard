@@ -1,4 +1,5 @@
 // LineChart.jsx
+import { Select } from "antd";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -38,12 +39,21 @@ const months = [
 ];
 
 const LineChart = () => {
-  const [selectedYear, setSelectedYear] = useState(2025);
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [chartHeight, setChartHeight] = useState("200px");
 
+  // Generate last 5 years dynamically
+  const last5Years = Array.from({ length: 5 }, (_, i) => currentYear - i);
+
   // Fetch revenue data from API
-  const { data: revenueData = [], isLoading } =
-    useGetMonthlyRevenueQuery(selectedYear);
+  const { data: revenueData = [], isLoading } = useGetMonthlyRevenueQuery(
+    selectedYear,
+    {
+      // ensure RTK Query refetches when the argument (selectedYear) changes
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   // console.log(data);
 
@@ -144,6 +154,21 @@ const LineChart = () => {
         <h2 className="text-lg sm:text-xl font-bold text-secondary">
           Total Revenue
         </h2>
+        <div className="flex items-center gap-2">
+          <Select
+            value={selectedYear}
+            onChange={(val) => setSelectedYear(val)}
+            style={{ width: 110 }}
+            className="custom-select-ant-modal"
+          >
+            {last5Years.map((year) => (
+              <Select.Option key={year} value={year}>
+                {year}
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
+
         {/* Uncomment to enable year selection */}
         {/* <select
           value={selectedYear}

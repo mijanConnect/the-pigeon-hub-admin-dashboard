@@ -509,6 +509,11 @@ select {
   border-radius: 6px !important;
 }
 
+/* Select field styling */
+.custom-select-ant-modal-2 .ant-select-selector {
+  border: 1px solid #ffffff !important;
+}
+
 /* Selected text & placeholder color */
 .custom-select-ant-modal .ant-select-selection-item,
 .custom-select-ant-modal .ant-select-selection-item span,
@@ -797,4 +802,36 @@ select {
 /* Make input text inside Ant Select white */
 .custom-select-ant-table-select .ant-select-selection-search-input {
   color: white !important;
+}
+
+/* Custom styling for Iconic Score Select */
+.iconic-score-select.ant-select-outlined:not(.ant-select-customize-input)
+  .ant-select-selector {
+  border: 1px solid #071952 !important;
+  background: #ffffff !important;
+  border-radius: 6px !important;
+}
+
+/* Hover state */
+.iconic-score-select.ant-select-outlined:not(.ant-select-customize-input):hover
+  .ant-select-selector {
+  border-color: #088395 !important;
+}
+
+/* Focus state */
+.iconic-score-select.ant-select-outlined:not(
+    .ant-select-customize-input
+  ).ant-select-focused
+  .ant-select-selector {
+  border-color: #088395 !important;
+  box-shadow: 0 0 0 2px rgba(8, 131, 149, 0.1) !important;
+}
+
+/* Disabled state */
+.iconic-score-select.ant-select-outlined.ant-select-disabled:not(
+    .ant-select-customize-input
+  )
+  .ant-select-selector {
+  background: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
 }
