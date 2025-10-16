@@ -151,6 +151,20 @@ const AddNewPigeon = ({ onSave }) => {
             : pigeonData.breeder,
       });
 
+      // Prefill addresults textarea when editing: join array into newline-delimited text
+      try {
+        if (Array.isArray(pigeonData.addresults)) {
+          const joined = pigeonData.addresults.join("\n");
+          form.setFieldsValue({ addresults: joined });
+          setValue(joined);
+        } else if (typeof pigeonData.addresults === "string") {
+          form.setFieldsValue({ addresults: pigeonData.addresults });
+          setValue(pigeonData.addresults);
+        }
+      } catch (e) {
+        // ignore
+      }
+
       // show father ring in the input (keep typed value if user entered)
       if (pigeonData.fatherRingId) {
         setFatherDisplay(pigeonData.fatherRingId?.ringNumber || "");
@@ -208,6 +222,8 @@ const AddNewPigeon = ({ onSave }) => {
       });
       // reset breederDisplay for new form
       setBreederDisplay("");
+      // reset addresults textarea value
+      setValue("");
     }
   }, [pigeonData, id, form]);
 
@@ -341,7 +357,12 @@ const AddNewPigeon = ({ onSave }) => {
         iconic: values.iconic === "yes",
         fatherRingId: values.fatherRingId || "",
         motherRingId: values.motherRingId || "",
-        addresults: values.addresults ? values.addresults.split("\n") : [],
+        addresults: values.addresults
+          ? values.addresults
+              .split("\n")
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [],
       };
 
       const token = localStorage.getItem("token");

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import Sidebar from "./Sidebar";
-import Header from "./Header";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
+import Header from "./Header";
+import Sidebar from "./Sidebar";
 
 const Main = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -17,7 +17,10 @@ const Main = () => {
   }, []);
 
   return (
-    <div className="min-h-screen w-full flex bg-baseBg overflow-hidden">
+    <div
+      className="min-h-screen w-full flex bg-baseBg overflow-hidden"
+      style={{ maxWidth: "1880px", margin: "0 auto" }}
+    >
       {/* Sidebar */}
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 

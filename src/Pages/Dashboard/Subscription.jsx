@@ -189,7 +189,7 @@ const PackagesPlans = () => {
     );
 
   return (
-    <div className="flex flex-col !justify-center !items-center mt-10">
+    <div className="flex flex-col !justify-center !items-center mt-10 px-10 2xl:px-40">
       {/* <div className="flex flex-col justify-center items-center mb-8">
         <p className="bg-primary px-[12px] py-[2px] text-white rounded-3xl mb-2">
           Pricing Plan
@@ -215,10 +215,10 @@ const PackagesPlans = () => {
         {packages.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <p className="text-lg">No packages available.</p>
-            <p>Click the "Add Package" button to create your first package.</p>
+            {/* <p>Click the "Add Package" button to create your first package.</p> */}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {packages.map((pkg) => (
               <Card
                 key={pkg.id}

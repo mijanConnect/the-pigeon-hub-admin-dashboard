@@ -499,16 +499,19 @@ const ViewPigeon = ({
                   </div>
                   <div className="flex gap-1">
                     <p className="font-normal text-[14px]">Verified: </p>
-                    <p className="font-semibold text-[14px]">
+                    <p className="font-semibold text-[14px] flex items-center">
                       {pigeonData?.verified === true ? (
-                        <img
-                          src={VerifyIcon} // replace with the actual image path
-                          alt="Verified"
-                          style={{ width: 20, height: 20 }}
-                          className="ml-1"
-                        />
+                        <>
+                          <span className="mr-2">Yes</span>
+                          <img
+                            src={VerifyIcon}
+                            alt="Verified"
+                            style={{ width: 20, height: 20 }}
+                            className="ml-1"
+                          />
+                        </>
                       ) : (
-                        "N/A"
+                        "No"
                       )}
                     </p>
                   </div>

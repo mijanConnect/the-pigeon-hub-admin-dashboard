@@ -1042,7 +1042,7 @@ const PigeonManagement = () => {
             </Col>
           </Row>
 
-          <Row gutter={16} className="mb-4">
+          <Row gutter={16} className="mb-10">
             <Col span={24}>
               <Form.Item
                 label="Iconic Score"
@@ -1073,9 +1073,9 @@ const PigeonManagement = () => {
                       .includes(input.toLowerCase())
                   }
                 >
-                  {Array.from({ length: 101 }, (_, i) => i).map((score) => (
-                    <Option key={score} value={score}>
-                      {score}
+                  {Array.from({ length: 99 }, (_, i) => 99 - i).map((v) => (
+                    <Option key={v} value={v}>
+                      {v}
                     </Option>
                   ))}
                 </Select>
