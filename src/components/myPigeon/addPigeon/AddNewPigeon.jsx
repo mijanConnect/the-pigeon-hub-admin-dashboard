@@ -64,6 +64,8 @@ const AddNewPigeon = ({ onSave }) => {
   const [breederDisplay, setBreederDisplay] = useState("");
   const [fatherDisplay, setFatherDisplay] = useState("");
   const [motherDisplay, setMotherDisplay] = useState("");
+  const [fatherSelected, setFatherSelected] = useState(null);
+  const [motherSelected, setMotherSelected] = useState(null);
 
   const handleChangePlace = (e) => {
     setValue(e.target.value);
@@ -456,6 +458,111 @@ const AddNewPigeon = ({ onSave }) => {
     }
   };
 
+  const handleSaveAndCreateAnother = async () => {
+    try {
+      const values = await form.validateFields();
+
+      const combinedColor =
+        values.colorPattern?.color && values.colorPattern?.pattern
+          ? `${values.colorPattern.color} ${values.colorPattern.pattern}`
+          : values.colorPattern?.color || values.colorPattern?.pattern;
+
+      const filteredRaceResults = raceResults
+        .filter((r) => r.name || r.date || r.distance || r.total || r.place)
+        .map((r) => ({
+          name: r.name || "",
+          date: r.date || "",
+          distance: r.distance || "",
+          total: r.total ? Number(r.total) : 0,
+          place: r.place || "",
+        }));
+
+      const dataToSend = {
+        ringNumber: values.ringNumber,
+        name: values.name,
+        country: values.country,
+        birthYear: values.birthYear,
+        story: values.story || "",
+        shortInfo: values.shortInfo || "",
+        breeder: values.breeder,
+        color: combinedColor,
+        racingRating: values.racingRating,
+        racherRating: values.racerRating,
+        breederRating: values.breederRating,
+        iconicScore: values.iconicScore,
+        gender: values.gender,
+        status: values.status,
+        location: values.location,
+        notes: values.notes || "",
+        results:
+          filteredRaceResults.length > 0 ? filteredRaceResults : undefined,
+        verified: values.verification === "verified",
+        iconic: values.iconic === "yes",
+        fatherRingId: values.fatherRingId || "",
+        motherRingId: values.motherRingId || "",
+        addresults: values.addresults
+          ? values.addresults
+              .split("\n")
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [],
+      };
+
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("data", JSON.stringify(dataToSend));
+
+      // Append files
+      if (photos.pigeonPhoto)
+        formData.append("pigeonPhoto", photos.pigeonPhoto);
+      if (photos.eyePhoto) formData.append("eyePhoto", photos.eyePhoto);
+      if (photos.ownershipPhoto)
+        formData.append("ownershipPhoto", photos.ownershipPhoto);
+      if (photos.pedigreePhoto)
+        formData.append("pedigreePhoto", photos.pedigreePhoto);
+      if (photos.DNAPhoto) formData.append("DNAPhoto", photos.DNAPhoto);
+
+      // Always add a new pigeon (do not call update)
+      await addPigeon({ formData, token }).unwrap();
+      message.success(
+        "Pigeon added successfully! You can add another one now."
+      );
+
+      // Reset form & local state to blank for next entry
+      form.resetFields();
+      setSelected({ color: null, pattern: null });
+      setShowResults(false);
+      setRaceResults([]);
+      setPhotos({
+        pigeonPhoto: null,
+        eyePhoto: null,
+        ownershipPhoto: null,
+        pedigreePhoto: null,
+        DNAPhoto: null,
+      });
+      setFileLists({
+        pigeonPhoto: [],
+        eyePhoto: [],
+        ownershipPhoto: [],
+        pedigreePhoto: [],
+        DNAPhoto: [],
+      });
+      setBreederDisplay("");
+      setValue("");
+      setValue2("");
+      // clear editing context if any
+      try {
+        // if URL had an id param, don't navigate; just clear local editing state
+        // (we don't mutate route here)
+      } catch (e) {
+        // ignore
+      }
+    } catch (err) {
+      console.error(err);
+      message.error(err?.data?.message || err.message);
+    }
+  };
+
   const addRaceResult = () => {
     setRaceResults((prev) => [
       ...prev,
@@ -490,6 +597,28 @@ const AddNewPigeon = ({ onSave }) => {
     fileList: fileLists[key],
     showUploadList: { showPreviewIcon: true, showRemoveIcon: true },
     beforeUpload: (file) => {
+      // Validate file type
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/jpg",
+        "image/heic",
+        "image/heif",
+      ];
+      const maxBytes = 10 * 1024 * 1024; // 10 MB
+
+      if (!allowedTypes.includes(file.type)) {
+        message.error("Only JPEG, JPG, PNG or HEIC/HEIF files are allowed.");
+        // Prevent adding to upload list
+        return Upload.LIST_IGNORE;
+      }
+
+      if (file.size > maxBytes) {
+        message.error("Image must be less than 10MB.");
+        return Upload.LIST_IGNORE;
+      }
+
+      // Valid file — create preview and set into controlled state
       setPhotos((p) => ({ ...p, [key]: file }));
       const previewUrl = URL.createObjectURL(file);
       setFileLists((fl) => ({
@@ -504,6 +633,8 @@ const AddNewPigeon = ({ onSave }) => {
           },
         ],
       }));
+
+      // Return false to prevent automatic upload (we handle uploads manually)
       return false;
     },
     onRemove: () => {
@@ -595,6 +726,8 @@ const AddNewPigeon = ({ onSave }) => {
                           left: "10px",
                           color: "#999",
                           pointerEvents: "none",
+                          fontSize: "13px",
+                          lineHeight: "19px",
                         }}
                       >
                         For example:
@@ -983,14 +1116,24 @@ const AddNewPigeon = ({ onSave }) => {
                       return ring.includes(q) || label.includes(q);
                     }}
                     onSelect={(value, option) => {
-                      // when selecting suggestion, store selected ring number
+                      // when selecting suggestion, store selected ring number and selected pigeon data
                       form.setFieldsValue({ fatherRingId: value });
                       setFatherDisplay(value);
+                      // option may include the original data under option.data
+                      setFatherSelected(
+                        option?.data ||
+                          fatherOptions.find(
+                            (p) => String(p.ringNumber) === String(value)
+                          ) ||
+                          null
+                      );
                     }}
                     onChange={(val) => {
                       // keep typed value in field and form
                       form.setFieldsValue({ fatherRingId: val });
                       setFatherDisplay(val);
+                      // clear selected when user types a custom value
+                      setFatherSelected(null);
                     }}
                     onBlur={() => {
                       try {
@@ -1005,6 +1148,7 @@ const AddNewPigeon = ({ onSave }) => {
                     onClear={() => {
                       form.setFieldsValue({ fatherRingId: undefined });
                       setFatherDisplay("");
+                      setFatherSelected(null);
                     }}
                   />
                 </Form.Item>
@@ -1012,6 +1156,21 @@ const AddNewPigeon = ({ onSave }) => {
                   Enter a part of the ring or part of the name to search for the
                   Corresponding Pigeon
                 </p>
+                {fatherSelected && (
+                  <div className="mt-2 p-2 bg-gray-50 border rounded text-sm">
+                    {/* <strong>Selected Father:</strong> */}
+                    <div>
+                      <div className="flex gap-1">
+                        <p className="font-semibold">Ring Number:</p>
+                        <p>{fatherSelected.ringNumber}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <p className="font-semibold">Name:</p>
+                        <p>{fatherSelected.name || "Unknown"}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Mother */}
@@ -1040,10 +1199,18 @@ const AddNewPigeon = ({ onSave }) => {
                     onSelect={(value, option) => {
                       form.setFieldsValue({ motherRingId: value });
                       setMotherDisplay(value);
+                      setMotherSelected(
+                        option?.data ||
+                          motherOptions.find(
+                            (p) => String(p.ringNumber) === String(value)
+                          ) ||
+                          null
+                      );
                     }}
                     onChange={(val) => {
                       form.setFieldsValue({ motherRingId: val });
                       setMotherDisplay(val);
+                      setMotherSelected(null);
                     }}
                     onBlur={() => {
                       try {
@@ -1058,6 +1225,7 @@ const AddNewPigeon = ({ onSave }) => {
                     onClear={() => {
                       form.setFieldsValue({ motherRingId: undefined });
                       setMotherDisplay("");
+                      setMotherSelected(null);
                     }}
                   />
                 </Form.Item>
@@ -1065,6 +1233,15 @@ const AddNewPigeon = ({ onSave }) => {
                   Enter a part of the ring or part of the name to search for the
                   Corresponding Pigeon
                 </p>
+                {motherSelected && (
+                  <div className="mt-2 p-2 bg-gray-50 border rounded text-sm">
+                    <strong>Selected Pigeon:</strong>
+                    <div>
+                      {motherSelected.ringNumber} —{" "}
+                      {motherSelected.name || "Unknown"}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1072,7 +1249,10 @@ const AddNewPigeon = ({ onSave }) => {
           <div className="right-column w-[38%] flex flex-col gap-6 border p-4 rounded-lg">
             {/* ===== PIGEON PHOTOS ===== */}
             <div className="p-4 border rounded-lg flex flex-col">
-              <p className="text-[16px] font-semibold mb-2">Pigeon Photos:</p>
+              <p className="text-[16px] font-semibold">Pigeon Photos:</p>
+              <p className="mb-2 text-[12px] text-gray-400">
+                Accepted formats: JPEG, PNG, JPG. Maximum file size: 10MB.
+              </p>
               <div className="pb-2 relative">
                 {canScrollLeft && (
                   <div
@@ -1122,6 +1302,7 @@ const AddNewPigeon = ({ onSave }) => {
                   >
                     <Col flex="none">
                       <Upload
+                        accept=".jpg,.jpeg,.png,.heic,.heif"
                         className="custom-upload-ant"
                         {...commonUploadProps("pigeonPhoto")}
                       >
@@ -1133,6 +1314,7 @@ const AddNewPigeon = ({ onSave }) => {
 
                     <Col flex="none">
                       <Upload
+                        accept=".jpg,.jpeg,.png,.heic,.heif"
                         className="custom-upload-ant"
                         {...commonUploadProps("eyePhoto")}
                       >
@@ -1144,6 +1326,7 @@ const AddNewPigeon = ({ onSave }) => {
 
                     <Col flex="none">
                       <Upload
+                        accept=".jpg,.jpeg,.png,.heic,.heif"
                         className="custom-upload-ant"
                         {...commonUploadProps("ownershipPhoto")}
                       >
@@ -1155,6 +1338,7 @@ const AddNewPigeon = ({ onSave }) => {
 
                     <Col flex="none">
                       <Upload
+                        accept=".jpg,.jpeg,.png,.heic,.heif"
                         className="custom-upload-ant"
                         {...commonUploadProps("pedigreePhoto")}
                       >
@@ -1166,6 +1350,7 @@ const AddNewPigeon = ({ onSave }) => {
 
                     <Col flex="none">
                       <Upload
+                        accept=".jpg,.jpeg,.png,.heic,.heif"
                         className="custom-upload-ant"
                         {...commonUploadProps("DNAPhoto")}
                       >
@@ -1196,6 +1381,8 @@ const AddNewPigeon = ({ onSave }) => {
                         left: "10px",
                         color: "#999",
                         pointerEvents: "none",
+                        fontSize: "13px",
+                        lineHeight: "19px",
                       }}
                     >
                       For example:
@@ -1336,7 +1523,7 @@ const AddNewPigeon = ({ onSave }) => {
         </div>
       </Form>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
         {/* <Button
           key="cancel"
           onClick={onCancel}
@@ -1347,18 +1534,26 @@ const AddNewPigeon = ({ onSave }) => {
         <Button
           onClick={() => navigate("/my-pigeon")} // Navigate on cancel
           disabled={isAdding || isUpdating}
-          className="mr-[10px] bg-[#C33739] border border-[#C33739] text-white"
+          className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
         >
           Cancel
         </Button>
 
         <Button
           key="save"
-          type="primary"
           onClick={handleSave}
           loading={isAdding || isUpdating}
+          className="bg-primary border border-primary text-white"
         >
-          {pigeonData ? "Update Pigeon" : "Add New Pigeon"}
+          {pigeonData ? "Update Pigeon" : "Save Pigeon"}
+        </Button>
+        <Button
+          key="save-another"
+          onClick={handleSaveAndCreateAnother}
+          loading={isAdding}
+          className="bg-primary border border-primary text-white"
+        >
+          Save and create another pigeon
         </Button>
       </div>
     </div>

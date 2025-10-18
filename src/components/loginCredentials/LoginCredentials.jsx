@@ -11,7 +11,7 @@ import {
   Table,
   Tooltip,
 } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -24,6 +24,7 @@ import {
   useToggleUserStatusMutation,
   useUpdateUserMutation,
 } from "../../redux/apiSlices/usermanageSlice";
+import { attachDragToElement } from "../common/dragScroll";
 
 const { Option } = Select;
 
@@ -56,6 +57,7 @@ const LoginCredentials = () => {
 
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
   const [userForm] = Form.useForm();
+  const tableContainerRef = useRef(null);
 
   // pageAccess options (include options observed in API samples so edit modal can pre-select)
   const pageAccessOptions = [
@@ -345,6 +347,13 @@ const LoginCredentials = () => {
     },
   };
 
+  useEffect(() => {
+    const el = tableContainerRef.current;
+    if (!el) return;
+    const cleanup = attachDragToElement(el);
+    return cleanup;
+  }, [data.length]);
+
   return (
     <div className="mt-4">
       <div className="flex justify-end items-center mb-4 ">
@@ -368,7 +377,10 @@ const LoginCredentials = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar">
+      <div
+        ref={tableContainerRef}
+        className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 hide-scrollbar custom-scrollbar"
+      >
         <div className="border rounded-lg shadow-md bg-gray-50">
           <div
             style={{ minWidth: "max-content" }}

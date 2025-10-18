@@ -22,6 +22,7 @@ import {
   useGetSiblingsQuery,
   useGetSinglePigeonQuery,
 } from "../../redux/apiSlices/mypigeonSlice";
+import { attachDragToElement } from "../common/dragScroll";
 import { getImageUrl } from "../common/imageUrl";
 import ViewPigeon from "./ViewPigeon"; // ✅ import
 
@@ -276,70 +277,8 @@ const MyPigeon = () => {
     const el = tableRowRef.current;
     if (!el) return;
 
-    let isDown = false;
-    let startX = 0;
-    let scrollLeftStart = 0;
-
-    const onMouseDown = (e) => {
-      // only left click
-      if (e.button !== 0) return;
-      isDown = true;
-      el.classList.add("cursor-grabbing");
-      startX = e.pageX - el.offsetLeft;
-      scrollLeftStart = el.scrollLeft;
-      document.body.style.userSelect = "none";
-    };
-
-    const onMouseMove = (e) => {
-      if (!isDown) return;
-      e.preventDefault();
-      const x = e.pageX - el.offsetLeft;
-      const walk = x - startX;
-      el.scrollLeft = scrollLeftStart - walk;
-    };
-
-    const onMouseUp = () => {
-      if (!isDown) return;
-      isDown = false;
-      el.classList.remove("cursor-grabbing");
-      document.body.style.userSelect = "";
-    };
-
-    const onTouchStart = (e) => {
-      isDown = true;
-      startX = e.touches[0].pageX - el.offsetLeft;
-      scrollLeftStart = el.scrollLeft;
-    };
-
-    const onTouchMove = (e) => {
-      if (!isDown) return;
-      const x = e.touches[0].pageX - el.offsetLeft;
-      const walk = x - startX;
-      el.scrollLeft = scrollLeftStart - walk;
-    };
-
-    const onTouchEnd = () => {
-      isDown = false;
-    };
-
-    el.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-
-    el.addEventListener("touchstart", onTouchStart, { passive: true });
-    el.addEventListener("touchmove", onTouchMove, { passive: true });
-    el.addEventListener("touchend", onTouchEnd);
-
-    return () => {
-      el.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-
-      el.removeEventListener("touchstart", onTouchStart);
-      el.removeEventListener("touchmove", onTouchMove);
-      el.removeEventListener("touchend", onTouchEnd);
-      document.body.style.userSelect = "";
-    };
+    const cleanup = attachDragToElement(el);
+    return cleanup;
   }, [pigeons.length]);
 
   return (

@@ -1,6 +1,6 @@
 import { Button, Col, Input, Row, Select, Table, Tooltip } from "antd";
 import { getCode, getNames } from "country-list";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import Swal from "sweetalert2";
 import {
@@ -9,6 +9,7 @@ import {
   useGetBreedersQuery,
   useUpdateBreederMutation,
 } from "../../redux/apiSlices/breederSlice";
+import { attachDragToElement } from "../common/dragScroll";
 import AddVerifyBreeder from "./AddVerifiedBreeder";
 
 const { Option } = Select;
@@ -36,6 +37,7 @@ const VerifyBreeder = () => {
   // Pagination
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const tableContainerRef = useRef(null);
 
   // RTK Query
   const { data: apiData, isLoading } = useGetBreedersQuery({
@@ -64,6 +66,15 @@ const VerifyBreeder = () => {
       setData(apiData.breeders);
     }
   }, [apiData]);
+
+  // attach drag-to-scroll behavior to the table scroll container
+  useEffect(() => {
+    const el = tableContainerRef.current;
+    if (!el) return;
+    const cleanup = attachDragToElement(el);
+    return cleanup;
+    // reattach when data/page/limit changes
+  }, [data.length, page, limit]);
 
   const openAddModal = () => {
     setEditingData(null);
@@ -354,7 +365,10 @@ const VerifyBreeder = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar">
+      <div
+        ref={tableContainerRef}
+        className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 hide-scrollbar custom-scrollbar"
+      >
         <div
           style={{ minWidth: "max-content" }}
           className="bg-[#333D49] rounded-lg"

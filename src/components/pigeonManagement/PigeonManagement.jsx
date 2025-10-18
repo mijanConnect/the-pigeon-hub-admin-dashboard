@@ -12,7 +12,7 @@ import {
   message,
 } from "antd";
 import { getCode, getNames } from "country-list";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import { PiDnaBold } from "react-icons/pi";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +25,7 @@ import {
   useUpdatePigeonMutation,
 } from "../../redux/apiSlices/allpigeonSlice";
 import { useGetSiblingsQuery } from "../../redux/apiSlices/mypigeonSlice";
+import { attachDragToElement } from "../common/dragScroll";
 import { getImageUrl } from "../common/imageUrl";
 import ViewPigeon from "../myPigeon/ViewPigeon";
 
@@ -192,6 +193,18 @@ const PigeonManagement = () => {
   const showPedigreeChart = (record) => {
     navigate(`/pigeon-management/${record._id}`);
   };
+
+  // ref for horizontal scrolling container
+  const tableRowRef = useRef(null);
+
+  // enable mouse and touch drag to scroll horizontally on the table container
+  useEffect(() => {
+    const el = tableRowRef.current;
+    if (!el) return;
+
+    const cleanup = attachDragToElement(el);
+    return cleanup;
+  }, [pigeons.length]);
 
   const handleModalSave = async (values) => {
     try {
@@ -649,7 +662,10 @@ const PigeonManagement = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar">
+      <div
+        ref={tableRowRef}
+        className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar hide-scrollbar cursor-grab"
+      >
         <div className="border rounded-lg shadow-md bg-gray-50">
           <div
             style={{ minWidth: pigeons.length > 0 ? "max-content" : "100%" }}

@@ -1,8 +1,9 @@
 import { Table } from "antd";
 import { getCode } from "country-list";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import VerifyIcon from "../../../src/assets/verify.png";
 import { useGetRecentPigeonsQuery } from "../../redux/apiSlices/dashboardSlice";
+import { attachDragToElement } from "../common/dragScroll";
 import { getImageUrl } from "../common/imageUrl";
 
 // const getImageUrlTable = (path) =>
@@ -105,6 +106,7 @@ const getColumns = () => [
 
 const PigeonTable = () => {
   const [page, setPage] = useState(1);
+  const tableContainerRef = useRef(null);
 
   const { data, isLoading, isError } = useGetRecentPigeonsQuery({
     page,
@@ -117,6 +119,14 @@ const PigeonTable = () => {
   const pagination = data?.pagination || {};
 
   const columns = getColumns();
+
+  // attach drag-to-scroll behavior to the table container
+  useEffect(() => {
+    const el = tableContainerRef.current;
+    if (!el) return;
+    const cleanup = attachDragToElement(el);
+    return cleanup;
+  }, [pigeons.length, page]);
 
   const rowSelection = {
     onChange: (selectedRowKeys, selectedRows) => {
@@ -142,7 +152,10 @@ const PigeonTable = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar">
+      <div
+        ref={tableContainerRef}
+        className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar hide-scrollbar"
+      >
         <div className="border rounded-lg shadow-md bg-gray-50">
           <div
             style={{ minWidth: "max-content" }}
@@ -203,7 +216,7 @@ const PigeonTable = () => {
               //   total: pagination.total,
               //   onChange: (page) => setPage(page),
               // }}
-              pagination={false}
+              pagination={true}
               size="small"
               scroll={pigeons.length > 0 ? { x: "max-content" } : undefined}
               rowKey="key"

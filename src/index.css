@@ -345,6 +345,23 @@ select {
   background: transparent;
 }
 
+/* Make antd Upload picture-card previews fill the card and use cover */
+.custom-upload-ant .ant-upload-list-item-thumbnail {
+  width: 104px; /* match antd picture-card default */
+  height: 104px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.custom-upload-ant .ant-upload-list-item-thumbnail img,
+.custom-upload-ant .ant-upload-list-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 /* Improve container sizing */
 .container,
 .w-full {
@@ -854,4 +871,36 @@ select {
 }
 .cursor-grabbing {
   cursor: grabbing;
+}
+
+.custom-button-pigeon-cancel {
+  background-color: #c33739;
+  border: 1px solid #c33739;
+  color: white;
+  font-size: 18px;
+  padding: 16px 16px;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.custom-button-pigeon-cancel:hover {
+  background-color: white;
+  color: #c33739 !important;
+  border: 1px solid #c33739 !important;
+}
+
+.custom-button-pigeon {
+  background-color: #071952;
+  border: 1px solid #071952;
+  color: white;
+  font-size: 18px;
+  padding: 16px 16px;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.custom-button-pigeon:hover {
+  background-color: white;
+  color: #071952 !important;
+  border: 1px solid #071952 !important;
 }
