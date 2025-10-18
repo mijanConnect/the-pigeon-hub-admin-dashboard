@@ -12,7 +12,7 @@ import {
   message,
 } from "antd";
 import { getCode, getNames } from "country-list";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import { PiDnaBold } from "react-icons/pi";
 import { useNavigate } from "react-router-dom";
@@ -24,10 +24,9 @@ import {
   useTogglePigeonStatusMutation,
   useUpdatePigeonMutation,
 } from "../../redux/apiSlices/allpigeonSlice";
-import { useGetSiblingsQuery } from "../../redux/apiSlices/mypigeonSlice";
+// view handled by route /view-pigeon/:id
 import { attachDragToElement } from "../common/dragScroll";
 import { getImageUrl } from "../common/imageUrl";
-import ViewPigeon from "../myPigeon/ViewPigeon";
 
 const { Option } = Select;
 
@@ -45,8 +44,6 @@ const PigeonManagement = () => {
   // Modal states
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingPigeonId, setEditingPigeonId] = useState(null);
-  const [viewModalVisible, setViewModalVisible] = useState(false);
-  const [viewPigeonId, setViewPigeonId] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedPigeonForEdit, setSelectedPigeonForEdit] = useState(null);
   const [editForm] = Form.useForm();
@@ -74,15 +71,7 @@ const PigeonManagement = () => {
     skip: !editingPigeonId,
   });
 
-  const { data: viewPigeonData, isLoading: viewLoading } =
-    useGetSinglePigeonQuery(viewPigeonId, {
-      skip: !viewPigeonId,
-    });
-
-  const { data: viewSiblingsData, isLoading: siblingsLoading } =
-    useGetSiblingsQuery(viewPigeonId, {
-      skip: !viewPigeonId,
-    });
+  // view data is fetched by the standalone view page at /view-pigeon/:id
 
   const [updatePigeon] = useUpdatePigeonMutation();
   const [deletePigeon] = useDeletePigeonMutation();
@@ -106,8 +95,7 @@ const PigeonManagement = () => {
   };
 
   const handleView = (record) => {
-    setViewPigeonId(record._id);
-    setViewModalVisible(true);
+    navigate(`/view-pigeon/${record._id}`);
   };
 
   const showFullEditModal = (record) => {
@@ -186,8 +174,7 @@ const PigeonManagement = () => {
   };
 
   const handleViewCancel = () => {
-    setViewModalVisible(false);
-    setViewPigeonId(null);
+    // kept for compatibility if other code calls it - no-op now
   };
 
   const showPedigreeChart = (record) => {
@@ -995,15 +982,6 @@ const PigeonManagement = () => {
           </Form>
         )}
       </Modal>
-
-      {/* View Modal */}
-      <ViewPigeon
-        visible={viewModalVisible}
-        onCancel={handleViewCancel}
-        pigeonData={viewPigeonData?.data || null}
-        siblingsData={viewSiblingsData?.data?.siblings || null}
-        loading={viewLoading}
-      />
 
       {/* Edit Modal */}
       <Modal

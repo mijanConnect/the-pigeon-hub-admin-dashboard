@@ -19,12 +19,9 @@ import AllIcon from "../../assets/all.png";
 import {
   useDeletePigeonMutation,
   useGetMyPigeonsQuery,
-  useGetSiblingsQuery,
-  useGetSinglePigeonQuery,
 } from "../../redux/apiSlices/mypigeonSlice";
 import { attachDragToElement } from "../common/dragScroll";
 import { getImageUrl } from "../common/imageUrl";
-import ViewPigeon from "./ViewPigeon"; // ✅ import
 
 import BreedingIcon from "../../assets/Breeding.png";
 import DeceasedIcon from "../../assets/Deceased.png";
@@ -46,24 +43,11 @@ const MyPigeon = () => {
     status: "all",
   });
 
-  // Add states
-  const [viewModalVisible, setViewModalVisible] = useState(false);
-  const [viewPigeonId, setViewPigeonId] = useState(null);
   const navigate = useNavigate();
 
-  const { data: viewPigeonData, isLoading: viewLoading } =
-    useGetSinglePigeonQuery(viewPigeonId, {
-      skip: !viewPigeonId,
-    });
-
-  const { data: viewSiblingsData, isLoading: siblingsLoading } =
-    useGetSiblingsQuery(viewPigeonId, {
-      skip: !viewPigeonId,
-    });
-
   const handleView = (record) => {
-    setViewPigeonId(record._id); // ✅ fetch full pigeon details
-    setViewModalVisible(true);
+    // navigate to the standalone view page
+    navigate(`/view-pigeon/${record._id}`);
   };
 
   const [page, setPage] = useState(1);
@@ -574,16 +558,7 @@ const MyPigeon = () => {
         </div>
       </div>
 
-      <ViewPigeon
-        visible={viewModalVisible}
-        onCancel={() => {
-          setViewModalVisible(false);
-          setViewPigeonId(null); // reset when closing
-        }}
-        pigeonData={viewPigeonData?.data || null}
-        siblingsData={viewSiblingsData?.data?.siblings || null}
-        loading={viewLoading}
-      />
+      {/* View now navigates to /view-pigeon/:id route — page handles its own data fetching */}
     </div>
   );
 };

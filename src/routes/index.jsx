@@ -56,6 +56,7 @@ import { Profiler } from "react";
 import ProtectedRoute from "./ProtectedRoute";
 import PigeonPedigreeChart from "../components/pedigreeChart/PedigreeChartContainer";
 import AddNewPigeon from "../components/myPigeon/addPigeon/AddNewPigeon";
+import ViewPigeon from "../components/myPigeon/addPigeon/ViewPigeon";
 
 const router = createBrowserRouter([
   {
@@ -82,6 +83,10 @@ const router = createBrowserRouter([
       {
         path: "/add-pigeon/:id",
         element: <AddNewPigeon />,
+      },
+      {
+        path: "/view-pigeon/:id",
+        element: <ViewPigeon />,
       },
       {
         path: "/pigeon-management",

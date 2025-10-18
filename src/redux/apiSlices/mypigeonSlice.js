@@ -146,8 +146,8 @@ const mypigeonSlice = api.injectEndpoints({
     }),
 
     getBreederNames: builder.query({
-      query: () => ({
-        url: "/breeder", // ✅ adjust according to your backend route
+      query: (limit=100) => ({
+        url: `/breeder?limit=${limit}`, // ✅ adjust according to your backend route
         method: "GET",
       }),
       transformResponse: (response) => {
