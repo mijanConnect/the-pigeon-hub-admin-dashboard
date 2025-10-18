@@ -1,4 +1,9 @@
-import { DownOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  DownOutlined,
+  LeftOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
 import {
   AutoComplete,
   Button,
@@ -13,7 +18,7 @@ import {
   message,
 } from "antd";
 import { getNames } from "country-list";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useAddPigeonMutation,
@@ -78,6 +83,17 @@ const AddNewPigeon = ({ onSave }) => {
   const { data: motherOptions = [], isLoading: motherLoading } =
     useGetPigeonSearchQuery(motherSearch, { skip: !motherSearch });
 
+  // Filter parent options by gender client-side to ensure only appropriate pigeons show
+  const fatherOptionsFiltered = (fatherOptions || []).filter((p) => {
+    const g = (p.gender || "").toString().toLowerCase();
+    return g === "cock"; // only show cocks for father
+  });
+
+  const motherOptionsFiltered = (motherOptions || []).filter((p) => {
+    const g = (p.gender || "").toString().toLowerCase();
+    return g === "hen"; // only show hens for mother
+  });
+
   //   const [editingPigeonId, setEditingPigeonId] = useState(null);
   const { data: editingPigeonData } = useGetSinglePigeonQuery(id, {
     skip: !id, // don't fetch until ID is set
@@ -96,6 +112,11 @@ const AddNewPigeon = ({ onSave }) => {
     pedigreePhoto: null,
     DNAPhoto: null,
   });
+
+  // Ref and state for horizontal photo scroller
+  const photosRowRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // 📷 Upload component fileLists (controlled previews)
   const [fileLists, setFileLists] = useState({
@@ -226,6 +247,25 @@ const AddNewPigeon = ({ onSave }) => {
       setValue("");
     }
   }, [pigeonData, id, form]);
+
+  // Update scroll controls when fileLists change or on resize
+  useEffect(() => {
+    const el = photosRowRef.current;
+    if (!el) return;
+
+    const update = () => {
+      setCanScrollLeft(el.scrollLeft > 0);
+      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+    };
+
+    update();
+    el.addEventListener("scroll", update);
+    window.addEventListener("resize", update);
+    return () => {
+      el.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [fileLists]);
 
   const handleClick = (color, pattern) => {
     setSelected({ color, pattern });
@@ -435,9 +475,9 @@ const AddNewPigeon = ({ onSave }) => {
 
   // ---------- Upload helpers ----------
   const uploadButton = (label) => (
-    <div style={{ color: "#666" }}>
+    <div style={{ color: "#666", padding: "8px", fontSize: "11px" }}>
       <PlusOutlined />
-      <div style={{ marginTop: 8 }}>{label}</div>
+      <div style={{ marginTop: 2 }}>{label}</div>
     </div>
   );
 
@@ -555,9 +595,15 @@ const AddNewPigeon = ({ onSave }) => {
                           pointerEvents: "none",
                         }}
                       >
-                        (Son of Burj Khalifa)
+                        For example:
+                        <br />
+                        Son of Burj Khalifa
                         <br />
                         Winner of the Dubai OLR
+                        <br />
+                        5 times 1st price winner
+                        <br />
+                        Bought for USD 50,000
                       </div>
                     )}
 
@@ -918,20 +964,23 @@ const AddNewPigeon = ({ onSave }) => {
                   className="custom-form-item-ant-select"
                 >
                   <AutoComplete
-                    options={fatherOptions.map((p) => ({
+                    options={fatherOptionsFiltered.map((p) => ({
                       value: p.ringNumber,
-                      label: `${p.ringNumber}(${p.name})`,
+                      label: `${p.ringNumber} (${p.name || "Unknown"})`,
+                      data: p,
                     }))}
-                    placeholder="Search by Father Ring No."
+                    placeholder="Search by Father Ring No. or Name"
                     className="custom-select-ant-modal"
                     onSearch={setFatherSearch}
                     value={fatherDisplay}
-                    filterOption={(inputValue, option) =>
-                      String(option.value)
-                        .toLowerCase()
-                        .includes(String(inputValue).toLowerCase())
-                    }
-                    onSelect={(value) => {
+                    filterOption={(inputValue, option) => {
+                      const q = String(inputValue).toLowerCase();
+                      const ring = String(option.value || "").toLowerCase();
+                      const label = String(option.label || "").toLowerCase();
+                      // match ring number or name
+                      return ring.includes(q) || label.includes(q);
+                    }}
+                    onSelect={(value, option) => {
                       // when selecting suggestion, store selected ring number
                       form.setFieldsValue({ fatherRingId: value });
                       setFatherDisplay(value);
@@ -971,20 +1020,22 @@ const AddNewPigeon = ({ onSave }) => {
                   className="custom-form-item-ant-select"
                 >
                   <AutoComplete
-                    options={motherOptions.map((p) => ({
+                    options={motherOptionsFiltered.map((p) => ({
                       value: p.ringNumber,
-                      label: `${p.ringNumber}(${p.name})`,
+                      label: `${p.ringNumber} (${p.name || "Unknown"})`,
+                      data: p,
                     }))}
-                    placeholder="Search by Mother Ring No."
+                    placeholder="Search by Mother Ring No. or Name"
                     className="custom-select-ant-modal"
                     onSearch={setMotherSearch}
                     value={motherDisplay}
-                    filterOption={(inputValue, option) =>
-                      String(option.value)
-                        .toLowerCase()
-                        .includes(String(inputValue).toLowerCase())
-                    }
-                    onSelect={(value) => {
+                    filterOption={(inputValue, option) => {
+                      const q = String(inputValue).toLowerCase();
+                      const ring = String(option.value || "").toLowerCase();
+                      const label = String(option.label || "").toLowerCase();
+                      return ring.includes(q) || label.includes(q);
+                    }}
+                    onSelect={(value, option) => {
                       form.setFieldsValue({ motherRingId: value });
                       setMotherDisplay(value);
                     }}
@@ -1020,68 +1071,95 @@ const AddNewPigeon = ({ onSave }) => {
             {/* ===== PIGEON PHOTOS ===== */}
             <div className="p-4 border rounded-lg flex flex-col">
               <p className="text-[16px] font-semibold mb-2">Pigeon Photos:</p>
-              <div className="pb-2 overflow-x-auto">
-                <Row
-                  gutter={[10, 16]}
-                  justify="start"
-                  wrap={false}
-                  className="flex-nowrap"
+              <div className="pb-2 relative">
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10">
+                  <Button
+                    type="text"
+                    icon={<LeftOutlined />}
+                    onClick={() => {
+                      const el = photosRowRef.current;
+                      if (el) el.scrollBy({ left: -200, behavior: "smooth" });
+                    }}
+                    disabled={!canScrollLeft}
+                  />
+                </div>
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10">
+                  <Button
+                    type="text"
+                    icon={<RightOutlined />}
+                    onClick={() => {
+                      const el = photosRowRef.current;
+                      if (el) el.scrollBy({ left: 200, behavior: "smooth" });
+                    }}
+                    disabled={!canScrollRight}
+                  />
+                </div>
+                <div
+                  ref={photosRowRef}
+                  className="overflow-x-auto hide-scrollbar"
                 >
-                  <Col flex="none">
-                    <Upload
-                      className="custom-upload-ant"
-                      {...commonUploadProps("pigeonPhoto")}
-                    >
-                      {fileLists.pigeonPhoto?.length
-                        ? null
-                        : uploadButton("Upload Pigeon Photo")}
-                    </Upload>
-                  </Col>
+                  <Row
+                    gutter={[10, 16]}
+                    justify="start"
+                    wrap={false}
+                    className="flex-nowrap"
+                  >
+                    <Col flex="none">
+                      <Upload
+                        className="custom-upload-ant"
+                        {...commonUploadProps("pigeonPhoto")}
+                      >
+                        {fileLists.pigeonPhoto?.length
+                          ? null
+                          : uploadButton("Upload Pigeon Photo")}
+                      </Upload>
+                    </Col>
 
-                  <Col flex="none">
-                    <Upload
-                      className="custom-upload-ant"
-                      {...commonUploadProps("eyePhoto")}
-                    >
-                      {fileLists.eyePhoto?.length
-                        ? null
-                        : uploadButton("Upload Eye Photo")}
-                    </Upload>
-                  </Col>
+                    <Col flex="none">
+                      <Upload
+                        className="custom-upload-ant"
+                        {...commonUploadProps("eyePhoto")}
+                      >
+                        {fileLists.eyePhoto?.length
+                          ? null
+                          : uploadButton("Upload Eye Photo")}
+                      </Upload>
+                    </Col>
 
-                  <Col flex="none">
-                    <Upload
-                      className="custom-upload-ant"
-                      {...commonUploadProps("ownershipPhoto")}
-                    >
-                      {fileLists.ownershipPhoto?.length
-                        ? null
-                        : uploadButton("Upload Ownership Card")}
-                    </Upload>
-                  </Col>
+                    <Col flex="none">
+                      <Upload
+                        className="custom-upload-ant"
+                        {...commonUploadProps("ownershipPhoto")}
+                      >
+                        {fileLists.ownershipPhoto?.length
+                          ? null
+                          : uploadButton("Upload Ownership Card")}
+                      </Upload>
+                    </Col>
 
-                  <Col flex="none">
-                    <Upload
-                      className="custom-upload-ant"
-                      {...commonUploadProps("pedigreePhoto")}
-                    >
-                      {fileLists.pedigreePhoto?.length
-                        ? null
-                        : uploadButton("Upload Pedigree Photo")}
-                    </Upload>
-                  </Col>
+                    <Col flex="none">
+                      <Upload
+                        className="custom-upload-ant"
+                        {...commonUploadProps("pedigreePhoto")}
+                      >
+                        {fileLists.pedigreePhoto?.length
+                          ? null
+                          : uploadButton("Upload Pedigree Photo")}
+                      </Upload>
+                    </Col>
 
-                  <Col flex="none">
-                    <Upload
-                      className="custom-upload-ant"
-                      {...commonUploadProps("DNAPhoto")}
-                    >
-                      {fileLists.DNAPhoto?.length
-                        ? null
-                        : uploadButton("Upload DNA Photo")}
-                    </Upload>
-                  </Col>
-                </Row>
+                    <Col flex="none">
+                      <Upload
+                        className="custom-upload-ant"
+                        {...commonUploadProps("DNAPhoto")}
+                      >
+                        {fileLists.DNAPhoto?.length
+                          ? null
+                          : uploadButton("Upload DNA Photo")}
+                      </Upload>
+                    </Col>
+                  </Row>
+                </div>
               </div>
             </div>
 
@@ -1104,6 +1182,8 @@ const AddNewPigeon = ({ onSave }) => {
                         pointerEvents: "none",
                       }}
                     >
+                      For example:
+                      <br />
                       1st/828p Quiévrain 108km
                       <br />
                       4th/3265p Melun 287km

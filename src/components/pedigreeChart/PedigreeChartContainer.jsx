@@ -118,7 +118,7 @@ const PigeonNode = ({ data }) => {
               {getGenderIcon(data.gender)}
             </span>
           )}
-          {data.ringNumber && (
+          {data.verified && (
             <img
               src="/assets/Letter-P.png"
               alt="Letter P"
@@ -127,7 +127,7 @@ const PigeonNode = ({ data }) => {
               className="w-6 h-6"
             />
           )}
-          {data.ringNumber && (
+          {data.iconic && (
             <img
               src="/assets/GoldCup.png"
               alt="Letter P"
@@ -159,7 +159,7 @@ const PigeonNode = ({ data }) => {
             <div className="flex items-center gap-2  italic text-black">
               {/* <UserOutlined className="w-3 h-3" /> */}
               <span className="truncate">{data.owner}</span>
-              {data.verified && (
+              {data.breederVerified && (
                 <img
                   src="/assets/Letter-B.png"
                   alt="Verified Breeder"
@@ -185,17 +185,17 @@ const PigeonNode = ({ data }) => {
           </div>
         )}
         {data.achievements && (
-          <div className="flex flex-col gap-1">
-            <p className="text-xs text-black inline-flex items-center flex-wrap gap-1 mt-1">
-              Results :
-              <img
-                src="/assets/GoldTrophy.png"
-                alt="Trophy"
-                width={20}
-                height={20}
-                className="w-5 h-5 inline-block"
-              />
-              <span className="inline-block">{data.achievements}</span>
+          <div className="flex items-start gap-1">
+            <p className="text-xs text-black">Results:</p>
+            <img
+              src="/assests/Gold-tropy.png"
+              alt="Letter P"
+              width={24}
+              height={24}
+              className="w-6 h-6 mt-[2px]"
+            />
+            <p className="text-xs text-black whitespace-pre-line">
+              {data.achievements}
             </p>
           </div>
         )}
@@ -602,7 +602,7 @@ export default function PigeonPedigreeChart() {
       </div>
       <div
         ref={chartRef}
-        className="w-full h-[2000px] bg-transparent flex justify-start items-center mt-0 rounded-3xl"
+        className="w-full h-[1400px] bg-transparent flex justify-start items-center mt-0 rounded-3xl"
       >
         {/* --- ReactFlow (now dynamic) --- */}
         <ReactFlow

@@ -217,7 +217,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 /* Custom Scrollbar */
-.menu-container::-webkit-scrollbar {
+/* .menu-container::-webkit-scrollbar {
   width: 8px;
 }
 
@@ -259,6 +259,7 @@ input[type="number"]::-webkit-inner-spin-button {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+*/
 
 /* Add this to your global CSS file */
 
@@ -331,6 +332,17 @@ select {
   background-repeat: no-repeat;
   background-size: 1.5em 1.5em;
   padding-right: 2.5em;
+}
+
+/* Utility: hide scrollbar but keep scrolling functional */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  background: transparent;
 }
 
 /* Improve container sizing */
@@ -834,4 +846,12 @@ select {
   .ant-select-selector {
   background: #f5f5f5 !important;
   border-color: #d9d9d9 !important;
+}
+
+/* Cursor utilities for grab/drag UX */
+.cursor-grab {
+  cursor: grab;
+}
+.cursor-grabbing {
+  cursor: grabbing;
 }

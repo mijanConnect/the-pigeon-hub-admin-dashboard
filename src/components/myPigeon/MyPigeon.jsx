@@ -10,7 +10,7 @@ import {
   Tooltip,
 } from "antd";
 import { getCode, getNames } from "country-list";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import { PiDnaBold } from "react-icons/pi";
 import { useNavigate } from "react-router-dom";
@@ -268,6 +268,80 @@ const MyPigeon = () => {
     },
   };
 
+  // ref for horizontal scrolling container
+  const tableRowRef = useRef(null);
+
+  // enable mouse and touch drag to scroll horizontally on the table container
+  useEffect(() => {
+    const el = tableRowRef.current;
+    if (!el) return;
+
+    let isDown = false;
+    let startX = 0;
+    let scrollLeftStart = 0;
+
+    const onMouseDown = (e) => {
+      // only left click
+      if (e.button !== 0) return;
+      isDown = true;
+      el.classList.add("cursor-grabbing");
+      startX = e.pageX - el.offsetLeft;
+      scrollLeftStart = el.scrollLeft;
+      document.body.style.userSelect = "none";
+    };
+
+    const onMouseMove = (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - el.offsetLeft;
+      const walk = x - startX;
+      el.scrollLeft = scrollLeftStart - walk;
+    };
+
+    const onMouseUp = () => {
+      if (!isDown) return;
+      isDown = false;
+      el.classList.remove("cursor-grabbing");
+      document.body.style.userSelect = "";
+    };
+
+    const onTouchStart = (e) => {
+      isDown = true;
+      startX = e.touches[0].pageX - el.offsetLeft;
+      scrollLeftStart = el.scrollLeft;
+    };
+
+    const onTouchMove = (e) => {
+      if (!isDown) return;
+      const x = e.touches[0].pageX - el.offsetLeft;
+      const walk = x - startX;
+      el.scrollLeft = scrollLeftStart - walk;
+    };
+
+    const onTouchEnd = () => {
+      isDown = false;
+    };
+
+    el.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: true });
+    el.addEventListener("touchend", onTouchEnd);
+
+    return () => {
+      el.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+      document.body.style.userSelect = "";
+    };
+  }, [pigeons.length]);
+
   return (
     <div className="w-full">
       <div className="flex justify-end mb-4 mt-4">
@@ -483,7 +557,10 @@ const MyPigeon = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar">
+      <div
+        ref={tableRowRef}
+        className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar hide-scrollbar cursor-grab"
+      >
         <div className="border rounded-lg shadow-md bg-gray-50">
           <div
             style={{ minWidth: pigeons.length > 0 ? "max-content" : "100%" }}

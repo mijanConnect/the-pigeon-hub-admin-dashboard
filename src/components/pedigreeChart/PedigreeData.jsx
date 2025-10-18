@@ -1,5 +1,6 @@
 // import { useMyProfileQuery } from "@/redux/featured/auth/authApi";
 
+
 export const convertBackendToExistingFormat = (backendResponse, role) => {
   if (!backendResponse?.data) {
     return {
@@ -13,23 +14,17 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
   const edges = [];
 
   // Determine max generation based on role
-  const maxGeneration = role === "SUPER_ADMIN" || role === "ADMIN" ? 4 : 4;
+  const maxGeneration = role === "PAIDUSER" ? 4 : 4;
 
   // Helper function to format results
-  // const formatResults = (results) => {
-  //   if (!Array.isArray(results) || results.length === 0) return null;
-  //   const firstResult = results[0];
-  //   return `${firstResult.name || ""}: ${firstResult.place || ""} (${
-  //     firstResult.date ? new Date(firstResult.date).getFullYear() : ""
-  //   })`;
-  // };
-
   const formatResults = (results) => {
     if (!results || !Array.isArray(results) || results.length === 0) {
       return null;
     }
-    return results.join("\n");
+
+    return results.map((item) => String(item).trim()).join("\n");
   };
+
   // Helper function to get gender from data
   const getGender = (genderData) => {
     if (typeof genderData === "string") {
@@ -38,10 +33,10 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       if (gender === "cock") return "Cock";
       if (gender === "unspecified") return "Unspecified";
     }
-    return "Unspecified"; // Default case
+    return "Unspecified";
   };
 
-  // Helper function to get breeder name with status check
+  // Helper function to get breeder name
   const getBreederInfo = (breeder) => {
     if (typeof breeder === "object" && breeder) {
       const name = breeder.breederName;
@@ -50,12 +45,28 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     return breeder;
   };
 
-  // Helper function to get consistent breeder verification status
-  const getBreederVerification = (breeder) => {
+  // Helper function to get breeder verification/status
+  const getBreederStatus = (breeder) => {
     if (typeof breeder === "object" && breeder) {
-      return breeder.verified === true;
+      // Check for 'status' field (true/false)
+      return breeder.status === true;
     }
     return false;
+  };
+
+  // Helper function to get pigeon verification status
+  const getPigeonVerification = (pigeon) => {
+    return pigeon?.verified === true;
+  };
+
+  // Helper function to get pigeon iconic status
+  const getPigeonIconic = (pigeon) => {
+    return pigeon?.iconic === true;
+  };
+
+  // Helper function to get pigeon iconic score
+  const getPigeonIconicScore = (pigeon) => {
+    return pigeon?.iconicScore || null;
   };
 
   // Helper function to create empty node
@@ -87,10 +98,12 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       birthYear: subject.birthYear?.toString(),
       color: "#FFFFE0",
       colorName: subject.color,
-      description:
-        subject.notes || subject.shortInfo,
+      description: subject.notes || subject.shortInfo,
       achievements: formatResults(subject.addresults),
-      verified: getBreederVerification(subject.breeder),
+      verified: getPigeonVerification(subject),
+      breederVerified: getBreederStatus(subject.breeder),
+      iconic: getPigeonIconic(subject),
+      iconicScore: getPigeonIconicScore(subject),
       handles: "top-bottom",
       isEmpty: false,
     },
@@ -103,7 +116,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       type: "pigeonNode",
       position: { x: 320, y: -200 },
       data: {
-        name: subject.fatherRingId.name || "Unknown Father",
+        name: subject.fatherRingId.name,
         ringNumber: subject.fatherRingId.ringNumber,
         owner: getBreederInfo(subject.fatherRingId.breeder),
         country: subject.fatherRingId.country,
@@ -114,10 +127,12 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         color: "#ADD8E6",
         colorName: subject.fatherRingId.color,
         description:
-          subject.fatherRingId.notes ||
-          subject.fatherRingId.shortInfo,
+          subject.fatherRingId.notes || subject.fatherRingId.shortInfo,
         achievements: formatResults(subject.fatherRingId.addresults),
-        verified: getBreederVerification(subject.fatherRingId.breeder),
+        verified: getPigeonVerification(subject.fatherRingId),
+        breederVerified: getBreederStatus(subject.fatherRingId.breeder),
+        iconic: getPigeonIconic(subject.fatherRingId),
+        iconicScore: getPigeonIconicScore(subject.fatherRingId),
         handles: "right-only",
         isEmpty: false,
       },
@@ -131,7 +146,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     source: "subject",
     target: "father_1",
     type: "smoothstep",
-    style: { stroke: "#3b82f6", strokeWidth: 3 },
+    style: { stroke: "#37B7C3", strokeWidth: 3 },
     curveness: 0.1,
   });
 
@@ -155,7 +170,10 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         description:
           subject.motherRingId.notes || subject.motherRingId.shortInfo,
         achievements: formatResults(subject.motherRingId.addresults),
-        verified: getBreederVerification(subject.motherRingId.breeder),
+        verified: getPigeonVerification(subject.motherRingId),
+        breederVerified: getBreederStatus(subject.motherRingId.breeder),
+        iconic: getPigeonIconic(subject.motherRingId),
+        iconicScore: getPigeonIconicScore(subject.motherRingId),
         handles: "right-only",
         isEmpty: false,
       },
@@ -166,7 +184,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       source: "subject",
       target: "mother_1",
       type: "smoothstep",
-      style: { stroke: "#ec4899", strokeWidth: 3 },
+      style: { stroke: "#37B7C3", strokeWidth: 3 },
     });
   } else {
     nodes.push(
@@ -182,7 +200,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       source: "subject",
       target: "mother_1",
       type: "smoothstep",
-      style: { stroke: "#ec4899", strokeWidth: 3 },
+      style: { stroke: "#37B7C3", strokeWidth: 3 },
     });
   }
 
@@ -206,13 +224,17 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         colorName: subject.fatherRingId.fatherRingId.color,
         description:
           subject.fatherRingId.fatherRingId.notes ||
-          subject.fatherRingId.fatherRingId.shortInfo,
+          subject.fatherRingId.fatherRingId.shortInfo ||
+          "Top racing cock.",
         achievements: formatResults(
           subject.fatherRingId.fatherRingId.addresults
         ),
-        verified: getBreederVerification(
+        verified: getPigeonVerification(subject.fatherRingId.fatherRingId),
+        breederVerified: getBreederStatus(
           subject.fatherRingId.fatherRingId.breeder
         ),
+        iconic: getPigeonIconic(subject.fatherRingId.fatherRingId),
+        iconicScore: getPigeonIconicScore(subject.fatherRingId.fatherRingId),
         isEmpty: false,
       },
     });
@@ -227,7 +249,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     source: "father_1",
     target: "father_2_1",
     type: "smoothstep",
-    style: { stroke: "#3b82f6", strokeWidth: 2.5 },
+    style: { stroke: "#37B7C3", strokeWidth: 2.5 },
   });
 
   // Father side - Grandmother (FP)
@@ -250,12 +272,15 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         description:
           subject.fatherRingId.motherRingId.notes ||
           subject.fatherRingId.motherRingId.shortInfo,
-        achievements: formatResults(
-          subject.fatherRingId.motherRingId.addresults
-        ),
-        verified: getBreederVerification(
+        achievements:
+          formatResults(subject.fatherRingId.motherRingId.addresults) ||
+          "Top producer",
+        verified: getPigeonVerification(subject.fatherRingId.motherRingId),
+        breederVerified: getBreederStatus(
           subject.fatherRingId.motherRingId.breeder
         ),
+        iconic: getPigeonIconic(subject.fatherRingId.motherRingId),
+        iconicScore: getPigeonIconicScore(subject.fatherRingId.motherRingId),
         isEmpty: false,
       },
     });
@@ -270,7 +295,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     source: "father_1",
     target: "mother_2_1",
     type: "smoothstep",
-    style: { stroke: "#ec4899", strokeWidth: 2.5 },
+    style: { stroke: "#37B7C3", strokeWidth: 2.5 },
   });
 
   // Mother side - Grandfather (MP)
@@ -296,9 +321,12 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         achievements:
           formatResults(subject.motherRingId.fatherRingId.addresults) ||
           "National ace",
-        verified: getBreederVerification(
+        verified: getPigeonVerification(subject.motherRingId.fatherRingId),
+        breederVerified: getBreederStatus(
           subject.motherRingId.fatherRingId.breeder
         ),
+        iconic: getPigeonIconic(subject.motherRingId.fatherRingId),
+        iconicScore: getPigeonIconicScore(subject.motherRingId.fatherRingId),
         isEmpty: false,
       },
     });
@@ -313,7 +341,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     source: "mother_1",
     target: "father_2_2",
     type: "smoothstep",
-    style: { stroke: "#3b82f6", strokeWidth: 2.5 },
+    style: { stroke: "#37B7C3", strokeWidth: 2.5 },
   });
 
   // Mother side - Grandmother (MP)
@@ -335,13 +363,17 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         colorName: subject.motherRingId.motherRingId.color,
         description:
           subject.motherRingId.motherRingId.notes ||
-          subject.motherRingId.motherRingId.shortInfo,
+          subject.motherRingId.motherRingId.shortInfo ||
+          "Foundation hen.",
         achievements: formatResults(
           subject.motherRingId.motherRingId.addresults
         ),
-        verified: getBreederVerification(
+        verified: getPigeonVerification(subject.motherRingId.motherRingId),
+        breederVerified: getBreederStatus(
           subject.motherRingId.motherRingId.breeder
         ),
+        iconic: getPigeonIconic(subject.motherRingId.motherRingId),
+        iconicScore: getPigeonIconicScore(subject.motherRingId.motherRingId),
         isEmpty: false,
       },
     });
@@ -356,7 +388,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     source: "mother_1",
     target: "mother_2_2",
     type: "smoothstep",
-    style: { stroke: "#ec4899", strokeWidth: 2.5 },
+    style: { stroke: "#37B7C3", strokeWidth: 2.5 },
   });
 
   // Generation 3 - Only if maxGeneration >= 3
@@ -387,11 +419,12 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
             birthYear: parentPath.birthYear?.toString(),
             color: color,
             colorName: parentPath.color,
-            description:
-              parentPath.notes ||
-              parentPath.shortInfo,
+            description: parentPath.notes || parentPath.shortInfo,
             achievements: formatResults(parentPath.addresults),
-            verified: getBreederVerification(parentPath.breeder),
+            verified: getPigeonVerification(parentPath),
+            breederVerified: getBreederStatus(parentPath.breeder),
+            iconic: getPigeonIconic(parentPath),
+            iconicScore: getPigeonIconicScore(parentPath),
             isEmpty: false,
           },
         });
@@ -400,7 +433,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       }
 
       // Always push edge regardless of data
-      const strokeColor = isFromFather ? "#3b82f6" : "#ec4899";
+      const strokeColor = isFromFather ? "#37B7C3" : "#37B7C3";
       edges.push({
         id: `${parentNodeId}-${nodeId}`,
         source: parentNodeId,
@@ -521,7 +554,11 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
             position: `GG-GF (${nodeId})`,
             birthYear: parentPath.fatherRingId.birthYear?.toString(),
             color: fatherColor,
-            verified: parentPath.fatherRingId.verified || false,
+            colorName: parentPath.fatherRingId.color,
+            verified: getPigeonVerification(parentPath.fatherRingId),
+            breederVerified: getBreederStatus(parentPath.fatherRingId.breeder),
+            iconic: getPigeonIconic(parentPath.fatherRingId),
+            iconicScore: getPigeonIconicScore(parentPath.fatherRingId),
             isEmpty: false,
           },
         });
@@ -542,7 +579,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         source: nodeId,
         target: `${nodeId}_father`,
         type: "smoothstep",
-        style: { stroke: "#3b82f6", strokeWidth: 1.5 },
+        style: { stroke: "#37B7C3", strokeWidth: 1.5 },
       });
 
       if (parentPath && parentPath.motherRingId) {
@@ -560,7 +597,11 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
             position: `GG-GM (${nodeId})`,
             birthYear: parentPath.motherRingId.birthYear?.toString(),
             color: motherColor,
-            verified: parentPath.motherRingId.verified || false,
+            colorName: parentPath.motherRingId.color,
+            verified: getPigeonVerification(parentPath.motherRingId),
+            breederVerified: getBreederStatus(parentPath.motherRingId.breeder),
+            iconic: getPigeonIconic(parentPath.motherRingId),
+            iconicScore: getPigeonIconicScore(parentPath.motherRingId),
             isEmpty: false,
           },
         });
@@ -581,7 +622,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         source: nodeId,
         target: `${nodeId}_mother`,
         type: "smoothstep",
-        style: { stroke: "#ec4899", strokeWidth: 1.5 },
+        style: { stroke: "#37B7C3", strokeWidth: 1.5 },
       });
     };
 
