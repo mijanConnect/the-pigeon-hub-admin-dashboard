@@ -117,6 +117,8 @@ const AddNewPigeon = ({ onSave }) => {
   const photosRowRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  // percentage top position for photo scroller arrows (customize as needed)
+  const photosScrollTop = "50%"; // e.g. '45%', '50%'
 
   // 📷 Upload component fileLists (controlled previews)
   const [fileLists, setFileLists] = useState({
@@ -1072,28 +1074,42 @@ const AddNewPigeon = ({ onSave }) => {
             <div className="p-4 border rounded-lg flex flex-col">
               <p className="text-[16px] font-semibold mb-2">Pigeon Photos:</p>
               <div className="pb-2 relative">
-                <div className="absolute left-[-16px] top-1/2 -translate-y-1/2 z-10 bg-gray-100 rounded-full">
-                  <Button
-                    type="text"
-                    icon={<LeftOutlined />}
-                    onClick={() => {
-                      const el = photosRowRef.current;
-                      if (el) el.scrollBy({ left: -200, behavior: "smooth" });
+                {canScrollLeft && (
+                  <div
+                    className="absolute left-[-16px] z-10 bg-gray-100 rounded-full"
+                    style={{
+                      top: photosScrollTop,
+                      transform: "translateY(-60%)",
                     }}
-                    disabled={!canScrollLeft}
-                  />
-                </div>
-                <div className="absolute right-[-16px] top-1/2 -translate-y-1/2 z-10 bg-gray-100 rounded-full">
-                  <Button
-                    type="text"
-                    icon={<RightOutlined />}
-                    onClick={() => {
-                      const el = photosRowRef.current;
-                      if (el) el.scrollBy({ left: 200, behavior: "smooth" });
+                  >
+                    <Button
+                      type="text"
+                      icon={<LeftOutlined />}
+                      onClick={() => {
+                        const el = photosRowRef.current;
+                        if (el) el.scrollBy({ left: -200, behavior: "smooth" });
+                      }}
+                    />
+                  </div>
+                )}
+                {canScrollRight && (
+                  <div
+                    className="absolute right-[-16px] z-10 bg-gray-100 rounded-full"
+                    style={{
+                      top: photosScrollTop,
+                      transform: "translateY(-60%)",
                     }}
-                    disabled={!canScrollRight}
-                  />
-                </div>
+                  >
+                    <Button
+                      type="text"
+                      icon={<RightOutlined />}
+                      onClick={() => {
+                        const el = photosRowRef.current;
+                        if (el) el.scrollBy({ left: 200, behavior: "smooth" });
+                      }}
+                    />
+                  </div>
+                )}
                 <div
                   ref={photosRowRef}
                   className="overflow-x-auto hide-scrollbar"
