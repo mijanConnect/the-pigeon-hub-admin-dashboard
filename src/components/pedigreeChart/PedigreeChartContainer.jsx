@@ -188,7 +188,7 @@ const PigeonNode = ({ data }) => {
           <div className="flex items-start gap-1">
             <p className="text-xs text-black">Results:</p>
             <img
-              src="/assests/Gold-tropy.png"
+              src="/assets/GoldTrophy.png"
               alt="Letter P"
               width={24}
               height={24}

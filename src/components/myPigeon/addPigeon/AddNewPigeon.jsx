@@ -1072,7 +1072,7 @@ const AddNewPigeon = ({ onSave }) => {
             <div className="p-4 border rounded-lg flex flex-col">
               <p className="text-[16px] font-semibold mb-2">Pigeon Photos:</p>
               <div className="pb-2 relative">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10">
+                <div className="absolute left-[-16px] top-1/2 -translate-y-1/2 z-10 bg-gray-100 rounded-full">
                   <Button
                     type="text"
                     icon={<LeftOutlined />}
@@ -1083,7 +1083,7 @@ const AddNewPigeon = ({ onSave }) => {
                     disabled={!canScrollLeft}
                   />
                 </div>
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10">
+                <div className="absolute right-[-16px] top-1/2 -translate-y-1/2 z-10 bg-gray-100 rounded-full">
                   <Button
                     type="text"
                     icon={<RightOutlined />}
