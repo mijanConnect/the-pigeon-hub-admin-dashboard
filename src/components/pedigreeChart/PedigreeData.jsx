@@ -1,6 +1,5 @@
 // import { useMyProfileQuery } from "@/redux/featured/auth/authApi";
 
-
 export const convertBackendToExistingFormat = (backendResponse, role) => {
   if (!backendResponse?.data) {
     return {
