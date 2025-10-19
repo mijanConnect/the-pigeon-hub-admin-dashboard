@@ -192,7 +192,15 @@ const AddNewPigeon = ({ onSave }) => {
 
       // show father ring in the input (keep typed value if user entered)
       if (pigeonData.fatherRingId) {
-        setFatherDisplay(pigeonData.fatherRingId?.ringNumber || "");
+        setFatherDisplay(
+          pigeonData.fatherRingId?.ringNumber || pigeonData.fatherRingId || ""
+        );
+        // ensure the selected preview box shows on edit
+        const maybeFather =
+          typeof pigeonData.fatherRingId === "object"
+            ? pigeonData.fatherRingId
+            : { ringNumber: pigeonData.fatherRingId, name: "" };
+        setFatherSelected(maybeFather);
       }
 
       // show breeder name/string in the input (resolve later when breederNames arrive)
@@ -322,7 +330,10 @@ const AddNewPigeon = ({ onSave }) => {
         const match = fatherOptions.find(
           (p) => p.ringNumber === current || p.ringNumber === String(current)
         );
-        if (match) setFatherDisplay(match.ringNumber);
+        if (match) {
+          setFatherDisplay(match.ringNumber);
+          setFatherSelected(match);
+        }
       }
     } catch (e) {
       // ignore

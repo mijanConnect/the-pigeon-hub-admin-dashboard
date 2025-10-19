@@ -8,7 +8,7 @@ import ReactFlow, {
 } from "reactflow";
 
 import { DownloadOutlined } from "@ant-design/icons";
-import { Button } from "antd";
+import { Button, Dropdown } from "antd";
 import "reactflow/dist/style.css";
 
 import { useGetProfileQuery } from "../../redux/apiSlices/profileSlice";
@@ -306,24 +306,21 @@ export default function PigeonPedigreeChart() {
     }
   }, [nodes]);
 
-  // PDF Export Function
-  const exportToPDF = useCallback(async () => {
+  // Generic chart capture and PDF save function. Returns the generated filename.
+  const captureChartAndSave = useCallback(async (filenameOverride) => {
     try {
       if (!chartRef.current) {
-        alert("Chart not ready for export. Please try again.");
-        return;
+        throw new Error("Chart not ready");
       }
 
-      // Show loading state
+      // Show loading state on the primary PDF button if present
       const exportButton = document.querySelector("[data-export-pdf]");
       if (exportButton) {
         exportButton.textContent = "Exporting...";
         exportButton.disabled = true;
       }
 
-      // Create a comprehensive function to convert lab colors to RGB
       const convertLabToRgb = (labString) => {
-        // Extract values from lab() function
         const labMatch = labString.match(/lab\(\s*([^)]+)\s*\)/);
         if (!labMatch) return labString;
 
@@ -332,8 +329,6 @@ export default function PigeonPedigreeChart() {
           .map((v) => parseFloat(v.replace("%", "")));
         const [l, a, b] = values;
 
-        // Simple lab to RGB conversion (approximation)
-        // For a more accurate conversion, you might want to use a color library
         const y = (l + 16) / 116;
         const x = a / 500 + y;
         const z = y - b / 200;
@@ -360,21 +355,17 @@ export default function PigeonPedigreeChart() {
         return `rgb(${r}, ${g}, ${blue})`;
       };
 
-      // More comprehensive approach to handle lab colors
       const temporarilyReplaceLabColors = (element) => {
         const originalStyles = [];
 
-        // Function to recursively process all elements
         const processElement = (el) => {
           if (el.nodeType === Node.ELEMENT_NODE) {
             const style = el.getAttribute("style");
             const computedStyle = window.getComputedStyle(el);
 
-            // Check both inline styles and computed styles for lab colors
             let needsReplacement = false;
             let newStyle = style || "";
 
-            // Check inline style attribute
             if (style && style.includes("lab(")) {
               needsReplacement = true;
               newStyle = style.replace(/lab\([^)]+\)/g, (match) => {
@@ -382,7 +373,6 @@ export default function PigeonPedigreeChart() {
               });
             }
 
-            // Check computed styles for common color properties
             const colorProperties = [
               "color",
               "background-color",
@@ -408,7 +398,6 @@ export default function PigeonPedigreeChart() {
               el.setAttribute("style", newStyle);
             }
 
-            // Process child elements
             Array.from(el.children).forEach(processElement);
           }
         };
@@ -417,10 +406,9 @@ export default function PigeonPedigreeChart() {
         return originalStyles;
       };
 
-      // Apply lab color replacements
+      // Apply lab color replacements and remove truncation classes
       const styleBackups = temporarilyReplaceLabColors(chartRef.current);
 
-      // --- Temporarily remove truncation/overflow styles so html2canvas captures full text ---
       const truncationBackups = [];
       const removeTruncation = (el) => {
         if (!el) return;
@@ -434,13 +422,11 @@ export default function PigeonPedigreeChart() {
             style: e.getAttribute("style"),
           };
           truncationBackups.push(original);
-          // remove classes that cause clipping
           e.classList.remove(
             "truncate",
             "overflow-hidden",
             "whitespace-nowrap"
           );
-          // also remove inline overflow styles that could clip text
           const oldStyle = e.getAttribute("style") || "";
           const newStyle = oldStyle
             .replace(/overflow:\s*hidden;?/g, "")
@@ -451,23 +437,20 @@ export default function PigeonPedigreeChart() {
         });
       };
 
-      // run removal
       removeTruncation(chartRef.current);
 
       // Wait a moment for DOM updates
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 120));
 
-      // Configure html2canvas with better error handling
       const canvas = await html2canvas(chartRef.current, {
-        scale: 2, // Higher resolution
+        scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: "#ffffff",
         width: chartRef.current.scrollWidth,
         height: chartRef.current.scrollHeight,
-        logging: false, // Disable logging to reduce console noise
+        logging: false,
         ignoreElements: (element) => {
-          // Skip elements that might cause issues
           return (
             element.classList &&
             element.classList.contains("html2canvas-ignore")
@@ -475,7 +458,7 @@ export default function PigeonPedigreeChart() {
         },
       });
 
-      // Restore original styles
+      // Restore styles
       styleBackups.forEach((backup) => {
         if (backup.hasStyle && backup.originalStyle) {
           backup.element.setAttribute("style", backup.originalStyle);
@@ -484,69 +467,46 @@ export default function PigeonPedigreeChart() {
         }
       });
 
-      // Restore truncation/overflow classes and inline styles
       truncationBackups.forEach((b) => {
-        // restore class list
-        b.element.className = ""; // clear then re-add to keep order predictable
+        b.element.className = "";
         b.classList.forEach((c) => b.element.classList.add(c));
-        // restore inline style
         if (b.style) b.element.setAttribute("style", b.style);
         else b.element.removeAttribute("style");
       });
 
-      const imgData = canvas.toDataURL("image/png", 1.0); // Full quality
+      const imgData = canvas.toDataURL("image/png", 1.0);
 
-      // Calculate PDF dimensions
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
 
-      // Calculate scale to fit on standard paper size
-      const maxWidth = imgWidth > imgHeight ? 1120 : 790; // A4 landscape/portrait at 150 DPI
+      const maxWidth = imgWidth > imgHeight ? 1120 : 790;
       const maxHeight = imgWidth > imgHeight ? 790 : 1120;
 
       const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight, 1);
       const finalWidth = imgWidth * scale;
       const finalHeight = imgHeight * scale;
 
-      // Create PDF with appropriate orientation
       const pdf = new jsPDF({
         orientation: imgWidth > imgHeight ? "landscape" : "portrait",
         unit: "px",
-        format: [finalWidth + 40, finalHeight + 40], // Add padding
+        format: [finalWidth + 40, finalHeight + 40],
       });
 
-      // Center the image on the page
       const xOffset = 20;
       const yOffset = 20;
 
-      // Add the image to PDF
       pdf.addImage(imgData, "PNG", xOffset, yOffset, finalWidth, finalHeight);
 
-      // Generate filename with current date
       const currentDate = new Date().toISOString().split("T")[0];
-      const filename = `pigeon-pedigree-chart-${currentDate}.pdf`;
+      const filename =
+        filenameOverride || `pigeon-pedigree-chart-${currentDate}.pdf`;
 
-      // Save PDF
       pdf.save(filename);
 
-      console.log("PDF export completed successfully");
+      return filename;
     } catch (error) {
-      console.error("Error exporting to PDF:", error);
-
-      // More specific error messages
-      if (error.message && error.message.includes("lab")) {
-        alert(
-          "Error: Unsupported color format detected. Please try refreshing the page and exporting again."
-        );
-      } else if (error.message && error.message.includes("canvas")) {
-        alert(
-          "Error: Unable to capture chart image. Please ensure the chart is fully loaded and try again."
-        );
-      } else {
-        alert("Error exporting to PDF. Please try again or refresh the page.");
-      }
+      throw error;
     } finally {
-      // Reset button state
       const exportButton = document.querySelector("[data-export-pdf]");
       if (exportButton) {
         exportButton.textContent = "Export as PDF";
@@ -554,6 +514,62 @@ export default function PigeonPedigreeChart() {
       }
     }
   }, []);
+
+  // Original single-click export (captures the full chart)
+  const exportToPDF = useCallback(async () => {
+    try {
+      await captureChartAndSave();
+      console.log("PDF export completed successfully");
+    } catch (error) {
+      console.error("Error exporting to PDF:", error);
+      alert("Error exporting to PDF. Please try again or refresh the page.");
+    }
+  }, [captureChartAndSave]);
+
+  // Export only N generations (N includes subject as generation 0). Example: 4Gen => generations 0..3
+  const exportToPDFWithGenerations = useCallback(
+    async (genCount) => {
+      const maxGen = Math.max(0, genCount - 1);
+      const originalNodes = nodes;
+      const originalEdges = edges;
+
+      try {
+        // Filter nodes by generation
+        const filteredNodes = originalNodes.filter((n) => {
+          const gen = n?.data?.generation ?? 0;
+          return gen <= maxGen;
+        });
+
+        // Keep edges that connect visible nodes
+        const visibleIds = new Set(filteredNodes.map((n) => n.id));
+        const filteredEdges = originalEdges.filter(
+          (e) => visibleIds.has(e.source) && visibleIds.has(e.target)
+        );
+
+        // Apply filtered graph
+        setNodes(filteredNodes);
+        setEdges(filteredEdges);
+
+        // Wait for ReactFlow to re-render
+        await new Promise((resolve) => setTimeout(resolve, 220));
+
+        const currentDate = new Date().toISOString().split("T")[0];
+        const filename = `pigeon-pedigree-chart-${genCount}gen-${currentDate}.pdf`;
+
+        await captureChartAndSave(filename);
+
+        console.log(`PDF export for ${genCount} generations completed`);
+      } catch (error) {
+        console.error("Error exporting filtered generations:", error);
+        alert("Error exporting the selected generations. Please try again.");
+      } finally {
+        // Restore original nodes/edges regardless of success/failure
+        setNodes(originalNodes);
+        setEdges(originalEdges);
+      }
+    },
+    [nodes, edges, setNodes, setEdges, captureChartAndSave]
+  );
 
   const defaultViewport = { x: 0, y: 0, zoom: 0.8 };
 
@@ -568,7 +584,7 @@ export default function PigeonPedigreeChart() {
 
   return (
     <div className="container  mx-auto">
-      <div className="flex flex-col md:flex-row items-center justify-between mt-12">
+      <div className="flex flex-col md:flex-row items-center justify-between mt-4">
         <div className="max-w-2xl">
           <h2 className="text-black font-bold text-2xl">
             Pigeon pedigree chart
@@ -589,20 +605,37 @@ export default function PigeonPedigreeChart() {
           >
             Export as Excel
           </Button>
-          <Button
-            onClick={exportToPDF}
-            type="primary"
-            data-export-pdf
-            className="bg-primary text-white hover:text-white flex items-center gap-2"
-            icon={<DownloadOutlined />}
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: "4gen",
+                  label: "Export as PDF (4Gen)",
+                  onClick: async () => exportToPDFWithGenerations(4),
+                },
+                {
+                  key: "5gen",
+                  label: "Export as PDF (5Gen)",
+                  onClick: async () => exportToPDFWithGenerations(5),
+                },
+              ],
+            }}
+            placement="bottomRight"
           >
-            Export as PDF
-          </Button>
+            <Button
+              type="primary"
+              data-export-pdf
+              className="bg-primary text-white hover:text-white flex items-center gap-2"
+              icon={<DownloadOutlined />}
+            >
+              Export as PDF
+            </Button>
+          </Dropdown>
         </div>
       </div>
       <div
         ref={chartRef}
-        className="w-full h-[1400px] bg-transparent flex justify-start items-center mt-0 rounded-3xl"
+        className="w-full h-[2000px] bg-transparent flex justify-start items-center rounded-3xl"
       >
         {/* --- ReactFlow (now dynamic) --- */}
         <ReactFlow
@@ -615,7 +648,7 @@ export default function PigeonPedigreeChart() {
           defaultViewport={defaultViewport}
           fitView
           attributionPosition="bottom-right"
-          className="bg-transparent h-full py-16"
+          className="bg-transparent h-full py-8"
           minZoom={0.5}
           maxZoom={1}
           nodesDraggable={false}

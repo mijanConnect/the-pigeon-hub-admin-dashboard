@@ -235,6 +235,9 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
         },
         { label: "Country", value: String(pigeon?.country || "N/A") },
         { label: "Status", value: String(pigeon?.status || "N/A") },
+        { label: "Verified", value: String(pigeon?.verified ? "Yes" : "No") },
+        // { label: "Iconic", value: String(pigeon?.iconic ? "Yes" : "No") },
+        { label: "Iconic Score", value: String(pigeon?.iconicScore || "N/A") },
       ];
 
       pdf.setFontSize(9);
@@ -296,6 +299,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
 
       // Siblings Information - Table format
       if (siblings && siblings.length > 0) {
+        yPosition += 5;
         checkPageBreak(60);
 
         addSectionHeader("Siblings Information", yPosition);
