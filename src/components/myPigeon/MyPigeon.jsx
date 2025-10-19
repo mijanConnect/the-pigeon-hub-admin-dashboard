@@ -35,6 +35,7 @@ import RacingIcon from "../../assets/Racing.png";
 import RetiredIcon from "../../assets/Retired.png";
 import SoldIcon from "../../assets/Sold.png";
 import PigeonPdfExport from "./addPigeon/ExportPdf";
+import PigeonPdfExport2 from "./addPigeon/ExportPdf2";
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -54,6 +55,11 @@ const MyPigeon = () => {
   });
 
   const handleView = (record) => {
+    // navigate to the standalone view page
+    navigate(`/view-pigeon/${record._id}`);
+  };
+
+  const handleViewDown = (record) => {
     // navigate to the standalone view page
     navigate(`/view-pigeon/${record._id}`);
   };
@@ -206,7 +212,7 @@ const MyPigeon = () => {
           `${record.ringNumber || record._id}-photo.jpg`
         );
       case "details": {
-        <PigeonPdfExport pigeon={pigeons} siblings={siblingsData} />;
+        // <PigeonPdfExport pigeon={pigeons} siblings={siblingsData} />;
       }
       default:
         return message.error("Unknown download option");
@@ -343,6 +349,12 @@ const MyPigeon = () => {
                 onClick={() => handleDelete(record)}
               />
             </Tooltip>
+            <Tooltip title="2">
+              <FaTrash
+                style={{ color: "#ff4d4f", fontSize: 16, cursor: "pointer" }}
+                onClick={() => handleViewDown(record)}
+              />
+            </Tooltip>
             {/* Download menu */}
             <Dropdown
               overlay={
@@ -354,7 +366,12 @@ const MyPigeon = () => {
                 >
                   <Menu.Item key="pedigree">Original pedigree</Menu.Item>
                   <Menu.Item key="ownership">Ownership card</Menu.Item>
-                  <Menu.Item key="details">Pigeon details</Menu.Item>
+                  <Menu.Item key="details">
+                    <PigeonPdfExport2
+                      pigeon={pigeons}
+                      siblings={siblingsData}
+                    />
+                  </Menu.Item>
                   <Menu.Item key="dna">DNA certificate</Menu.Item>
                   <Menu.Item key="photo">Pigeon photo</Menu.Item>
                 </Menu>

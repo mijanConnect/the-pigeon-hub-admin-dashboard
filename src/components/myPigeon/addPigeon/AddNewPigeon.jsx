@@ -1270,7 +1270,7 @@ const AddNewPigeon = ({ onSave }) => {
                     className="absolute left-[-16px] z-10 bg-gray-100 rounded-full"
                     style={{
                       top: photosScrollTop,
-                      transform: "translateY(-60%)",
+                      transform: "translateY(-50%)",
                     }}
                   >
                     <Button
@@ -1288,7 +1288,7 @@ const AddNewPigeon = ({ onSave }) => {
                     className="absolute right-[-16px] z-10 bg-gray-100 rounded-full"
                     style={{
                       top: photosScrollTop,
-                      transform: "translateY(-60%)",
+                      transform: "translateY(-50%)",
                     }}
                   >
                     <Button
