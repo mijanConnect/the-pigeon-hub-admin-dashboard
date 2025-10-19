@@ -260,9 +260,9 @@ const ViewPigeon = () => {
   const { data: pigeonResp, isLoading: loading } = useGetSinglePigeonQuery(id, {
     skip: !id,
   });
-  const { data: siblingsResp } = useGetSiblingsQuery(id, { skip: !id });
-
   const pigeonData = pigeonResp?.data || null;
+  
+  const { data: siblingsResp } = useGetSiblingsQuery(id, { skip: !id });
   const siblingsData = siblingsResp?.data?.siblings || null;
 
   console.log(siblingsData);

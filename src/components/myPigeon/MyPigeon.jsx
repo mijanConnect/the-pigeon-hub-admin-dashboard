@@ -24,6 +24,7 @@ import {
   useDeletePigeonMutation,
   useGetAllSiblingsQuery,
   useGetMyPigeonsQuery,
+  useGetSinglePigeonQuery,
 } from "../../redux/apiSlices/mypigeonSlice";
 import { attachDragToElement } from "../common/dragScroll";
 import { getImageUrl } from "../common/imageUrl";
@@ -35,7 +36,6 @@ import RacingIcon from "../../assets/Racing.png";
 import RetiredIcon from "../../assets/Retired.png";
 import SoldIcon from "../../assets/Sold.png";
 import PigeonPdfExport from "./addPigeon/ExportPdf";
-import PigeonPdfExport2 from "./addPigeon/ExportPdf2";
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -59,17 +59,16 @@ const MyPigeon = () => {
     navigate(`/view-pigeon/${record._id}`);
   };
 
-  const handleViewDown = (record) => {
-    // navigate to the standalone view page
-    navigate(`/view-pigeon/${record._id}`);
-  };
-
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const countries = getNames();
 
   const showEditModal = (record) => {
     navigate(`/add-pigeon/${record._id}`);
+  };
+
+  const showPdfExportModal = (record) => {
+    navigate(`/export-pdf/${record._id}`);
   };
 
   const handleAddPigeon = () => {
@@ -94,10 +93,6 @@ const MyPigeon = () => {
 
   const pigeons = data?.pigeons || [];
   const total = data?.pagination?.total || 0;
-
-  const { data: siblingsData } = useGetAllSiblingsQuery();
-
-  console.log(siblingsData);
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -212,7 +207,6 @@ const MyPigeon = () => {
           `${record.ringNumber || record._id}-photo.jpg`
         );
       case "details": {
-        // <PigeonPdfExport pigeon={pigeons} siblings={siblingsData} />;
       }
       default:
         return message.error("Unknown download option");
@@ -349,12 +343,6 @@ const MyPigeon = () => {
                 onClick={() => handleDelete(record)}
               />
             </Tooltip>
-            <Tooltip title="2">
-              <FaTrash
-                style={{ color: "#ff4d4f", fontSize: 16, cursor: "pointer" }}
-                onClick={() => handleViewDown(record)}
-              />
-            </Tooltip>
             {/* Download menu */}
             <Dropdown
               overlay={
@@ -366,11 +354,11 @@ const MyPigeon = () => {
                 >
                   <Menu.Item key="pedigree">Original pedigree</Menu.Item>
                   <Menu.Item key="ownership">Ownership card</Menu.Item>
-                  <Menu.Item key="details">
-                    <PigeonPdfExport2
-                      pigeon={pigeons}
-                      siblings={siblingsData}
-                    />
+                  <Menu.Item
+                    key="details"
+                    onClick={() => showEditModal2(record)}
+                  >
+                    <PigeonPdfExport selectedId={record._id} />
                   </Menu.Item>
                   <Menu.Item key="dna">DNA certificate</Menu.Item>
                   <Menu.Item key="photo">Pigeon photo</Menu.Item>

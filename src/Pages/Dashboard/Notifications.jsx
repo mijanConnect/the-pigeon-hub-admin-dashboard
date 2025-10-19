@@ -29,7 +29,7 @@ const Notifications = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-4 px-4 bg-primary">
-        <h2 className="text-[22px] font-bold text-white">All Notifications</h2>
+        <h2 className="text-[22px] font-bold text-white">Notifications</h2>
         <button
           onClick={handleReadAll}
           className="bg-primary text-white h-10 rounded-md"

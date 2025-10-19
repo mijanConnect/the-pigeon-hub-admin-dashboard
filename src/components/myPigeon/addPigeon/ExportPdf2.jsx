@@ -1,11 +1,28 @@
 import React from "react";
 import jsPDF from "jspdf";
 import moment from "moment";
-// import { Button } from "@/components/ui/button";
-import { Button } from "antd";
-import { Download } from "lucide-react";
+import React, { useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  useGetSiblingsQuery,
+  useGetSinglePigeonQuery,
+} from "../../../redux/apiSlices/mypigeonSlice";
 
-const PigeonPdfExport2 = ({ pigeon, siblings = [] }) => {
+const PigeonPdfExport = () => {
+  const navigate = useNavigate();
+  const printRef = useRef(null);
+  const { id } = useParams();
+
+  const { data: pigeonResp, isLoading: loading } = useGetSinglePigeonQuery(id, {
+    skip: !id,
+  });
+  const pigeon = pigeonResp?.data || null;
+
+  const { data: siblingsResp } = useGetSiblingsQuery(id, { skip: !id });
+  const siblingsData = siblingsResp?.data?.siblings || null;
+
+  console.log(siblingsData);
+
   // Use your existing getImageUrl function
   const getImageUrl = (path) => {
     if (!path) {
@@ -403,13 +420,13 @@ const PigeonPdfExport2 = ({ pigeon, siblings = [] }) => {
           );
           xPos += colWidths.racer;
           pdf.text(
-            truncate(sibling.father?.ringNumber, colWidths.father),
+            truncate(sibling.fatherRingId?.name, colWidths.father),
             xPos + 1,
             rowY
           );
           xPos += colWidths.father;
           pdf.text(
-            truncate(sibling.mother?.ringNumber, colWidths.mother),
+            truncate(sibling.motherRingId?.name, colWidths.mother),
             xPos + 1,
             rowY
           );
@@ -463,4 +480,4 @@ const PigeonPdfExport2 = ({ pigeon, siblings = [] }) => {
   );
 };
 
-export default PigeonPdfExport2;
+export default PigeonPdfExport;

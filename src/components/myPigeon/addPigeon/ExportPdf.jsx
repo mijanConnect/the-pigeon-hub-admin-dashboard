@@ -403,13 +403,13 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
           );
           xPos += colWidths.racer;
           pdf.text(
-            truncate(sibling.father?.ringNumber, colWidths.father),
+            truncate(sibling.fatherRingId?.name, colWidths.father),
             xPos + 1,
             rowY
           );
           xPos += colWidths.father;
           pdf.text(
-            truncate(sibling.mother?.ringNumber, colWidths.mother),
+            truncate(sibling.motherRingId?.name, colWidths.mother),
             xPos + 1,
             rowY
           );
