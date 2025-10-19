@@ -43,6 +43,10 @@ const mypigeonSlice = api.injectEndpoints({
             pigeon?.DNAPhoto ||
             pigeon?.ownershipPhoto ||
             "",
+          DNAPhoto: pigeon?.DNAPhoto || "",
+          pedigreePhoto: pigeon?.pedigreePhoto || "",
+          ownershipPhoto: pigeon?.ownershipPhoto || "",
+          pigeonPhoto: pigeon?.pigeonPhoto || "",
           name: pigeon.name || "N/A",
           country: { name: pigeon.country, icon: "" },
           breeder: pigeon.breeder?.breederName || "N/A",
@@ -87,6 +91,15 @@ const mypigeonSlice = api.injectEndpoints({
 
     // ---------- GET SIBLINGS ----------
     getSiblings: builder.query({
+      query: (id) => ({
+        url: `/pigeon/siblings/${id}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, id) => [{ type: "Pigeon", id }],
+    }),
+
+    // ---------- GET All SIBLINGS ----------
+    getAllSiblings: builder.query({
       query: (id) => ({
         url: `/pigeon/siblings/${id}`,
         method: "GET",
@@ -146,7 +159,7 @@ const mypigeonSlice = api.injectEndpoints({
     }),
 
     getBreederNames: builder.query({
-      query: (limit=100) => ({
+      query: (limit = 100) => ({
         url: `/breeder?limit=${limit}`, // ✅ adjust according to your backend route
         method: "GET",
       }),
@@ -186,6 +199,7 @@ export const {
   useGetPigeonSearchQuery,
   useGetSinglePigeonQuery, // ✅ New hook
   useGetSiblingsQuery, // ✅ New hook
+  useGetAllSiblingsQuery, // ✅ New hook
   useAddPigeonMutation,
   useUpdatePigeonMutation, // ✅
   useDeletePigeonMutation,

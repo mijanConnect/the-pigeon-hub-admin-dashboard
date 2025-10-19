@@ -2,10 +2,10 @@ import { Button, Spin, Table } from "antd";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import React, { useEffect, useRef, useState } from "react";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
 import PlaceholderImg from "../../../assets/placeholder.png";
 import VerifyIcon from "../../../assets/verify.png";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import {
   useGetSiblingsQuery,
   useGetSinglePigeonQuery,
@@ -264,6 +264,9 @@ const ViewPigeon = () => {
 
   const pigeonData = pigeonResp?.data || null;
   const siblingsData = siblingsResp?.data?.siblings || null;
+
+  console.log(siblingsData);
+
   const handleExportPDF = async () => {
     const contentEl = printRef.current;
     if (!contentEl) return;
@@ -659,12 +662,6 @@ const ViewPigeon = () => {
                             //     : undefined
                             // }
                             columns={[
-                              // {
-                              //   title: "SL",
-                              //   key: "index",
-                              //   render: (_, __, index) => index + 1,
-                              //   width: 60,
-                              // },
                               {
                                 title: "Name",
                                 dataIndex: "name",
@@ -703,15 +700,15 @@ const ViewPigeon = () => {
                               },
                               {
                                 title: "Father",
-                                dataIndex: "name",
-                                key: "name",
-                                render: (value) => value || "N/A",
+                                dataIndex: "fatherRingId",
+                                key: "fatherRingId",
+                                render: (value) => value?.ringNumber || "N/A",
                               },
                               {
                                 title: "Mother",
-                                dataIndex: "name",
-                                key: "name",
-                                render: (value) => value || "N/A",
+                                dataIndex: "motherRingId",
+                                key: "motherRingId",
+                                render: (value) => value?.ringNumber || "N/A",
                               },
                               {
                                 title: "Gender",

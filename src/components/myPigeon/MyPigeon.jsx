@@ -1,23 +1,28 @@
 import {
   Button,
   Col,
+  Dropdown,
   Input,
+  Menu,
   Row,
   Select,
   Spin,
   Table,
   Tabs,
   Tooltip,
+  message,
 } from "antd";
 import { getCode, getNames } from "country-list";
 import { useEffect, useRef, useState } from "react";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
+import { IoMdDownload } from "react-icons/io";
 import { PiDnaBold } from "react-icons/pi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import AllIcon from "../../assets/all.png";
 import {
   useDeletePigeonMutation,
+  useGetAllSiblingsQuery,
   useGetMyPigeonsQuery,
 } from "../../redux/apiSlices/mypigeonSlice";
 import { attachDragToElement } from "../common/dragScroll";
@@ -29,11 +34,16 @@ import LostIcon from "../../assets/Lost.png";
 import RacingIcon from "../../assets/Racing.png";
 import RetiredIcon from "../../assets/Retired.png";
 import SoldIcon from "../../assets/Sold.png";
+import PigeonPdfExport from "./addPigeon/ExportPdf";
 
 const { Option } = Select;
 const { TabPane } = Tabs;
 
 const MyPigeon = () => {
+  const navigate = useNavigate();
+  const printRef = useRef(null);
+  const { id } = useParams();
+
   const [tabKey, setTabKey] = useState("all");
   const [filters, setFilters] = useState({
     search: "",
@@ -42,8 +52,6 @@ const MyPigeon = () => {
     color: "all",
     status: "all",
   });
-
-  const navigate = useNavigate();
 
   const handleView = (record) => {
     // navigate to the standalone view page
@@ -81,6 +89,10 @@ const MyPigeon = () => {
   const pigeons = data?.pigeons || [];
   const total = data?.pagination?.total || 0;
 
+  const { data: siblingsData } = useGetAllSiblingsQuery();
+
+  console.log(siblingsData);
+
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setPage(1);
@@ -109,6 +121,96 @@ const MyPigeon = () => {
 
   const showPedigreeChart = (record) => {
     navigate(`/pigeon-management/${record._id}`);
+  };
+
+  // Helper to download a URL or create a JSON download
+  const downloadUrl = async (url, filename) => {
+    if (!url) {
+      message.error("File not available for download");
+      return;
+    }
+
+    // If url is an object URL or data URL, just use anchor
+    if (url.startsWith("blob:") || url.startsWith("data:")) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      return;
+    }
+
+    // Try fetching the resource as a blob (better for cross-origin images when CORS allows)
+    try {
+      const resp = await fetch(url, { mode: "cors" });
+      if (!resp.ok) throw new Error("Fetch failed");
+      const blob = await resp.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
+      return;
+    } catch (err) {
+      // Fallback to direct link (may open in new tab or be blocked by CORS)
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      return;
+    }
+  };
+
+  const handleDownload = async (record, key) => {
+    // pick the appropriate field or generate content
+    switch (key) {
+      case "pedigree":
+        if (!record.pedigreePhoto) {
+          return message.error("Pedigree photo not available for this pigeon");
+        }
+        return await downloadUrl(
+          getImageUrl(record.pedigreePhoto),
+          `${record.ringNumber || record._id}-pedigree.jpg`
+        );
+      case "ownership":
+        if (!record.ownershipPhoto) {
+          return message.error("Ownership card not available for this pigeon");
+        }
+        return await downloadUrl(
+          getImageUrl(record.ownershipPhoto),
+          `${record.ringNumber || record._id}-ownership.jpg`
+        );
+      case "dna":
+        if (!record.DNAPhoto) {
+          return message.error("DNA certificate not available for this pigeon");
+        }
+        return await downloadUrl(
+          getImageUrl(record.DNAPhoto),
+          `${record.ringNumber || record._id}-dna.jpg`
+        );
+      case "photo":
+        if (!record.pigeonPhoto) {
+          return message.error("Pigeon photo not available");
+        }
+        return await downloadUrl(
+          getImageUrl(record.pigeonPhoto),
+          `${record.ringNumber || record._id}-photo.jpg`
+        );
+      case "details": {
+        <PigeonPdfExport pigeon={pigeons} siblings={siblingsData} />;
+      }
+      default:
+        return message.error("Unknown download option");
+    }
   };
 
   const columns = [
@@ -241,6 +343,35 @@ const MyPigeon = () => {
                 onClick={() => handleDelete(record)}
               />
             </Tooltip>
+            {/* Download menu */}
+            <Dropdown
+              overlay={
+                <Menu
+                  onClick={({ key }) => {
+                    // menu keys: pedigree, ownership, details, dna, photo
+                    handleDownload(record, key);
+                  }}
+                >
+                  <Menu.Item key="pedigree">Original pedigree</Menu.Item>
+                  <Menu.Item key="ownership">Ownership card</Menu.Item>
+                  <Menu.Item key="details">Pigeon details</Menu.Item>
+                  <Menu.Item key="dna">DNA certificate</Menu.Item>
+                  <Menu.Item key="photo">Pigeon photo</Menu.Item>
+                </Menu>
+              }
+              trigger={["click"]}
+            >
+              <Tooltip title="Download Options">
+                <IoMdDownload
+                  style={{
+                    color: "#ffff",
+                    fontSize: 16,
+                    cursor: "pointer",
+                    marginLeft: "-5px",
+                  }}
+                />
+              </Tooltip>
+            </Dropdown>
           </div>
         </div>
       ),

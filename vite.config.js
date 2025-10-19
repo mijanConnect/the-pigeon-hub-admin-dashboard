@@ -38,12 +38,12 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   preview: {
-    host: "0.0.0.0", // সব interface থেকে access
+    host: "0.0.0.0",
     port: 4173,
     strictPort: true,
   },
   server: {
-    host: true, // dev server
+    host: true, 
     allowedHosts: ["admin.thepigeonhub.com", "localhost", "127.0.0.1"],
   },
 });
