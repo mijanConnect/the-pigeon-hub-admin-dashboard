@@ -57,6 +57,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import PigeonPedigreeChart from "../components/pedigreeChart/PedigreeChartContainer";
 import AddNewPigeon from "../components/myPigeon/addPigeon/AddNewPigeon";
 import ViewPigeon from "../components/myPigeon/addPigeon/ViewPigeon";
+import PigeonPdfExport2 from "../components/myPigeon/addPigeon/ExportPdf2";
 
 const router = createBrowserRouter([
   {
@@ -87,6 +88,10 @@ const router = createBrowserRouter([
       {
         path: "/view-pigeon/:id",
         element: <ViewPigeon />,
+      },
+      {
+        path: "/export-pdf/:id",
+        element: <PigeonPdfExport2 />,
       },
       {
         path: "/pigeon-management",

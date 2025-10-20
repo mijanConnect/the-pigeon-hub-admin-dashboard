@@ -1,29 +1,30 @@
-import React from "react";
+import { Spin, message } from "antd";
 import jsPDF from "jspdf";
 import moment from "moment";
-import React, { useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   useGetSiblingsQuery,
   useGetSinglePigeonQuery,
 } from "../../../redux/apiSlices/mypigeonSlice";
 
-const PigeonPdfExport = () => {
+const PigeonPdfExport2 = () => {
   const navigate = useNavigate();
-  const printRef = useRef(null);
   const { id } = useParams();
+  const location = useLocation();
+  const origin = location?.state?.from || "/my-pigeon";
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+  const runOnceRef = useRef(false); // guard for StrictMode double-invoke
 
   const { data: pigeonResp, isLoading: loading } = useGetSinglePigeonQuery(id, {
     skip: !id,
   });
   const pigeon = pigeonResp?.data || null;
 
-  const { data: siblingsResp } = useGetSiblingsQuery(id, { skip: !id });
-  const siblingsData = siblingsResp?.data?.siblings || null;
+  const { data: siblingsResp, isLoading: siblingsLoading } =
+    useGetSiblingsQuery(id, { skip: !id });
+  const siblings = siblingsResp?.data?.siblings || [];
 
-  console.log(siblingsData);
-
-  // Use your existing getImageUrl function
   const getImageUrl = (path) => {
     if (!path) {
       return "https://i.ibb.co/fYZx5zCP/Region-Gallery-Viewer.png";
@@ -32,20 +33,28 @@ const PigeonPdfExport = () => {
     if (path.startsWith("http://") || path.startsWith("https://")) {
       return path;
     } else {
-      const baseUrl = "http://10.10.7.41:5001";
-      // const baseUrl = "https://ftp.thepigeonhub.com";
+      // const baseUrl = "http://10.10.7.41:5001";
+      const baseUrl = "https://ftp.thepigeonhub.com";
       return `${baseUrl}/${path}`;
     }
   };
 
-  // Convert image URL to base64
   const getBase64FromUrl = async (url) => {
     try {
       const imageUrl = getImageUrl(url);
 
+      // attach Authorization header when token is available (protected images)
+      const token = localStorage.getItem("token");
+      const headers = token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : {};
+
       const response = await fetch(imageUrl, {
         mode: "cors",
         cache: "no-cache",
+        headers,
       });
 
       if (!response.ok) {
@@ -67,6 +76,18 @@ const PigeonPdfExport = () => {
   };
 
   const handleExportPDF = async () => {
+    if (!pigeon) {
+      message.error("Pigeon data not loaded");
+      return;
+    }
+
+    setPdfGenerating(true);
+
+    console.log(
+      "[ExportPdf2] handleExportPDF started for pigeon:",
+      pigeon?._id
+    );
+
     try {
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -74,7 +95,6 @@ const PigeonPdfExport = () => {
       const margin = 15;
       let yPosition = margin;
 
-      // Helper function to check if we need a new page
       const checkPageBreak = (requiredSpace) => {
         if (yPosition + requiredSpace > pageHeight - margin) {
           pdf.addPage();
@@ -84,19 +104,13 @@ const PigeonPdfExport = () => {
         return false;
       };
 
-      // Helper function to add section header with cyan background
       const addSectionHeader = (title, yPos) => {
-        // Cyan background (#37B7C3)
         pdf.setFillColor(55, 183, 195);
         pdf.rect(margin, yPos - 5, pageWidth - 2 * margin, 8, "F");
-
-        // White text
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(12);
         pdf.setFont("helvetica", "bold");
         pdf.text(title, margin + 2, yPos);
-
-        // Reset text color to black
         pdf.setTextColor(0, 0, 0);
       };
 
@@ -176,7 +190,6 @@ const PigeonPdfExport = () => {
       // RIGHT: Basic Information Section
       let rightY = contentStartY;
 
-      // Basic Information Content (without header)
       const infoItems = [
         { label: "Name", value: String(pigeon?.name || "N/A"), bold: true },
         { label: "Ring Number", value: String(pigeon?.ringNumber || "N/A") },
@@ -199,7 +212,6 @@ const PigeonPdfExport = () => {
         rightY += 6;
       });
 
-      // Move yPosition after the image/info section
       yPosition = Math.max(contentStartY + imageSize + 15, rightY + 10);
 
       // Parents Information Section (Full Width)
@@ -253,7 +265,6 @@ const PigeonPdfExport = () => {
         { label: "Country", value: String(pigeon?.country || "N/A") },
         { label: "Status", value: String(pigeon?.status || "N/A") },
         { label: "Verified", value: String(pigeon?.verified ? "Yes" : "No") },
-        // { label: "Iconic", value: String(pigeon?.iconic ? "Yes" : "No") },
         { label: "Iconic Score", value: String(pigeon?.iconicScore || "N/A") },
       ];
 
@@ -292,6 +303,8 @@ const PigeonPdfExport = () => {
 
         yPosition += 5;
       }
+
+      // Notes
       if (pigeon?.notes) {
         yPosition += 5;
         checkPageBreak(10);
@@ -458,26 +471,100 @@ const PigeonPdfExport = () => {
         });
       }
 
-      // Save PDF
+      // Save PDF - create blob and trigger download (more reliable in some browsers)
       const fileName = `Pigeon_${
         pigeon?.ringNumber || "Report"
       }_${moment().format("YYYYMMDD")}.pdf`;
-      pdf.save(fileName);
+
+      try {
+        console.log("[ExportPdf2] preparing blob for download...");
+        const pdfBlob = pdf.output("blob");
+        const objectUrl = URL.createObjectURL(pdfBlob);
+        const a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
+        console.log("[ExportPdf2] download triggered for", fileName);
+        message.success("PDF downloaded successfully!");
+      } catch (err) {
+        console.error("[ExportPdf2] fallback to pdf.save due to error:", err);
+        // fallback
+        pdf.save(fileName);
+        message.success("PDF downloaded successfully!");
+      }
+
+      // Navigate back to the originating route after delay (preserves where user started)
+      setTimeout(() => {
+        navigate(origin);
+      }, 1500);
+      setPdfGenerating(false);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF. Please try again.");
+      message.error("Failed to generate PDF. Please try again.");
+      setPdfGenerating(false);
     }
   };
 
+  // Trigger PDF export when component mounts and data is ready
+  useEffect(() => {
+    // In development React StrictMode mounts components twice; guard against double export
+    // Also wait until siblings are loaded so the first export includes them
+    if (runOnceRef.current) return;
+    if (!loading && !siblingsLoading && pigeon && id) {
+      runOnceRef.current = true;
+      console.log(
+        "[ExportPdf2] both pigeon and siblings ready, running export",
+        { pigeonId: id }
+      );
+      handleExportPDF();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pigeon, loading, siblingsLoading, id]);
+
+  // Show loading state
+  if (loading || pdfGenerating) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-center">
+          <Spin size="large" />
+          <p className="mt-4 text-lg font-semibold text-gray-700">
+            {loading ? "Loading pigeon data..." : "Generating PDF..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if pigeon not found
+  if (!pigeon) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <div className="text-center">
+          <p className="text-lg font-semibold text-red-500">Pigeon not found</p>
+          <button
+            onClick={() => navigate("/my-pigeon")}
+            className="mt-4 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Button
-      onClick={handleExportPDF}
-      className="bg-primary border border-primary text-white"
-    >
-      <Download className="w-4 h-4" />
-      Export PDF
-    </Button>
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-center">
+        <Spin size="large" />
+        <p className="mt-4 text-lg font-semibold text-gray-700">
+          Processing your request...
+        </p>
+      </div>
+    </div>
   );
 };
 
-export default PigeonPdfExport;
+export default PigeonPdfExport2;

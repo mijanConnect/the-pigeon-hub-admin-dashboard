@@ -22,9 +22,7 @@ import Swal from "sweetalert2";
 import AllIcon from "../../assets/all.png";
 import {
   useDeletePigeonMutation,
-  useGetAllSiblingsQuery,
   useGetMyPigeonsQuery,
-  useGetSinglePigeonQuery,
 } from "../../redux/apiSlices/mypigeonSlice";
 import { attachDragToElement } from "../common/dragScroll";
 import { getImageUrl } from "../common/imageUrl";
@@ -35,7 +33,6 @@ import LostIcon from "../../assets/Lost.png";
 import RacingIcon from "../../assets/Racing.png";
 import RetiredIcon from "../../assets/Retired.png";
 import SoldIcon from "../../assets/Sold.png";
-import PigeonPdfExport from "./addPigeon/ExportPdf";
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -68,7 +65,8 @@ const MyPigeon = () => {
   };
 
   const showPdfExportModal = (record) => {
-    navigate(`/export-pdf/${record._id}`);
+    console.log("[MyPigeon] navigating to export route for", record?._id);
+    navigate(`/export-pdf/${record._id}`, { state: { from: "/my-pigeon" } });
   };
 
   const handleAddPigeon = () => {
@@ -207,6 +205,9 @@ const MyPigeon = () => {
           `${record.ringNumber || record._id}-photo.jpg`
         );
       case "details": {
+        console.log("[MyPigeon] download details requested for", record?._id);
+        showPdfExportModal(record);
+        return;
       }
       default:
         return message.error("Unknown download option");
@@ -354,12 +355,7 @@ const MyPigeon = () => {
                 >
                   <Menu.Item key="pedigree">Original pedigree</Menu.Item>
                   <Menu.Item key="ownership">Ownership card</Menu.Item>
-                  <Menu.Item
-                    key="details"
-                    onClick={() => showEditModal2(record)}
-                  >
-                    <PigeonPdfExport selectedId={record._id} />
-                  </Menu.Item>
+                  <Menu.Item key="details">Pigeon details</Menu.Item>
                   <Menu.Item key="dna">DNA certificate</Menu.Item>
                   <Menu.Item key="photo">Pigeon photo</Menu.Item>
                 </Menu>

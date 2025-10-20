@@ -1,8 +1,10 @@
 import {
   Button,
   Col,
+  Dropdown,
   Form,
   Input,
+  Menu,
   Modal,
   Row,
   Select,
@@ -14,8 +16,9 @@ import {
 import { getCode, getNames } from "country-list";
 import { useEffect, useRef, useState } from "react";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
+import { IoMdDownload } from "react-icons/io";
 import { PiDnaBold } from "react-icons/pi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
   useDeletePigeonMutation,
@@ -31,6 +34,9 @@ import { getImageUrl } from "../common/imageUrl";
 const { Option } = Select;
 
 const PigeonManagement = () => {
+  const navigate = useNavigate();
+  const printRef = useRef(null);
+  const { id } = useParams();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [filters, setFilters] = useState({
@@ -49,7 +55,6 @@ const PigeonManagement = () => {
   const [editForm] = Form.useForm();
   const [isIconicEnabled, setIsIconicEnabled] = useState(false);
   const countries = getNames();
-  const navigate = useNavigate();
 
   // RTK Query hooks
   const { data, isLoading } = useGetAllPigeonsQuery({
@@ -98,9 +103,62 @@ const PigeonManagement = () => {
     navigate(`/view-pigeon/${record._id}`);
   };
 
+  const showPdfExportModal = (record) => {
+    console.log("[MyPigeon] navigating to export route for", record?._id);
+    navigate(`/export-pdf/${record._id}`, {
+      state: { from: "/pigeon-management" },
+    });
+  };
+
   const showFullEditModal = (record) => {
     setEditingPigeonId(record._id);
     setIsModalVisible(true);
+  };
+
+  const downloadUrl = async (url, filename) => {
+    if (!url) {
+      message.error("File not available for download");
+      return;
+    }
+
+    // If url is an object URL or data URL, just use anchor
+    if (url.startsWith("blob:") || url.startsWith("data:")) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      return;
+    }
+
+    // Try fetching the resource as a blob (better for cross-origin images when CORS allows)
+    try {
+      const resp = await fetch(url, { mode: "cors" });
+      if (!resp.ok) throw new Error("Fetch failed");
+      const blob = await resp.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
+      return;
+    } catch (err) {
+      // Fallback to direct link (may open in new tab or be blocked by CORS)
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      return;
+    }
   };
 
   const showEditModal = (record) => {
@@ -119,6 +177,51 @@ const PigeonManagement = () => {
       iconicScore: record.iconicScore || 0,
     });
     setEditModalVisible(true);
+  };
+
+  const handleDownload = async (record, key) => {
+    // pick the appropriate field or generate content
+    switch (key) {
+      case "pedigree":
+        if (!record.pedigreePhoto) {
+          return message.error("Pedigree photo not available for this pigeon");
+        }
+        return await downloadUrl(
+          getImageUrl(record.pedigreePhoto),
+          `${record.ringNumber || record._id}-pedigree.jpg`
+        );
+      case "ownership":
+        if (!record.ownershipPhoto) {
+          return message.error("Ownership card not available for this pigeon");
+        }
+        return await downloadUrl(
+          getImageUrl(record.ownershipPhoto),
+          `${record.ringNumber || record._id}-ownership.jpg`
+        );
+      case "dna":
+        if (!record.DNAPhoto) {
+          return message.error("DNA certificate not available for this pigeon");
+        }
+        return await downloadUrl(
+          getImageUrl(record.DNAPhoto),
+          `${record.ringNumber || record._id}-dna.jpg`
+        );
+      case "photo":
+        if (!record.pigeonPhoto) {
+          return message.error("Pigeon photo not available");
+        }
+        return await downloadUrl(
+          getImageUrl(record.pigeonPhoto),
+          `${record.ringNumber || record._id}-photo.jpg`
+        );
+      case "details": {
+        console.log("[MyPigeon] download details requested for", record?._id);
+        showPdfExportModal(record);
+        return;
+      }
+      default:
+        return message.error("Unknown download option");
+    }
   };
 
   const handleEditUpdate = async () => {
@@ -531,6 +634,35 @@ const PigeonManagement = () => {
                 onClick={() => handleDelete(record)}
               />
             </Tooltip>
+            {/* Download menu */}
+            <Dropdown
+              overlay={
+                <Menu
+                  onClick={({ key }) => {
+                    // menu keys: pedigree, ownership, details, dna, photo
+                    handleDownload(record, key);
+                  }}
+                >
+                  <Menu.Item key="pedigree">Original pedigree</Menu.Item>
+                  <Menu.Item key="ownership">Ownership card</Menu.Item>
+                  <Menu.Item key="details">Pigeon details</Menu.Item>
+                  <Menu.Item key="dna">DNA certificate</Menu.Item>
+                  <Menu.Item key="photo">Pigeon photo</Menu.Item>
+                </Menu>
+              }
+              trigger={["click"]}
+            >
+              <Tooltip title="Download Options">
+                <IoMdDownload
+                  style={{
+                    color: "#ffff",
+                    fontSize: 16,
+                    cursor: "pointer",
+                    marginLeft: "-5px",
+                  }}
+                />
+              </Tooltip>
+            </Dropdown>
             {/* <Tooltip title="Status">
               <Switch
                 size="small"

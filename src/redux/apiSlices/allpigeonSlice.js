@@ -43,6 +43,10 @@ const allpigeonSlice = api.injectEndpoints({
             pigeon?.DNAPhoto ||
             pigeon?.ownershipPhoto ||
             "",
+          DNAPhoto: pigeon?.DNAPhoto || "",
+          pedigreePhoto: pigeon?.pedigreePhoto || "",
+          ownershipPhoto: pigeon?.ownershipPhoto || "",
+          pigeonPhoto: pigeon?.pigeonPhoto || "",
           name: pigeon.name || "N/A",
           country: pigeon.country || "N/A",
           breeder: pigeon.breeder?.breederName || "N/A",
