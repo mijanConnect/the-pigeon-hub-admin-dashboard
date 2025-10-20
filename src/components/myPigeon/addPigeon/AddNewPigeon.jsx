@@ -789,7 +789,7 @@ const AddNewPigeon = ({ onSave }) => {
                           ? `${formatColor(selected.color)} ${selected.pattern}`
                           : "Select Color & Pattern"}
                       </span>
-                      <DownOutlined />
+                      <DownOutlined className="text-primary" />
                     </Button>
                   </Dropdown>
                 </Form.Item>
@@ -1264,7 +1264,7 @@ const AddNewPigeon = ({ onSave }) => {
               <p className="mb-2 text-[12px] text-gray-400">
                 Accepted formats: JPEG, PNG, JPG. Maximum file size: 10MB.
               </p>
-              <div className="pb-2 relative">
+              <div className="relative">
                 {canScrollLeft && (
                   <div
                     className="absolute left-[-16px] z-10 bg-gray-100 rounded-full"
@@ -1303,7 +1303,7 @@ const AddNewPigeon = ({ onSave }) => {
                 )}
                 <div
                   ref={photosRowRef}
-                  className="overflow-x-auto hide-scrollbar"
+                  className="overflow-x-auto hide-scrollbar h-[102px] overflow-y-hidden"
                 >
                   <Row
                     gutter={[10, 16]}

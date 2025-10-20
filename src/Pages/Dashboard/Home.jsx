@@ -124,7 +124,7 @@ const Home = () => {
         <div className="w-full lg:w-1/3 border border-primary p-6 rounded-lg">
           <div className="flex justify-between items-center mb-6 text-white">
             <h2 className="text-secondary text-[24px] font-bold">Statistics</h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 select-item-home">
               <Select
                 value={rangeFilter}
                 onChange={(val) => setRangeFilter(val)}

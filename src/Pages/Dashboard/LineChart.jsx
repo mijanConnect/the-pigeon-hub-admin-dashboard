@@ -201,7 +201,7 @@ const LineChart = () => {
         <h2 className="text-lg sm:text-xl font-bold text-secondary">
           Total Revenue
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 select-item-home">
           <Select
             value={selectedYear}
             onChange={(val) => setSelectedYear(val)}

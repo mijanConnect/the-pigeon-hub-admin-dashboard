@@ -313,12 +313,30 @@ export default function PigeonPedigreeChart() {
         throw new Error("Chart not ready");
       }
 
-      // Show loading state on the primary PDF button if present
+      // Show loading state
       const exportButton = document.querySelector("[data-export-pdf]");
       if (exportButton) {
         exportButton.textContent = "Exporting...";
         exportButton.disabled = true;
       }
+
+      // CRITICAL FIX: Temporarily increase height to ensure all content is visible
+      const originalHeight = chartRef.current.style.height;
+      const originalMinHeight = chartRef.current.style.minHeight;
+      const reactFlowElement = chartRef.current.querySelector(".react-flow");
+      const reactFlowOriginalHeight = reactFlowElement
+        ? reactFlowElement.style.height
+        : null;
+
+      // Force minimum height to ensure all edges are rendered
+      chartRef.current.style.height = "2000px";
+      chartRef.current.style.minHeight = "2000px";
+      if (reactFlowElement) {
+        reactFlowElement.style.height = "2000px";
+      }
+
+      // Wait for ReactFlow to adjust to new height
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       const convertLabToRgb = (labString) => {
         const labMatch = labString.match(/lab\(\s*([^)]+)\s*\)/);
@@ -406,9 +424,10 @@ export default function PigeonPedigreeChart() {
         return originalStyles;
       };
 
-      // Apply lab color replacements and remove truncation classes
+      // Apply lab color replacements
       const styleBackups = temporarilyReplaceLabColors(chartRef.current);
 
+      // Remove truncation
       const truncationBackups = [];
       const removeTruncation = (el) => {
         if (!el) return;
@@ -439,8 +458,77 @@ export default function PigeonPedigreeChart() {
 
       removeTruncation(chartRef.current);
 
-      // Wait a moment for DOM updates
-      await new Promise((resolve) => setTimeout(resolve, 120));
+      // CRITICAL FIX: Ensure SVG edges are visible and properly positioned
+      const svgEdges = chartRef.current.querySelectorAll(
+        ".react-flow__edges, .react-flow__edge"
+      );
+      const svgBackups = [];
+
+      svgEdges.forEach((svg) => {
+        const original = {
+          element: svg,
+          style: svg.getAttribute("style"),
+          visibility: svg.style.visibility,
+          display: svg.style.display,
+          opacity: svg.style.opacity,
+          zIndex: svg.style.zIndex,
+        };
+        svgBackups.push(original);
+
+        // Force visibility and proper positioning
+        svg.style.visibility = "visible !important";
+        svg.style.display = "block !important";
+        svg.style.opacity = "1 !important";
+        svg.style.position = "absolute";
+        svg.style.top = "0";
+        svg.style.left = "0";
+        svg.style.width = "100%";
+        svg.style.height = "100%";
+        svg.style.pointerEvents = "none";
+        svg.style.zIndex = "1";
+        svg.setAttribute("width", "100%");
+        svg.setAttribute("height", "100%");
+
+        // Ensure all paths in edges have proper stroke
+        const paths = svg.querySelectorAll("path");
+        paths.forEach((path) => {
+          const stroke = path.getAttribute("stroke");
+          if (!stroke || stroke === "none" || stroke === "transparent") {
+            path.setAttribute("stroke", "#37B7C3");
+          }
+
+          const strokeWidth = path.getAttribute("stroke-width");
+          if (!strokeWidth || parseFloat(strokeWidth) < 1) {
+            path.setAttribute("stroke-width", "2");
+          }
+
+          path.setAttribute("fill", "none");
+          path.style.visibility = "visible";
+          path.style.display = "block";
+          path.style.opacity = "1";
+        });
+
+        // Ensure all edge groups are visible
+        const gElements = svg.querySelectorAll("g");
+        gElements.forEach((g) => {
+          g.style.visibility = "visible";
+          g.style.display = "block";
+          g.style.opacity = "1";
+        });
+      });
+
+      // Force render all ReactFlow edge elements specifically
+      const allEdgeElements = chartRef.current.querySelectorAll(
+        '[class*="react-flow__edge"]'
+      );
+      allEdgeElements.forEach((edge) => {
+        edge.style.visibility = "visible";
+        edge.style.display = "block";
+        edge.style.opacity = "1";
+      });
+
+      // Wait longer for all elements to render properly
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const canvas = await html2canvas(chartRef.current, {
         scale: 2,
@@ -450,15 +538,37 @@ export default function PigeonPedigreeChart() {
         width: chartRef.current.scrollWidth,
         height: chartRef.current.scrollHeight,
         logging: false,
+        // Critical settings for SVG capture
+        foreignObjectRendering: false,
+        removeContainer: false,
         ignoreElements: (element) => {
+          // Don't ignore any elements, especially not SVG
           return (
             element.classList &&
             element.classList.contains("html2canvas-ignore")
           );
         },
+        onclone: (clonedDoc) => {
+          // Additional processing on cloned document
+          const clonedEdges = clonedDoc.querySelectorAll(
+            ".react-flow__edges, .react-flow__edge"
+          );
+          clonedEdges.forEach((svg) => {
+            svg.style.visibility = "visible";
+            svg.style.display = "block";
+            svg.style.opacity = "1";
+
+            const paths = svg.querySelectorAll("path");
+            paths.forEach((path) => {
+              path.setAttribute("stroke", "#37B7C3");
+              path.setAttribute("stroke-width", "2");
+              path.setAttribute("fill", "none");
+            });
+          });
+        },
       });
 
-      // Restore styles
+      // Restore all styles
       styleBackups.forEach((backup) => {
         if (backup.hasStyle && backup.originalStyle) {
           backup.element.setAttribute("style", backup.originalStyle);
@@ -473,6 +583,20 @@ export default function PigeonPedigreeChart() {
         if (b.style) b.element.setAttribute("style", b.style);
         else b.element.removeAttribute("style");
       });
+
+      // Restore SVG elements
+      svgBackups.forEach((backup) => {
+        if (backup.style) {
+          backup.element.setAttribute("style", backup.style);
+        }
+      });
+
+      // Restore original heights
+      chartRef.current.style.height = originalHeight;
+      chartRef.current.style.minHeight = originalMinHeight;
+      if (reactFlowElement && reactFlowOriginalHeight) {
+        reactFlowElement.style.height = reactFlowOriginalHeight;
+      }
 
       const imgData = canvas.toDataURL("image/png", 1.0);
 
@@ -635,7 +759,7 @@ export default function PigeonPedigreeChart() {
       </div>
       <div
         ref={chartRef}
-        className="w-full h-[2000px] bg-transparent flex justify-start items-center rounded-3xl"
+        className="w-full h-[1400px] 2xl:h-[2000px] bg-transparent flex justify-start items-center rounded-3xl"
       >
         {/* --- ReactFlow (now dynamic) --- */}
         <ReactFlow
