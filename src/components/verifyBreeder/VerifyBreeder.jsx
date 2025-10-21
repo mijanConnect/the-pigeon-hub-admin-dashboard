@@ -202,7 +202,16 @@ const VerifyBreeder = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (value) => (value ? "Verified" : "Not Verified"),
+      render: (value) => (
+        <span
+          style={{
+            color: value ? "#37B7C3" : "#C33739",
+            fontWeight: "500",
+          }}
+        >
+          {value ? "Verified" : "Not Verified"}
+        </span>
+      ),
     },
     {
       title: "Actions",
