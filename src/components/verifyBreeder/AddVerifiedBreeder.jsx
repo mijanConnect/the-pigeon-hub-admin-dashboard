@@ -37,10 +37,18 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
       onCancel={onCancel}
       width={800}
       footer={[
-        <Button key="cancel" onClick={onCancel}>
+        <Button
+          key="cancel"
+          onClick={onCancel}
+          className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
+        >
           Cancel
         </Button>,
-        <Button key="save" type="primary" onClick={handleSave}>
+        <Button
+          key="save"
+          className="bg-primary border border-primary text-white"
+          onClick={handleSave}
+        >
           {initialValues ? "Save Changes" : "Add Verified Breeder"}
         </Button>,
       ]}

@@ -17,6 +17,7 @@ import Spinner from "../../components/common/Spinner";
 import OrderTable from "../../components/home/OrderTable";
 import { useGetOverviewStatsQuery } from "../../redux/apiSlices/dashboardSlice";
 import LineChart from "./LineChart";
+import SpinnerCustom from "./Spinner/SpinnerCustom";
 const { Option } = Select;
 
 ChartJS.register(
@@ -96,7 +97,7 @@ const Home = () => {
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-screen">
-        <Spinner />
+        <SpinnerCustom />
       </div>
     );
 
@@ -153,7 +154,7 @@ const Home = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-auto">
             {/* Total Pigeons */}
-            <div className="bg-white border border-primary rounded-lg flex items-center p-6">
+            <div className="bg-white border border-primary rounded-lg flex items-start p-6">
               <div className="flex flex-col items-baseline">
                 <h2 className="text-start text-[16px] font-semibold mb-1">
                   Total Pigeon
@@ -165,7 +166,7 @@ const Home = () => {
             </div>
 
             {/* Verified Pigeons */}
-            <div className="bg-white border border-primary rounded-lg flex items-center p-6">
+            <div className="bg-white border border-primary rounded-lg flex items-start p-6">
               <div className="flex flex-col items-baseline">
                 <h2 className="text-start text-[16px] font-semibold mb-1">
                   Verified Pigeon
@@ -178,7 +179,7 @@ const Home = () => {
             </div>
 
             {/* Iconic Pigeons */}
-            <div className="bg-white border border-primary rounded-lg flex items-center p-6">
+            <div className="bg-white border border-primary rounded-lg flex items-start p-6">
               <div className="flex flex-col items-baseline">
                 <h2 className="text-start text-[16px] font-semibold mb-1">
                   Iconic Pigeon
@@ -190,7 +191,7 @@ const Home = () => {
             </div>
 
             {/* Subscription Revenue */}
-            <div className="bg-white border border-primary rounded-lg flex items-center p-6">
+            <div className="bg-white border border-primary rounded-lg flex items-start p-6">
               <div className="flex flex-col items-baseline">
                 <h2 className="text-start text-[16px] font-semibold mb-1">
                   Subscription Revenue

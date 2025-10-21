@@ -73,7 +73,7 @@ const FeaturedInput = ({ value = [], onChange }) => {
                 add();
               }}
               icon={<PlusOutlined />}
-              className="w-full"
+              className="w-full mb-[2px]"
             >
               Add Feature
             </Button>

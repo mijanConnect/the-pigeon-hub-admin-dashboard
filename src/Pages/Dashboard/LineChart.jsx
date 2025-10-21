@@ -94,8 +94,10 @@ const LineChart = () => {
         setChartHeight("150px");
       } else if (window.innerWidth < 1024) {
         setChartHeight("200px");
-      } else {
+      } else if (window.innerWidth < 1440) {
         setChartHeight("250px");
+      } else {
+        setChartHeight("300px");
       }
     };
     updateChartHeight();
@@ -133,6 +135,9 @@ const LineChart = () => {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: 0,
+    },
     interaction: {
       mode: "nearest",
       intersect: false,
@@ -229,10 +234,20 @@ const LineChart = () => {
         </select> */}
       </div>
       <div
-        style={{ width: "100%", height: chartHeight }}
+        style={{
+          width: "100%",
+          height: chartHeight,
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+        }}
         className="text-white"
       >
-        <Line data={chartData} options={options} />
+        <Line
+          data={chartData}
+          options={options}
+          key={`chart-${selectedYear}-${chartHeight}`}
+        />
       </div>
     </div>
   );

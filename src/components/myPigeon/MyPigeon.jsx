@@ -105,14 +105,16 @@ const MyPigeon = () => {
       text: `Are you sure you want to delete ${record.name}?`,
       icon: "warning",
       showCancelButton: true,
+      confirmButtonColor: "#37B7C3",
+      cancelButtonColor: "#C33739",
       confirmButtonText: "Yes, delete it!",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           await deletePigeon(record._id).unwrap();
-          Swal.fire("Deleted!", "Pigeon has been deleted.", "success");
+          message.success("Pigeon deleted successfully!");
         } catch (err) {
-          Swal.fire("Error", err?.data?.message || "Failed to delete", "error");
+          message.error(err?.data?.message || "Failed to delete");
         }
       }
     });
@@ -401,8 +403,7 @@ const MyPigeon = () => {
     <div className="w-full">
       <div className="flex justify-end mb-4 mt-4">
         <Button
-          type="primary"
-          className="py-5 px-7 font-semibold text-[16px]"
+          className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px]"
           onClick={handleAddPigeon}
         >
           Add New Pigeon

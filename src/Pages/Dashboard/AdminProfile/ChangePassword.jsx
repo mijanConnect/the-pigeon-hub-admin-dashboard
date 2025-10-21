@@ -1,4 +1,4 @@
-import { Form, Input, message } from "antd";
+import { Form, Input, message, Button } from "antd";
 import React from "react";
 import GradientButton from "../../../components/common/GradiantButton";
 import { useChangePasswordMutation } from "../../../redux/apiSlices/profileSlice";
@@ -60,9 +60,9 @@ const ChangePassword = () => {
             <Input.Password
               placeholder="Enter Password"
               style={{
-                height: "40px",
+                height: "45px",
                 background: "white",
-                borderRadius: "8px",
+                borderRadius: "6px",
                 outline: "none",
               }}
             />
@@ -94,9 +94,9 @@ const ChangePassword = () => {
             <Input.Password
               placeholder="Enter new password"
               style={{
-                height: "40px",
+                height: "45px",
                 background: "white",
-                borderRadius: "8px",
+                borderRadius: "6px",
                 outline: "none",
               }}
             />
@@ -126,9 +126,9 @@ const ChangePassword = () => {
             <Input.Password
               placeholder="Confirm new password"
               style={{
-                height: "40px",
+                height: "45px",
                 background: "white",
-                borderRadius: "8px",
+                borderRadius: "6px",
                 outline: "none",
               }}
             />
@@ -156,13 +156,12 @@ const ChangePassword = () => {
             </Form.Item>
           </div> */}
           <Form.Item>
-            <button
+            <Button
               type="submit"
-              className="bg-primary text-white w-full font-bold rounded-lg"
-              style={{ height: 40 }}
+              className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px] w-full"
             >
               Update Your Password
-            </button>
+            </Button>
           </Form.Item>
         </Form>
       </div>

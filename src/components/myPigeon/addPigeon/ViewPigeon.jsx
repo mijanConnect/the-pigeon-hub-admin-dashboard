@@ -261,7 +261,7 @@ const ViewPigeon = () => {
     skip: !id,
   });
   const pigeonData = pigeonResp?.data || null;
-  
+
   const { data: siblingsResp } = useGetSiblingsQuery(id, { skip: !id });
   const siblingsData = siblingsResp?.data?.siblings || null;
 

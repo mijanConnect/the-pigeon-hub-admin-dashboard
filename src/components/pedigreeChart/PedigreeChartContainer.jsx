@@ -708,9 +708,9 @@ export default function PigeonPedigreeChart() {
 
   return (
     <div className="container  mx-auto">
-      <div className="flex flex-col md:flex-row items-center justify-between mt-4">
+      <div className="flex flex-col md:flex-row items-end justify-between mt-4">
         <div className="max-w-2xl">
-          <h2 className="text-black font-bold text-2xl">
+          <h2 className="text-black font-bold text-[26px]">
             Pigeon pedigree chart
           </h2>
           {/* <p className="text-black">
@@ -720,11 +720,10 @@ export default function PigeonPedigreeChart() {
             pairings.
           </p> */}
         </div>
-        <div className="flex gap-5">
+        <div className="flex gap-3">
           <Button
             onClick={exportToExcel}
-            type="primary"
-            className="bg-primary text-white hover:text-white flex items-center gap-2"
+            className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px]"
             icon={<DownloadOutlined />}
           >
             Export as Excel
@@ -747,9 +746,8 @@ export default function PigeonPedigreeChart() {
             placement="bottomRight"
           >
             <Button
-              type="primary"
               data-export-pdf
-              className="bg-primary text-white hover:text-white flex items-center gap-2"
+              className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px]"
               icon={<DownloadOutlined />}
             >
               Export as PDF

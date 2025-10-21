@@ -905,6 +905,10 @@ select {
   border: 1px solid #071952 !important;
 }
 
-.select-item-home .ant-select-selection-item{
+.select-item-home .ant-select-selection-item {
   color: #071952 !important;
+}
+
+.profile-avatar-pigeon {
+  border-radius: 8px !important;
 }

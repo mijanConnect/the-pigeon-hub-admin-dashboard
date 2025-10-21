@@ -1,4 +1,4 @@
-import { Button, Col, Input, Row, Select, Table, Tooltip } from "antd";
+import { Button, Col, Input, Row, Select, Table, Tooltip, message } from "antd";
 import { getCode, getNames } from "country-list";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -110,22 +110,22 @@ const VerifyBreeder = () => {
           data: payload,
           token: "your-auth-token",
         }).unwrap();
-        Swal.fire("Updated!", "Breeder updated successfully!", "success");
+        message.success("Breeder updated successfully!");
       } else {
         const res = await addBreeder({
           data: payload,
           token: "your-auth-token",
         }).unwrap();
         if (res.success) {
-          Swal.fire("Added!", "Breeder added successfully!", "success");
+          message.success("Breeder added successfully!");
         } else {
-          Swal.fire("Error", "Something went wrong!", "error");
+          message.error("Something went wrong!");
         }
       }
       setIsModalVisible(false);
     } catch (error) {
       console.error(error);
-      Swal.fire("Error", "Something went wrong!", "error");
+      message.error("Something went wrong!");
     }
   };
 
@@ -142,10 +142,10 @@ const VerifyBreeder = () => {
       if (result.isConfirmed) {
         try {
           await deleteBreeder(record._id).unwrap();
-          Swal.fire("Deleted!", "Breeder has been deleted.", "success");
+          message.success("Breeder deleted successfully!");
         } catch (error) {
           console.error(error);
-          Swal.fire("Error", "Failed to delete breeder!", "error");
+          message.error("Failed to delete breeder!");
         }
       }
     });
@@ -211,7 +211,7 @@ const VerifyBreeder = () => {
       render: (_, record) => (
         <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
           <div className="flex gap-5 border px-4 py-2 rounded">
-            <Tooltip title="View & Update Details">
+            <Tooltip title="Update Details">
               <FaEdit
                 style={{ color: "#ffff", fontSize: "16px", cursor: "pointer" }}
                 onClick={() => openEditModal(record)}
@@ -246,8 +246,7 @@ const VerifyBreeder = () => {
     <div className="w-full">
       <div className="flex justify-end mb-4 mt-4">
         <Button
-          type="primary"
-          className="py-5 px-7 font-semibold text-[16px]"
+          className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px]"
           onClick={openAddModal}
         >
           Add Verified Breeder

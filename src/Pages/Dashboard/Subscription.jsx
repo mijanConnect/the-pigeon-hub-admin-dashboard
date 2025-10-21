@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import FeaturedInput from "../../components/common/PackageFeatureInput";
 import Spinner from "../../components/common/Spinner";
+import SpinnerCustom from "../Dashboard/Spinner/SpinnerCustom";
 import {
   useAddPackageMutation,
   useDeletePackageMutation,
@@ -176,7 +177,7 @@ const PackagesPlans = () => {
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-screen">
-        <Spinner />
+        <SpinnerCustom />
       </div>
     );
   if (isError)
@@ -306,10 +307,18 @@ const PackagesPlans = () => {
           onCancel={handleCancel}
           width={800}
           footer={[
-            <Button key="cancel" onClick={handleCancel}>
+            <Button
+              key="cancel"
+              onClick={handleCancel}
+              className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
+            >
               Cancel
             </Button>,
-            <Button key="save" type="primary" onClick={() => form.submit()}>
+            <Button
+              key="save"
+              onClick={() => form.submit()}
+              className="bg-primary border border-primary text-white"
+            >
               {isEditing ? "Update Package" : "Add Package"}
             </Button>,
           ]}
@@ -319,7 +328,7 @@ const PackagesPlans = () => {
             form={form}
             layout="vertical"
             onFinish={handleSubmit}
-            className="mb-6"
+            className="mb-0"
           >
             <Row gutter={[30, 20]}>
               <Col xs={24} sm={12} md={12}>

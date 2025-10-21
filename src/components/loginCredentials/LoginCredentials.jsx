@@ -10,6 +10,7 @@ import {
   Switch,
   Table,
   Tooltip,
+  message,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -119,21 +120,11 @@ const LoginCredentials = () => {
 
       try {
         await updateUser({ _id: selectedRecord._id, body: payload }).unwrap();
-        Swal.fire({
-          title: "Updated!",
-          text: "User details have been updated successfully.",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+        message.success("User details have been updated successfully.");
         handleCloseViewModal();
         refetchUsers();
       } catch (err) {
-        Swal.fire({
-          title: "Error",
-          text: err?.data?.message || "Failed to update user.",
-          icon: "error",
-        });
+        message.error(err?.data?.message || "Failed to update user.");
       }
     });
   };
@@ -145,22 +136,12 @@ const LoginCredentials = () => {
       try {
         await addRoleApi({ roleName }).unwrap();
         setRoles((prev) => [...prev, roleName]);
-        Swal.fire({
-          title: "Role Added!",
-          text: `Role "${roleName}" has been successfully added.`,
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+        message.success(`Role "${roleName}" has been successfully added.`);
         roleForm.resetFields();
         setIsRoleModalVisible(false);
         refetchUsers();
       } catch (err) {
-        Swal.fire({
-          title: "Error",
-          text: err?.data?.message || "Failed to add role.",
-          icon: "error",
-        });
+        message.error(err?.data?.message || "Failed to add role.");
       }
     });
   };
@@ -179,22 +160,12 @@ const LoginCredentials = () => {
 
       try {
         await addUser(payload).unwrap();
-        Swal.fire({
-          title: "User Added!",
-          text: `${values.name} has been added successfully.`,
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+        message.success(`${values.name} has been added successfully.`);
         userForm.resetFields();
         setIsUserModalVisible(false);
         refetchUsers();
       } catch (err) {
-        Swal.fire({
-          title: "Error",
-          text: err?.data?.message || "Failed to add user.",
-          icon: "error",
-        });
+        message.error(err?.data?.message || "Failed to add user.");
       }
     });
   };
@@ -206,25 +177,17 @@ const LoginCredentials = () => {
       text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
+      confirmButtonColor: "#37B7C3",
+      cancelButtonColor: "#C33739",
       confirmButtonText: "Yes, delete it!",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           await deleteUser({ _id: record._id }).unwrap();
-          Swal.fire({
-            title: "Deleted!",
-            text: "User has been deleted.",
-            icon: "success",
-          });
+          message.success("User has been deleted.");
           refetchUsers();
         } catch (err) {
-          Swal.fire({
-            title: "Error",
-            text: err?.data?.message || "Failed to delete user.",
-            icon: "error",
-          });
+          message.error(err?.data?.message || "Failed to delete user.");
         }
       }
     });
@@ -246,7 +209,22 @@ const LoginCredentials = () => {
       key: "phone",
       align: "center",
     },
-    { title: "Status", dataIndex: "status", key: "status", align: "center" },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      align: "center",
+      render: (status) => (
+        <span
+          style={{
+            color: status === "Active" ? "#37B7C3" : "#ff4d4f",
+            fontWeight: "500",
+          }}
+        >
+          {status}
+        </span>
+      ),
+    },
     {
       title: "Actions",
       key: "action",
@@ -291,7 +269,7 @@ const LoginCredentials = () => {
                 checked={record.status === "Active"}
                 style={{
                   backgroundColor:
-                    record.status === "Active" ? "#3fae6a" : "gray",
+                    record.status === "Active" ? "#37B7C3" : "gray",
                 }}
                 onChange={(checked) => {
                   Swal.fire({
@@ -301,7 +279,7 @@ const LoginCredentials = () => {
                     }.`,
                     icon: "warning",
                     showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
+                    confirmButtonColor: "#37B7C3",
                     cancelButtonColor: "#d33",
                     confirmButtonText: "Yes, change it!",
                   }).then(async (result) => {
@@ -312,23 +290,16 @@ const LoginCredentials = () => {
                           status: checked,
                         }).unwrap();
 
-                        Swal.fire({
-                          title: "Updated!",
-                          text: `Status has been changed to ${
+                        message.success(
+                          `Status has been changed to ${
                             checked ? "Active" : "Inactive"
-                          }.`,
-                          icon: "success",
-                          timer: 1500,
-                          showConfirmButton: false,
-                        });
+                          }.`
+                        );
                         refetchUsers();
                       } catch (err) {
-                        Swal.fire({
-                          title: "Error",
-                          text:
-                            err?.data?.message || "Failed to update status.",
-                          icon: "error",
-                        });
+                        message.error(
+                          err?.data?.message || "Failed to update status."
+                        );
                       }
                     }
                   });
@@ -359,17 +330,16 @@ const LoginCredentials = () => {
       <div className="flex justify-end items-center mb-4 ">
         <div className="flex gap-5">
           <Button
-            type="primary"
             onClick={() => setIsUserModalVisible(true)}
-            className="bg-[#37B7C3] py-5 px-7 font-semibold text-[16px]"
+            // className="bg-[#37B7C3] py-5 px-7 font-semibold text-[16px]"
+            className="bg-[#37B7C3] hover:!bg-[#37B7C3]/80 text-white hover:!text-white py-5 px-7 font-semibold text-[16px] border-[#37B7C3] hover:!border-[#37B7C3]"
             loading={isAdding}
           >
             Add New User
           </Button>
           <Button
-            type="primary"
             onClick={() => setIsRoleModalVisible(true)}
-            className="py-5 px-7 font-semibold text-[16px]"
+            className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px]"
             loading={isAddingRole}
           >
             Add New Role
@@ -452,12 +422,16 @@ const LoginCredentials = () => {
         onCancel={handleCloseViewModal}
         width={800}
         footer={[
-          <Button key="cancel" onClick={handleCloseViewModal}>
+          <Button
+            key="cancel"
+            onClick={handleCloseViewModal}
+            className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
+          >
             Cancel
           </Button>,
           <Button
             key="save"
-            type="primary"
+            className="bg-primary border border-primary text-white"
             onClick={handleUpdateRecord}
             loading={isUpdating}
           >
@@ -486,7 +460,6 @@ const LoginCredentials = () => {
                   />
                 </Form.Item>
               </Col>
-
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="email"
@@ -494,8 +467,13 @@ const LoginCredentials = () => {
                   className="custom-form-item-ant"
                   rules={[
                     { required: true, message: "Please enter email" },
-                    { type: "email", message: "Enter a valid email" },
+                    {
+                      pattern:
+                        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                      message: "Please enter a valid email address",
+                    },
                   ]}
+                  validateTrigger={["onChange", "onBlur"]}
                 >
                   <Input
                     placeholder="Enter Email"
@@ -503,8 +481,7 @@ const LoginCredentials = () => {
                     disabled
                   />
                 </Form.Item>
-              </Col>
-
+              </Col>{" "}
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="role"
@@ -524,7 +501,6 @@ const LoginCredentials = () => {
                   </Select>
                 </Form.Item>
               </Col>
-
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="phone"
@@ -538,7 +514,6 @@ const LoginCredentials = () => {
                   />
                 </Form.Item>
               </Col>
-
               <Col xs={24} sm={24}>
                 <Form.Item name="pageAccess" label="Page Access Control">
                   <Checkbox.Group className="custom-checkbox-ant-modal">
@@ -563,10 +538,18 @@ const LoginCredentials = () => {
         open={isRoleModalVisible}
         onCancel={() => setIsRoleModalVisible(false)}
         footer={[
-          <Button key="cancel" onClick={() => setIsRoleModalVisible(false)}>
+          <Button
+            key="cancel"
+            onClick={() => setIsRoleModalVisible(false)}
+            className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
+          >
             Cancel
           </Button>,
-          <Button key="add" type="primary" onClick={handleAddRole}>
+          <Button
+            key="add"
+            className="bg-primary border border-primary text-white"
+            onClick={handleAddRole}
+          >
             Add Role
           </Button>,
         ]}
@@ -594,12 +577,16 @@ const LoginCredentials = () => {
         onCancel={() => setIsUserModalVisible(false)}
         width={700}
         footer={[
-          <Button key="cancel" onClick={() => setIsUserModalVisible(false)}>
+          <Button
+            key="cancel"
+            onClick={() => setIsUserModalVisible(false)}
+            className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
+          >
             Cancel
           </Button>,
           <Button
             key="add"
-            type="primary"
+            className="bg-primary border border-primary text-white"
             onClick={handleAddUser}
             loading={isAdding}
           >
@@ -626,7 +613,14 @@ const LoginCredentials = () => {
               <Form.Item
                 name="email"
                 label="Email"
-                rules={[{ required: true, message: "Please enter email" }]}
+                rules={[
+                  { required: true, message: "Please enter email" },
+                  {
+                    pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                    message: "Please enter a valid email address",
+                  },
+                ]}
+                validateTrigger={["onChange", "onBlur"]}
                 className="custom-form-item-ant"
               >
                 <Input

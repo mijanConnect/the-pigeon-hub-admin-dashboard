@@ -41,12 +41,12 @@ const TermsAndCondition = () => {
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold">Terms & Conditions</h2>
-        <GradientButton
+        <Button
           onClick={showModal}
-          className="w-60 bg-secondary text-white h-10"
+          className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px]"
         >
           Update Terms & Conditions
-        </GradientButton>
+        </Button>
       </div>
 
       <div className="saved-content mt-6 border p-6 rounded-lg bg-white">
@@ -70,17 +70,17 @@ const TermsAndCondition = () => {
           <Button
             key="cancel"
             onClick={handleCancel}
-            className="bg-red-500 text-white mr-2 py-5"
+            className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
           >
             Cancel
           </Button>,
-          <GradientButton
+          <Button
             key="submit"
             onClick={handleOk}
-            className="bg-secondary text-white"
+            className="bg-primary border border-primary text-white"
           >
             Update Terms & Conditions
-          </GradientButton>,
+          </Button>,
         ]}
       >
         {isModalOpen && (

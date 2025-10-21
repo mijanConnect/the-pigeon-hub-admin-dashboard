@@ -327,15 +327,17 @@ const PigeonManagement = () => {
       title: "Delete Pigeon?",
       text: `Are you sure you want to delete ${record.name}?`,
       icon: "warning",
+      confirmButtonColor: "#37B7C3",
+      cancelButtonColor: "#C33739",
       showCancelButton: true,
       confirmButtonText: "Yes, delete it!",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           await deletePigeon(record._id).unwrap();
-          Swal.fire("Deleted!", "Pigeon has been deleted.", "success");
+          message.success("Pigeon deleted successfully!");
         } catch (err) {
-          Swal.fire("Error", err?.data?.message || "Failed to delete", "error");
+          message.error(err?.data?.message || "Failed to delete");
         }
       }
     });
@@ -349,8 +351,8 @@ const PigeonManagement = () => {
       }.`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
+      confirmButtonColor: "#37B7C3",
+      cancelButtonColor: "#C33739",
       confirmButtonText: "Yes, change it!",
     }).then(async (result) => {
       if (result.isConfirmed) {
@@ -1120,9 +1122,22 @@ const PigeonManagement = () => {
         title="Edit Pigeon Details"
         open={editModalVisible}
         onCancel={handleEditCancel}
-        onOk={handleEditUpdate}
-        okText="Update"
-        cancelText="Cancel"
+        footer={[
+          <Button
+            key="cancel"
+            onClick={handleEditCancel}
+            className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739] hover:!bg-transparent"
+          >
+            Cancel
+          </Button>,
+          <Button
+            key="update"
+            onClick={handleEditUpdate}
+            className="bg-primary border border-primary hover:!border-primary text-white hover:!text-primary hover:!bg-transparent"
+          >
+            Update
+          </Button>,
+        ]}
         width={600}
       >
         <Form form={editForm} layout="vertical" className="custom-form-ant">

@@ -19,7 +19,7 @@ import "antd/dist/reset.css";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useGetAnalyticsQuery } from "../../redux/apiSlices/analysisSlice";
-import Spinner from "../../components/common/Spinner";
+import SpinnerCustom from "../../Pages/Dashboard/Spinner/SpinnerCustom";
 
 // hook from RTK Query slice
 
@@ -100,7 +100,7 @@ export default function MonthlyStatsChart() {
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-screen">
-        <Spinner />
+        <SpinnerCustom />
       </div>
     );
   if (error)
@@ -120,7 +120,9 @@ export default function MonthlyStatsChart() {
           <div className="flex flex-wrap gap-5">
             {/* Date Range */}
             <div className="flex flex-col w-36">
-              <label className="mb-1 text-gray-800">Date Range</label>
+              <label className="mb-1 font-semibold text-gray-800">
+                Date Range
+              </label>
               <Select
                 value={selectedMonthYear}
                 onChange={setSelectedMonthYear}
@@ -137,7 +139,9 @@ export default function MonthlyStatsChart() {
 
             {/* Metric */}
             <div className="flex flex-col w-36">
-              <label className="mb-1 text-gray-800">Category</label>
+              <label className="mb-1 font-semibold text-gray-800">
+                Category
+              </label>
               <Select
                 value={selectedMetric}
                 onChange={setSelectedMetric}
@@ -158,8 +162,7 @@ export default function MonthlyStatsChart() {
           {/* Export */}
           <div className="flex items-end">
             <Button
-              type="primary"
-              className="py-5 px-7 font-semibold text-[16px]"
+              className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px] w-full"
               onClick={() => {
                 const exportData = filteredData.map((row) => ({
                   Date: row.date,

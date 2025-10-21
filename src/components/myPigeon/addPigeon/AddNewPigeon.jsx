@@ -607,6 +607,21 @@ const AddNewPigeon = ({ onSave }) => {
     multiple: false,
     fileList: fileLists[key],
     showUploadList: { showPreviewIcon: true, showRemoveIcon: true },
+    onPreview: async (file) => {
+      // Open preview in Ant Design's built-in preview modal
+      let src = file.url;
+      if (!src) {
+        src = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file.originFileObj);
+          reader.onload = () => resolve(reader.result);
+        });
+      }
+      const image = new Image();
+      image.src = src;
+      const imgWindow = window.open(src);
+      imgWindow?.document.write(image.outerHTML);
+    },
     beforeUpload: (file) => {
       // Validate file type
       const allowedTypes = [
@@ -640,6 +655,7 @@ const AddNewPigeon = ({ onSave }) => {
             name: file.name,
             status: "done",
             url: previewUrl,
+            thumbUrl: previewUrl,
             originFileObj: file,
           },
         ],
@@ -1260,6 +1276,31 @@ const AddNewPigeon = ({ onSave }) => {
           <div className="right-column w-[38%] flex flex-col gap-6 border p-4 rounded-lg">
             {/* ===== PIGEON PHOTOS ===== */}
             <div className="p-4 border rounded-lg flex flex-col">
+              <style>{`
+                .custom-upload-ant .ant-upload-list-item-thumbnail,
+                .custom-upload-ant .ant-upload-list-item-info {
+                  width: 100% !important;
+                  height: 100% !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  justify-content: center !important;
+                  overflow: hidden !important;
+                }
+                .custom-upload-ant .ant-upload-list-item-thumbnail img,
+                .custom-upload-ant .ant-upload-list-picture-card-container img,
+                .custom-upload-ant .ant-upload-list-item img {
+                  width: 100% !important;
+                  height: 100% !important;
+                  max-width: none !important;
+                  max-height: none !important;
+                  object-fit: cover !important;
+                  display: block !important;
+                  margin: 0 !important;
+                }
+                .custom-upload-ant .ant-upload-list-picture-card .ant-upload-list-item {
+                  padding: 0 !important;
+                }
+              `}</style>
               <p className="text-[16px] font-semibold">Pigeon Photos:</p>
               <p className="mb-2 text-[12px] text-gray-400">
                 Accepted formats: JPEG, PNG, JPG. Maximum file size: 10MB.
@@ -1562,7 +1603,7 @@ const AddNewPigeon = ({ onSave }) => {
           key="save-another"
           onClick={handleSaveAndCreateAnother}
           loading={isAdding}
-          className="bg-primary border border-primary text-white"
+          className="bg-[#37B7C3] border border-[#37B7C3] hover:!border-[#37B7C3] text-white hover:!text-[#37B7C3]"
         >
           Save and create another pigeon
         </Button>
