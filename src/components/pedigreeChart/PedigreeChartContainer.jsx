@@ -10,6 +10,7 @@ import ReactFlow, {
 import { DownloadOutlined } from "@ant-design/icons";
 import { Button, Dropdown } from "antd";
 import "reactflow/dist/style.css";
+import logo from "../../../src/assets/image4.png";
 
 import { useGetProfileQuery } from "../../redux/apiSlices/profileSlice";
 // import { useParams } from "next/navigation";
@@ -25,6 +26,7 @@ import { useParams } from "react-router-dom";
 import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
 import Spinner from "../common/Spinner";
 import { convertBackendToExistingFormat } from "./PedigreeData";
+import { exportPedigreeToPDF } from "./exportPDF";
 
 const PigeonNode = ({ data }) => {
   const countryCode = data.country ? getCode(data.country) : null;
@@ -61,17 +63,17 @@ const PigeonNode = ({ data }) => {
   const getCardSize = (generation) => {
     switch (generation) {
       case 0:
-        return "w-[270px] h-[700px]"; // Subject - largest
+        return "w-[240px] h-[700px]"; // Subject - largest (narrower)
       case 1:
-        return "w-[270px] h-[700px]"; // Parents
+        return "w-[240px] h-[700px]"; // Parents
       case 2:
-        return "w-[270px] h-[510px]"; // Grandparents
+        return "w-[240px] h-[510px]"; // Grandparents
       case 3:
-        return "w-[270px] h-[250px]"; // Great-grandparents
+        return "w-[240px] h-[250px]"; // Great-grandparents
       case 4:
-        return "w-[270px] h-[120px]"; // Great-great-grandparents - smallest
+        return "w-[240px] h-[120px]"; // Great-great-grandparents - smallest
       default:
-        return "w-[270px] h-24";
+        return "w-[240px] h-24";
     }
   };
 
@@ -226,6 +228,7 @@ export default function PigeonPedigreeChart() {
   const { data: pedigreeData, isLoading } = useGetPigeonPedigreeDataQuery(id);
   // console.log("pedigreeData", pedigreeData);
   const chartRef = useRef(null);
+  const reactFlowInstanceRef = useRef(null);
 
   const { data, isLoading: isLoadingProfile } = useGetProfileQuery();
 
@@ -244,6 +247,30 @@ export default function PigeonPedigreeChart() {
     setNodes(dynamicNodes);
     setEdges(dynamicEdges);
   }, [dynamicNodes, dynamicEdges, setNodes, setEdges]);
+
+  // Keep the flow fitted to the container on init, nodes/edges change and resize
+  useEffect(() => {
+    const fit = () => {
+      try {
+        const inst = reactFlowInstanceRef.current;
+        if (inst && typeof inst.fitView === "function") {
+          inst.fitView({ padding: 0.12, includeHiddenNodes: true });
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    fit();
+
+    const onResize = () => {
+      clearTimeout(window.__pedigree_fit_timeout);
+      window.__pedigree_fit_timeout = setTimeout(fit, 150);
+    };
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [nodes.length, edges.length]);
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
@@ -307,395 +334,383 @@ export default function PigeonPedigreeChart() {
   }, [nodes]);
 
   // Generic chart capture and PDF save function. Returns the generated filename.
-  const captureChartAndSave = useCallback(async (filenameOverride) => {
-    try {
-      if (!chartRef.current) {
-        throw new Error("Chart not ready");
-      }
+  // const captureChartAndSave = useCallback(async (filenameOverride) => {
+  //   try {
+  //     if (!chartRef.current) {
+  //       throw new Error("Chart not ready");
+  //     }
 
-      // Show loading state
-      const exportButton = document.querySelector("[data-export-pdf]");
-      if (exportButton) {
-        exportButton.textContent = "Exporting...";
-        exportButton.disabled = true;
-      }
+  //     // Show loading state
+  //     const exportButton = document.querySelector("[data-export-pdf]");
+  //     if (exportButton) {
+  //       exportButton.textContent = "Exporting...";
+  //       exportButton.disabled = true;
+  //     }
 
-      // CRITICAL FIX: Temporarily increase height to ensure all content is visible
-      const originalHeight = chartRef.current.style.height;
-      const originalMinHeight = chartRef.current.style.minHeight;
-      const reactFlowElement = chartRef.current.querySelector(".react-flow");
-      const reactFlowOriginalHeight = reactFlowElement
-        ? reactFlowElement.style.height
-        : null;
+  //     // Temporarily expand container to its full scroll size to avoid clipping
+  //     const originalHeight = chartRef.current.style.height;
+  //     const originalMinHeight = chartRef.current.style.minHeight;
+  //     const originalWidth = chartRef.current.style.width;
 
-      // Force minimum height to ensure all edges are rendered
-      chartRef.current.style.height = "2000px";
-      chartRef.current.style.minHeight = "2000px";
-      if (reactFlowElement) {
-        reactFlowElement.style.height = "2000px";
-      }
+  //     const reactFlowElement = chartRef.current.querySelector(".react-flow");
+  //     const reactFlowOriginalHeight = reactFlowElement
+  //       ? reactFlowElement.style.height
+  //       : null;
+  //     const reactFlowOriginalWidth = reactFlowElement
+  //       ? reactFlowElement.style.width
+  //       : null;
 
-      // Wait for ReactFlow to adjust to new height
-      await new Promise((resolve) => setTimeout(resolve, 300));
+  //     const fullHeight = Math.max(
+  //       chartRef.current.scrollHeight,
+  //       chartRef.current.clientHeight
+  //     );
+  //     const fullWidth = Math.max(
+  //       chartRef.current.scrollWidth,
+  //       chartRef.current.clientWidth
+  //     );
 
-      const convertLabToRgb = (labString) => {
-        const labMatch = labString.match(/lab\(\s*([^)]+)\s*\)/);
-        if (!labMatch) return labString;
+  //     chartRef.current.style.height = `${fullHeight}px`;
+  //     chartRef.current.style.minHeight = `${fullHeight}px`;
+  //     chartRef.current.style.width = `${fullWidth}px`;
+  //     if (reactFlowElement) {
+  //       reactFlowElement.style.height = `${fullHeight}px`;
+  //       reactFlowElement.style.width = `${fullWidth}px`;
+  //     }
 
-        const values = labMatch[1]
-          .split(/\s+/)
-          .map((v) => parseFloat(v.replace("%", "")));
-        const [l, a, b] = values;
+  //     // Wait for layout to settle
+  //     await new Promise((resolve) => setTimeout(resolve, 300));
 
-        const y = (l + 16) / 116;
-        const x = a / 500 + y;
-        const z = y - b / 200;
+  //     const convertLabToRgb = (labString) => {
+  //       const labMatch = labString.match(/lab\(\s*([^)]+)\s*\)/);
+  //       if (!labMatch) return labString;
 
-        const r = Math.max(
-          0,
-          Math.min(
-            255,
-            Math.round(255 * (3.2406 * x - 1.5372 * y - 0.4986 * z))
-          )
-        );
-        const g = Math.max(
-          0,
-          Math.min(
-            255,
-            Math.round(255 * (-0.9689 * x + 1.8758 * y + 0.0415 * z))
-          )
-        );
-        const blue = Math.max(
-          0,
-          Math.min(255, Math.round(255 * (0.0557 * x - 0.204 * y + 1.057 * z)))
-        );
+  //       const values = labMatch[1]
+  //         .split(/\s+/)
+  //         .map((v) => parseFloat(v.replace("%", "")));
+  //       const [l, a, b] = values;
 
-        return `rgb(${r}, ${g}, ${blue})`;
-      };
+  //       const y = (l + 16) / 116;
+  //       const x = a / 500 + y;
+  //       const z = y - b / 200;
 
-      const temporarilyReplaceLabColors = (element) => {
-        const originalStyles = [];
+  //       const r = Math.max(
+  //         0,
+  //         Math.min(
+  //           255,
+  //           Math.round(255 * (3.2406 * x - 1.5372 * y - 0.4986 * z))
+  //         )
+  //       );
+  //       const g = Math.max(
+  //         0,
+  //         Math.min(
+  //           255,
+  //           Math.round(255 * (-0.9689 * x + 1.8758 * y + 0.0415 * z))
+  //         )
+  //       );
+  //       const blue = Math.max(
+  //         0,
+  //         Math.min(255, Math.round(255 * (0.0557 * x - 0.204 * y + 1.057 * z)))
+  //       );
 
-        const processElement = (el) => {
-          if (el.nodeType === Node.ELEMENT_NODE) {
-            const style = el.getAttribute("style");
-            const computedStyle = window.getComputedStyle(el);
+  //       return `rgb(${r}, ${g}, ${blue})`;
+  //     };
 
-            let needsReplacement = false;
-            let newStyle = style || "";
+  //     const temporarilyReplaceLabColors = (element) => {
+  //       const originalStyles = [];
 
-            if (style && style.includes("lab(")) {
-              needsReplacement = true;
-              newStyle = style.replace(/lab\([^)]+\)/g, (match) => {
-                return convertLabToRgb(match);
-              });
-            }
+  //       const processElement = (el) => {
+  //         if (el.nodeType === Node.ELEMENT_NODE) {
+  //           const style = el.getAttribute("style");
+  //           const computedStyle = window.getComputedStyle(el);
 
-            const colorProperties = [
-              "color",
-              "background-color",
-              "border-color",
-              "fill",
-              "stroke",
-            ];
-            colorProperties.forEach((prop) => {
-              const value = computedStyle.getPropertyValue(prop);
-              if (value && value.includes("lab(")) {
-                needsReplacement = true;
-                const convertedColor = convertLabToRgb(value);
-                newStyle += `; ${prop}: ${convertedColor} !important`;
-              }
-            });
+  //           let needsReplacement = false;
+  //           let newStyle = style || "";
 
-            if (needsReplacement) {
-              originalStyles.push({
-                element: el,
-                originalStyle: style,
-                hasStyle: el.hasAttribute("style"),
-              });
-              el.setAttribute("style", newStyle);
-            }
+  //           if (style && style.includes("lab(")) {
+  //             needsReplacement = true;
+  //             newStyle = style.replace(/lab\([^)]+\)/g, (match) => {
+  //               return convertLabToRgb(match);
+  //             });
+  //           }
 
-            Array.from(el.children).forEach(processElement);
-          }
-        };
+  //           const colorProperties = [
+  //             "color",
+  //             "background-color",
+  //             "border-color",
+  //             "fill",
+  //             "stroke",
+  //           ];
+  //           colorProperties.forEach((prop) => {
+  //             const value = computedStyle.getPropertyValue(prop);
+  //             if (value && value.includes("lab(")) {
+  //               needsReplacement = true;
+  //               const convertedColor = convertLabToRgb(value);
+  //               newStyle += `; ${prop}: ${convertedColor} !important`;
+  //             }
+  //           });
 
-        processElement(element);
-        return originalStyles;
-      };
+  //           if (needsReplacement) {
+  //             originalStyles.push({
+  //               element: el,
+  //               originalStyle: style,
+  //               hasStyle: el.hasAttribute("style"),
+  //             });
+  //             el.setAttribute("style", newStyle);
+  //           }
 
-      // Apply lab color replacements
-      const styleBackups = temporarilyReplaceLabColors(chartRef.current);
+  //           Array.from(el.children).forEach(processElement);
+  //         }
+  //       };
 
-      // Remove truncation
-      const truncationBackups = [];
-      const removeTruncation = (el) => {
-        if (!el) return;
-        const elements = el.querySelectorAll(
-          ".truncate, .overflow-hidden, .whitespace-nowrap"
-        );
-        elements.forEach((e) => {
-          const original = {
-            element: e,
-            classList: Array.from(e.classList),
-            style: e.getAttribute("style"),
-          };
-          truncationBackups.push(original);
-          e.classList.remove(
-            "truncate",
-            "overflow-hidden",
-            "whitespace-nowrap"
-          );
-          const oldStyle = e.getAttribute("style") || "";
-          const newStyle = oldStyle
-            .replace(/overflow:\s*hidden;?/g, "")
-            .replace(/text-overflow:\s*ellipsis;?/g, "")
-            .replace(/white-space:\s*nowrap;?/g, "");
-          if (newStyle.trim()) e.setAttribute("style", newStyle);
-          else e.removeAttribute("style");
-        });
-      };
+  //       processElement(element);
+  //       return originalStyles;
+  //     };
 
-      removeTruncation(chartRef.current);
+  //     // Apply lab color replacements
+  //     const styleBackups = temporarilyReplaceLabColors(chartRef.current);
 
-      // CRITICAL FIX: Ensure SVG edges are visible and properly positioned
-      const svgEdges = chartRef.current.querySelectorAll(
-        ".react-flow__edges, .react-flow__edge"
-      );
-      const svgBackups = [];
+  //     // Remove truncation
+  //     const truncationBackups = [];
+  //     const removeTruncation = (el) => {
+  //       if (!el) return;
+  //       const elements = el.querySelectorAll(
+  //         ".truncate, .overflow-hidden, .whitespace-nowrap"
+  //       );
+  //       elements.forEach((e) => {
+  //         const original = {
+  //           element: e,
+  //           classList: Array.from(e.classList),
+  //           style: e.getAttribute("style"),
+  //         };
+  //         truncationBackups.push(original);
+  //         e.classList.remove(
+  //           "truncate",
+  //           "overflow-hidden",
+  //           "whitespace-nowrap"
+  //         );
+  //         const oldStyle = e.getAttribute("style") || "";
+  //         const newStyle = oldStyle
+  //           .replace(/overflow:\s*hidden;?/g, "")
+  //           .replace(/text-overflow:\s*ellipsis;?/g, "")
+  //           .replace(/white-space:\s*nowrap;?/g, "");
+  //         if (newStyle.trim()) e.setAttribute("style", newStyle);
+  //         else e.removeAttribute("style");
+  //       });
+  //     };
 
-      svgEdges.forEach((svg) => {
-        const original = {
-          element: svg,
-          style: svg.getAttribute("style"),
-          visibility: svg.style.visibility,
-          display: svg.style.display,
-          opacity: svg.style.opacity,
-          zIndex: svg.style.zIndex,
-        };
-        svgBackups.push(original);
+  //     removeTruncation(chartRef.current);
 
-        // Force visibility and proper positioning
-        svg.style.visibility = "visible !important";
-        svg.style.display = "block !important";
-        svg.style.opacity = "1 !important";
-        svg.style.position = "absolute";
-        svg.style.top = "0";
-        svg.style.left = "0";
-        svg.style.width = "100%";
-        svg.style.height = "100%";
-        svg.style.pointerEvents = "none";
-        svg.style.zIndex = "1";
-        svg.setAttribute("width", "100%");
-        svg.setAttribute("height", "100%");
+  //     // CRITICAL FIX: Ensure SVG edges are visible and properly positioned
+  //     const svgEdges = chartRef.current.querySelectorAll(
+  //       ".react-flow__edges, .react-flow__edge"
+  //     );
+  //     const svgBackups = [];
 
-        // Ensure all paths in edges have proper stroke
-        const paths = svg.querySelectorAll("path");
-        paths.forEach((path) => {
-          const stroke = path.getAttribute("stroke");
-          if (!stroke || stroke === "none" || stroke === "transparent") {
-            path.setAttribute("stroke", "#37B7C3");
-          }
+  //     svgEdges.forEach((svg) => {
+  //       const original = {
+  //         element: svg,
+  //         style: svg.getAttribute("style"),
+  //         visibility: svg.style.visibility,
+  //         display: svg.style.display,
+  //         opacity: svg.style.opacity,
+  //         zIndex: svg.style.zIndex,
+  //       };
+  //       svgBackups.push(original);
 
-          const strokeWidth = path.getAttribute("stroke-width");
-          if (!strokeWidth || parseFloat(strokeWidth) < 1) {
-            path.setAttribute("stroke-width", "2");
-          }
+  //       // Force visibility and proper positioning
+  //       svg.style.visibility = "visible !important";
+  //       svg.style.display = "block !important";
+  //       svg.style.opacity = "1 !important";
+  //       svg.style.position = "absolute";
+  //       svg.style.top = "0";
+  //       svg.style.left = "0";
+  //       svg.style.width = "100%";
+  //       svg.style.height = "100%";
+  //       svg.style.pointerEvents = "none";
+  //       svg.style.zIndex = "1";
+  //       svg.setAttribute("width", "100%");
+  //       svg.setAttribute("height", "100%");
 
-          path.setAttribute("fill", "none");
-          path.style.visibility = "visible";
-          path.style.display = "block";
-          path.style.opacity = "1";
-        });
+  //       // Ensure all paths in edges have proper stroke
+  //       const paths = svg.querySelectorAll("path");
+  //       paths.forEach((path) => {
+  //         const stroke = path.getAttribute("stroke");
+  //         if (!stroke || stroke === "none" || stroke === "transparent") {
+  //           path.setAttribute("stroke", "#37B7C3");
+  //         }
 
-        // Ensure all edge groups are visible
-        const gElements = svg.querySelectorAll("g");
-        gElements.forEach((g) => {
-          g.style.visibility = "visible";
-          g.style.display = "block";
-          g.style.opacity = "1";
-        });
-      });
+  //         const strokeWidth = path.getAttribute("stroke-width");
+  //         if (!strokeWidth || parseFloat(strokeWidth) < 1) {
+  //           path.setAttribute("stroke-width", "2");
+  //         }
 
-      // Force render all ReactFlow edge elements specifically
-      const allEdgeElements = chartRef.current.querySelectorAll(
-        '[class*="react-flow__edge"]'
-      );
-      allEdgeElements.forEach((edge) => {
-        edge.style.visibility = "visible";
-        edge.style.display = "block";
-        edge.style.opacity = "1";
-      });
+  //         path.setAttribute("fill", "none");
+  //         path.style.visibility = "visible";
+  //         path.style.display = "block";
+  //         path.style.opacity = "1";
+  //       });
 
-      // Wait longer for all elements to render properly
-      await new Promise((resolve) => setTimeout(resolve, 500));
+  //       // Ensure all edge groups are visible
+  //       const gElements = svg.querySelectorAll("g");
+  //       gElements.forEach((g) => {
+  //         g.style.visibility = "visible";
+  //         g.style.display = "block";
+  //         g.style.opacity = "1";
+  //       });
+  //     });
 
-      const canvas = await html2canvas(chartRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-        width: chartRef.current.scrollWidth,
-        height: chartRef.current.scrollHeight,
-        logging: false,
-        // Critical settings for SVG capture
-        foreignObjectRendering: false,
-        removeContainer: false,
-        ignoreElements: (element) => {
-          // Don't ignore any elements, especially not SVG
-          return (
-            element.classList &&
-            element.classList.contains("html2canvas-ignore")
-          );
-        },
-        onclone: (clonedDoc) => {
-          // Additional processing on cloned document
-          const clonedEdges = clonedDoc.querySelectorAll(
-            ".react-flow__edges, .react-flow__edge"
-          );
-          clonedEdges.forEach((svg) => {
-            svg.style.visibility = "visible";
-            svg.style.display = "block";
-            svg.style.opacity = "1";
+  //     // Force render all ReactFlow edge elements specifically
+  //     const allEdgeElements = chartRef.current.querySelectorAll(
+  //       '[class*="react-flow__edge"]'
+  //     );
+  //     allEdgeElements.forEach((edge) => {
+  //       edge.style.visibility = "visible";
+  //       edge.style.display = "block";
+  //       edge.style.opacity = "1";
+  //     });
 
-            const paths = svg.querySelectorAll("path");
-            paths.forEach((path) => {
-              path.setAttribute("stroke", "#37B7C3");
-              path.setAttribute("stroke-width", "2");
-              path.setAttribute("fill", "none");
-            });
-          });
-        },
-      });
+  //     // Wait longer for all elements to render properly
+  //     await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Restore all styles
-      styleBackups.forEach((backup) => {
-        if (backup.hasStyle && backup.originalStyle) {
-          backup.element.setAttribute("style", backup.originalStyle);
-        } else if (!backup.hasStyle) {
-          backup.element.removeAttribute("style");
-        }
-      });
+  //     const captureScale = Math.min(window.devicePixelRatio || 2, 3);
 
-      truncationBackups.forEach((b) => {
-        b.element.className = "";
-        b.classList.forEach((c) => b.element.classList.add(c));
-        if (b.style) b.element.setAttribute("style", b.style);
-        else b.element.removeAttribute("style");
-      });
+  //     const canvas = await html2canvas(chartRef.current, {
+  //       scale: captureScale,
+  //       useCORS: true,
+  //       allowTaint: true,
+  //       backgroundColor: "#ffffff",
+  //       width: chartRef.current.scrollWidth,
+  //       height: chartRef.current.scrollHeight,
+  //       logging: false,
+  //       // Critical settings for SVG capture
+  //       foreignObjectRendering: false,
+  //       removeContainer: false,
+  //       ignoreElements: (element) => {
+  //         // Don't ignore any elements, especially not SVG
+  //         return (
+  //           element.classList &&
+  //           element.classList.contains("html2canvas-ignore")
+  //         );
+  //       },
+  //       onclone: (clonedDoc) => {
+  //         // Additional processing on cloned document
+  //         const clonedEdges = clonedDoc.querySelectorAll(
+  //           ".react-flow__edges, .react-flow__edge"
+  //         );
+  //         clonedEdges.forEach((svg) => {
+  //           svg.style.visibility = "visible";
+  //           svg.style.display = "block";
+  //           svg.style.opacity = "1";
 
-      // Restore SVG elements
-      svgBackups.forEach((backup) => {
-        if (backup.style) {
-          backup.element.setAttribute("style", backup.style);
-        }
-      });
+  //           const paths = svg.querySelectorAll("path");
+  //           paths.forEach((path) => {
+  //             path.setAttribute("stroke", "#37B7C3");
+  //             path.setAttribute("stroke-width", "2");
+  //             path.setAttribute("fill", "none");
+  //           });
+  //         });
+  //       },
+  //     });
 
-      // Restore original heights
-      chartRef.current.style.height = originalHeight;
-      chartRef.current.style.minHeight = originalMinHeight;
-      if (reactFlowElement && reactFlowOriginalHeight) {
-        reactFlowElement.style.height = reactFlowOriginalHeight;
-      }
+  //     // Restore all styles
+  //     styleBackups.forEach((backup) => {
+  //       if (backup.hasStyle && backup.originalStyle) {
+  //         backup.element.setAttribute("style", backup.originalStyle);
+  //       } else if (!backup.hasStyle) {
+  //         backup.element.removeAttribute("style");
+  //       }
+  //     });
 
-      const imgData = canvas.toDataURL("image/png", 1.0);
+  //     truncationBackups.forEach((b) => {
+  //       b.element.className = "";
+  //       b.classList.forEach((c) => b.element.classList.add(c));
+  //       if (b.style) b.element.setAttribute("style", b.style);
+  //       else b.element.removeAttribute("style");
+  //     });
 
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
+  //     // Restore SVG elements
+  //     svgBackups.forEach((backup) => {
+  //       if (backup.style) {
+  //         backup.element.setAttribute("style", backup.style);
+  //       }
+  //     });
 
-      const maxWidth = imgWidth > imgHeight ? 1120 : 790;
-      const maxHeight = imgWidth > imgHeight ? 790 : 1120;
+  //     // Restore original sizes
+  //     chartRef.current.style.height = originalHeight;
+  //     chartRef.current.style.minHeight = originalMinHeight;
+  //     chartRef.current.style.width = originalWidth;
+  //     if (reactFlowElement) {
+  //       if (reactFlowOriginalHeight)
+  //         reactFlowElement.style.height = reactFlowOriginalHeight;
+  //       else reactFlowElement.style.removeProperty("height");
+  //       if (reactFlowOriginalWidth)
+  //         reactFlowElement.style.width = reactFlowOriginalWidth;
+  //       else reactFlowElement.style.removeProperty("width");
+  //     }
 
-      const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight, 1);
-      const finalWidth = imgWidth * scale;
-      const finalHeight = imgHeight * scale;
+  //     const imgData = canvas.toDataURL("image/png", 1.0);
 
-      const pdf = new jsPDF({
-        orientation: imgWidth > imgHeight ? "landscape" : "portrait",
-        unit: "px",
-        format: [finalWidth + 40, finalHeight + 40],
-      });
+  //     const imgWidth = canvas.width;
+  //     const imgHeight = canvas.height;
 
-      const xOffset = 20;
-      const yOffset = 20;
+  //     const maxWidth = imgWidth > imgHeight ? 1120 : 790;
+  //     const maxHeight = imgWidth > imgHeight ? 790 : 1120;
 
-      pdf.addImage(imgData, "PNG", xOffset, yOffset, finalWidth, finalHeight);
+  //     const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight, 1);
+  //     const finalWidth = imgWidth * scale;
+  //     const finalHeight = imgHeight * scale;
 
-      const currentDate = new Date().toISOString().split("T")[0];
-      const filename =
-        filenameOverride || `pigeon-pedigree-chart-${currentDate}.pdf`;
+  //     const pdf = new jsPDF({
+  //       orientation: imgWidth > imgHeight ? "landscape" : "portrait",
+  //       unit: "px",
+  //       format: [finalWidth + 40, finalHeight + 40],
+  //     });
 
-      pdf.save(filename);
+  //     const xOffset = 20;
+  //     const yOffset = 20;
 
-      return filename;
-    } catch (error) {
-      throw error;
-    } finally {
-      const exportButton = document.querySelector("[data-export-pdf]");
-      if (exportButton) {
-        exportButton.textContent = "Export as PDF";
-        exportButton.disabled = false;
-      }
-    }
-  }, []);
+  //     pdf.addImage(imgData, "PNG", xOffset, yOffset, finalWidth, finalHeight);
+
+  //     const currentDate = new Date().toISOString().split("T")[0];
+  //     const filename =
+  //       filenameOverride || `pigeon-pedigree-chart-${currentDate}.pdf`;
+
+  //     pdf.save(filename);
+
+  //     return filename;
+  //   } catch (error) {
+  //     throw error;
+  //   } finally {
+  //     const exportButton = document.querySelector("[data-export-pdf]");
+  //     if (exportButton) {
+  //       exportButton.textContent = "Export as PDF";
+  //       exportButton.disabled = false;
+  //     }
+  //   }
+  // }, []);
 
   // Original single-click export (captures the full chart)
+  // PDF Export Function
   const exportToPDF = useCallback(async () => {
     try {
-      await captureChartAndSave();
-      console.log("PDF export completed successfully");
+      await exportPedigreeToPDF(nodes, edges, pedigreeData);
     } catch (error) {
-      console.error("Error exporting to PDF:", error);
-      alert("Error exporting to PDF. Please try again or refresh the page.");
+      alert("Error exporting PDF. Please try again.");
     }
-  }, [captureChartAndSave]);
+  }, [nodes, edges, pedigreeData]);
 
-  // Export only N generations (N includes subject as generation 0). Example: 4Gen => generations 0..3
   const exportToPDFWithGenerations = useCallback(
     async (genCount) => {
-      const maxGen = Math.max(0, genCount - 1);
-      const originalNodes = nodes;
-      const originalEdges = edges;
-
       try {
-        // Filter nodes by generation
-        const filteredNodes = originalNodes.filter((n) => {
-          const gen = n?.data?.generation ?? 0;
-          return gen <= maxGen;
-        });
-
-        // Keep edges that connect visible nodes
-        const visibleIds = new Set(filteredNodes.map((n) => n.id));
-        const filteredEdges = originalEdges.filter(
-          (e) => visibleIds.has(e.source) && visibleIds.has(e.target)
-        );
-
-        // Apply filtered graph
-        setNodes(filteredNodes);
-        setEdges(filteredEdges);
-
-        // Wait for ReactFlow to re-render
-        await new Promise((resolve) => setTimeout(resolve, 220));
-
-        const currentDate = new Date().toISOString().split("T")[0];
-        const filename = `pigeon-pedigree-chart-${genCount}gen-${currentDate}.pdf`;
-
-        await captureChartAndSave(filename);
-
-        console.log(`PDF export for ${genCount} generations completed`);
+        await exportPedigreeToPDF(nodes, edges, pedigreeData, genCount);
       } catch (error) {
-        console.error("Error exporting filtered generations:", error);
         alert("Error exporting the selected generations. Please try again.");
-      } finally {
-        // Restore original nodes/edges regardless of success/failure
-        setNodes(originalNodes);
-        setEdges(originalEdges);
       }
     },
-    [nodes, edges, setNodes, setEdges, captureChartAndSave]
+    [nodes, edges, pedigreeData]
   );
 
-  const defaultViewport = { x: 0, y: 0, zoom: 0.8 };
+  const defaultViewport = { x: 0, y: 0, zoom: 0.7 };
 
   if (isLoading)
     return (
@@ -707,7 +722,7 @@ export default function PigeonPedigreeChart() {
   // if (isLoadingProfile) return <Spinner />;
 
   return (
-    <div className="container  mx-auto">
+    <div className="container mx-auto">
       <div className="flex flex-col md:flex-row items-end justify-between mt-4">
         <div className="max-w-2xl">
           <h2 className="text-black font-bold text-[26px]">
@@ -755,35 +770,75 @@ export default function PigeonPedigreeChart() {
           </Dropdown>
         </div>
       </div>
-      <div
-        ref={chartRef}
-        className="w-full h-[1400px] 2xl:h-[2000px] bg-transparent flex justify-start items-center rounded-3xl"
-      >
-        {/* --- ReactFlow (now dynamic) --- */}
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          nodeTypes={nodeTypes}
-          defaultViewport={defaultViewport}
-          fitView
-          attributionPosition="bottom-right"
-          className="bg-transparent h-full py-8"
-          minZoom={0.5}
-          maxZoom={1}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          elementsSelectable={false}
-          panOnDrag={false}
-          zoomOnScroll={false}
-          zoomOnPinch={false}
-          zoomOnDoubleClick={false}
-          proOptions={{ hideAttribution: true }}
+
+      <div className="relative">
+        <img
+          src={logo}
+          alt="The Pigeon Hub Logo"
+          width={100}
+          height={50}
+          className="absolute top-8 xl:top-16 2xl:top-20 left-0 xl:left-20 2xl:left-50"
+        />
+      </div>
+      <div className="flex justify-center">
+        <div
+          ref={chartRef}
+          className="w-full max-w-[1200px] h-[1120px] xl:h-[1400px] 2xl:h-[1700px] bg-transparent flex justify-start items-center rounded-3xl"
         >
-          {/* <Background variant="dots" gap={25} size={1.5} color="#FFFFFF" /> */}
-        </ReactFlow>
+          {/* --- ReactFlow (now dynamic) --- */}
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            defaultViewport={defaultViewport}
+            fitView
+            attributionPosition="bottom-right"
+            className="bg-transparent h-full py-8"
+            minZoom={0.5}
+            maxZoom={1}
+            nodesDraggable={false}
+            nodesConnectable={false}
+            elementsSelectable={false}
+            panOnDrag={false}
+            zoomOnScroll={false}
+            zoomOnPinch={false}
+            zoomOnDoubleClick={false}
+            proOptions={{ hideAttribution: true }}
+          >
+            {/* <Background variant="dots" gap={25} size={1.5} color="#FFFFFF" /> */}
+          </ReactFlow>
+        </div>
+      </div>
+      <div className="relative">
+        <div className="absolute bottom-7 xl:bottom-14 2xl:bottom-10 left-0 xl:left-20 2xl:left-20 text-black">
+          <p className="text-accent-foreground font-bold">
+            {pedigreeData?.data?.breeder?.breederName}
+          </p>
+          {pedigreeData?.data?.breeder?.country && (
+            <p>
+              Country:{" "}
+              <span className="text-accent-foreground font-bold">
+                {pedigreeData?.data?.breeder?.country}
+              </span>
+            </p>
+          )}
+          {pedigreeData?.data?.breeder?.phone && (
+            <p>
+              Phone:{" "}
+              <span className="text-accent-foreground font-bold">
+                {pedigreeData?.data?.breeder?.phone}
+              </span>
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="w-full flex justify-center">
+        <h2 className="text-accent-foreground font-bold  mb-10">
+          Generated by <span className="text-accent">thepigeonhub.com</span>
+        </h2>
       </div>
     </div>
   );
