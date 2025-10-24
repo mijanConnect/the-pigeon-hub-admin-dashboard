@@ -403,7 +403,7 @@ export const exportPedigreeToPDF = async (
     const cardWidth = generations === 4 ? 40 : 35;
 
     const gen0 = { w: cardWidth, h: 90 };
-    const gen1 = { w: cardWidth, h: 90 };
+    const gen1 = { w: cardWidth, h: 88 };
 
     const gen2Gap = 3;
     const gen2 = { w: cardWidth, h: 68.25 - (gen2Gap * 3) / 4 };
@@ -414,15 +414,14 @@ export const exportPedigreeToPDF = async (
     const gen4Gap = 2;
     const gen4 = { w: cardWidth, h: 17.0625 - (gen4Gap * 15) / 16 };
 
-    const gen1Gap = 93;
+    const gen1Gap = 97;
 
     // Starting positions
     const totalGen1Height = gen1.h * 2 + gen1Gap;
     const startY = (pageHeight - totalGen1Height) / 2;
     const startX = margin + 5;
 
-    // === GENERATION 0 (Subject) ===
-    const gen0Nodes = filteredNodes.filter((n) => n.data.generation === 0);
+   const gen0Nodes = filteredNodes.filter((n) => n.data.generation === 0);
     const gen0Y = startY + (totalGen1Height - gen0.h) / 2;
 
     if (gen0Nodes.length > 0) {
@@ -475,6 +474,7 @@ export const exportPedigreeToPDF = async (
         );
       }
     }
+
 
     // === GENERATION 2 ===
     if (generations === null || generations > 2) {

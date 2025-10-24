@@ -152,7 +152,7 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       },
     });
   } else {
-    nodes.push(createEmptyNode("father_1", { x: 0, y: -200 }, "Father", 1)); // Changed position
+    nodes.push(createEmptyNode("father_1", { x: 180, y: -200 }, "Father", 1)); // Changed position
   }
 
 
@@ -207,7 +207,7 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       sourceHandle: "bottom", // ADDED: Specify source handle
     });
   } else {
-    nodes.push(createEmptyNode("mother_1", { x: 180, y: 1220 }, "Mother", 1)); // Changed position
+    nodes.push(createEmptyNode("mother_1", { x: 180, y: 1200 }, "Mother", 1)); // Changed position
     edges.push({
       id: "subject-mother_1",
       source: "subject",

@@ -39,8 +39,8 @@ const PigeonNode = ({ data }) => {
   const getGenderIcon = (gender) => {
     if (gender === "Cock") return "♂";
     if (gender === "Hen") return "♀";
-    if (gender === "Unspecified") return "⚪";
-    return "⚪";
+    if (gender === "Unspecified") return "⛔";
+    return "⛔";
   };
 
 
@@ -842,19 +842,19 @@ export default function PigeonPedigreeChart() {
       </div>
       <div className="relative">
         <div className="absolute bottom-20 xl:bottom-28 2xl:bottom-32 -left-5 xl:left-24 2xl:left-52 text-black">
-          <p className="text-accent-foreground text-sm xl:text-base font-bold">
+          <p className="text-accent-foreground text-xs 2xl:text-lg  font-bold">
             {pedigreeData?.data?.breeder?.breederName}
           </p>
           {pedigreeData?.data?.breeder?.country && (
-            <p className="text-[10px] xl:text-base">
+            <p className="text-[10px] ">
               Location:{" "}
-              <span className="text-accent-foreground text-[10px] xl:text-base font-bold">
+              <span className="text-accent-foreground text-[10px]  font-bold">
                 {pedigreeData?.data?.breeder?.country}
               </span>
             </p>
           )}
           {pedigreeData?.data?.breeder?.phone && (
-            <p>
+            <p className="text-[10px] 2xl:text-xl">
               Phone:{" "}
               <span className="text-accent-foreground font-bold">
                 {pedigreeData?.data?.breeder?.phone}
