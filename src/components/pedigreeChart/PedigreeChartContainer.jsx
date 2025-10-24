@@ -26,7 +26,8 @@ import { useParams } from "react-router-dom";
 import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
 import Spinner from "../common/Spinner";
 import { convertBackendToExistingFormat } from "./PedigreeData";
-import { exportPedigreeToPDF } from "./exportPDF";
+import { exportPedigreeToPDF } from "./ExportPDF";
+// import { exportPedigreeToPDF } from "./exportPDF";
 
 const PigeonNode = ({ data }) => {
   const countryCode = data.country ? getCode(data.country) : null;
