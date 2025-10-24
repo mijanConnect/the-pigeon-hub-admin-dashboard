@@ -1,5 +1,6 @@
 // import { useMyProfileQuery } from "@/redux/featured/auth/authApi";
 
+
 export const convertBackendToExistingFormat = (backendResponse, role) => {
   if (!backendResponse?.data) {
     return {
@@ -8,12 +9,14 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     };
   }
 
+
   const subject = backendResponse.data;
   const nodes = [];
   const edges = [];
 
-  // Determine max generation based on role
-  const maxGeneration = role === "PAIDUSER" ? 4 : 4;
+
+const maxGeneration = role === "PAIDUSER" ? 4 : 4;
+
 
   // Helper function to format results
   const formatResults = (results) => {
@@ -21,8 +24,10 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       return null;
     }
 
+
     return results.map((item) => String(item).trim()).join("\n");
   };
+
 
   // Helper function to get gender from data
   const getGender = (genderData) => {
@@ -35,6 +40,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     return "Unspecified";
   };
 
+
   // Helper function to get breeder name
   const getBreederInfo = (breeder) => {
     if (typeof breeder === "object" && breeder) {
@@ -43,6 +49,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     }
     return breeder;
   };
+
 
   // Helper function to get breeder verification/status
   const getBreederStatus = (breeder) => {
@@ -53,20 +60,24 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     return false;
   };
 
+
   // Helper function to get pigeon verification status
   const getPigeonVerification = (pigeon) => {
     return pigeon?.verified === true;
   };
+
 
   // Helper function to get pigeon iconic status
   const getPigeonIconic = (pigeon) => {
     return pigeon?.iconic === true;
   };
 
+
   // Helper function to get pigeon iconic score
   const getPigeonIconicScore = (pigeon) => {
     return pigeon?.iconicScore || null;
   };
+
 
   // Helper function to create empty node
   const createEmptyNode = (id, position, positionLabel, generation) => {
@@ -81,7 +92,9 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     };
   };
 
+
   // Subject node (Generation 0) - All data included
+  // CHANGED: handles set to "top-bottom" for connections from top and bottom
   nodes.push({
     id: "subject",
     type: "pigeonNode",
@@ -103,17 +116,19 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       breederVerified: getBreederStatus(subject.breeder),
       iconic: getPigeonIconic(subject),
       iconicScore: getPigeonIconicScore(subject),
-      handles: "top-bottom",
+      handles: "top-bottom", // This ensures connections come from top and bottom
       isEmpty: false,
     },
   });
 
+
   // Generation 1 - Father
+  // CHANGED: Position adjusted to be above subject, handles changed
   if (subject.fatherRingId) {
     nodes.push({
       id: "father_1",
       type: "pigeonNode",
-      position: { x: 320, y: -200 },
+      position: { x: 180, y: -200 }, // Changed from { x: 320, y: -200 }
       data: {
         name: subject.fatherRingId.name,
         ringNumber: subject.fatherRingId.ringNumber,
@@ -137,25 +152,28 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       },
     });
   } else {
-    nodes.push(createEmptyNode("father_1", { x: 290, y: -200 }, "Father", 1));
+    nodes.push(createEmptyNode("father_1", { x: 0, y: -200 }, "Father", 1)); // Changed position
   }
+
 
   edges.push({
     id: "subject-father_1",
     source: "subject",
     target: "father_1",
+    sourceHandle: "top", // Connect from subject's TOP handle
+    targetHandle: null, // Connect to father's default LEFT handle
     type: "smoothstep",
     style: { stroke: "#37B7C3", strokeWidth: 3 },
-    curveness: 0.1,
   });
 
+
   // Generation 1 - Mother
-  // Generation 1 - Mother
+  // CHANGED: Position adjusted to be below subject
   if (subject.motherRingId) {
     nodes.push({
       id: "mother_1",
       type: "pigeonNode",
-      position: { x: 320, y: 1350 },
+      position: { x: 180, y: 1200 }, // Changed from { x: 320, y: 1210 }
       data: {
         name: subject.motherRingId.name,
         ringNumber: subject.motherRingId.ringNumber,
@@ -179,23 +197,27 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       },
     });
 
+
     edges.push({
       id: "subject-mother_1",
       source: "subject",
       target: "mother_1",
       type: "smoothstep",
       style: { stroke: "#37B7C3", strokeWidth: 3 },
+      sourceHandle: "bottom", // ADDED: Specify source handle
     });
   } else {
-    nodes.push(createEmptyNode("mother_1", { x: 290, y: 1210 }, "Mother", 1));
+    nodes.push(createEmptyNode("mother_1", { x: 180, y: 1220 }, "Mother", 1)); // Changed position
     edges.push({
       id: "subject-mother_1",
       source: "subject",
       target: "mother_1",
       type: "smoothstep",
       style: { stroke: "#37B7C3", strokeWidth: 3 },
+      sourceHandle: "bottom", // ADDED: Specify source handle
     });
   }
+
 
   // Generation 2 - Grandparents
   // Father side - Grandfather (FP)
@@ -203,7 +225,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     nodes.push({
       id: "father_2_1",
       type: "pigeonNode",
-      position: { x: 640, y: -200 },
+      position: { x: 500, y: -200 }, // Shifted right from father_1
       data: {
         name: subject.fatherRingId.fatherRingId.name,
         ringNumber: subject.fatherRingId.fatherRingId.ringNumber,
@@ -233,9 +255,10 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     });
   } else {
     nodes.push(
-      createEmptyNode("father_2_1", { x: 580, y: -200 }, "Grandfather (FP)", 2)
+      createEmptyNode("father_2_1", { x: 500, y: -200 }, "Grandfather (FP)", 2)
     );
   }
+
 
   edges.push({
     id: "father_1-father_2_1",
@@ -245,12 +268,13 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     style: { stroke: "#37B7C3", strokeWidth: 2.5 },
   });
 
+
   // Father side - Grandmother (FP)
   if (subject.fatherRingId?.motherRingId) {
     nodes.push({
       id: "mother_2_1",
       type: "pigeonNode",
-      position: { x: 640, y: 330 },
+      position: { x: 500, y: 310 },
       data: {
         name: subject.fatherRingId.motherRingId.name,
         ringNumber: subject.fatherRingId.motherRingId.ringNumber,
@@ -279,9 +303,10 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     });
   } else {
     nodes.push(
-      createEmptyNode("mother_2_1", { x: 580, y: 330 }, "Grandmother (FP)", 2)
+      createEmptyNode("mother_2_1", { x: 500, y: 320 }, "Grandmother (FP)", 2)
     );
   }
+
 
   edges.push({
     id: "father_1-mother_2_1",
@@ -291,12 +316,13 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     style: { stroke: "#37B7C3", strokeWidth: 2.5 },
   });
 
+
   // Mother side - Grandfather (MP)
   if (subject.motherRingId?.fatherRingId) {
     nodes.push({
       id: "father_2_2",
       type: "pigeonNode",
-      position: { x: 640, y: 870 },
+      position: { x: 500, y: 880 },
       data: {
         name: subject.motherRingId.fatherRingId.name,
         ringNumber: subject.motherRingId.fatherRingId.ringNumber,
@@ -325,9 +351,10 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     });
   } else {
     nodes.push(
-      createEmptyNode("father_2_2", { x: 580, y: 870 }, "Grandfather (MP)", 2)
+      createEmptyNode("father_2_2", { x: 500, y: 850 }, "Grandfather (MP)", 2)
     );
   }
+
 
   edges.push({
     id: "mother_1-father_2_2",
@@ -337,12 +364,13 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     style: { stroke: "#37B7C3", strokeWidth: 2.5 },
   });
 
+
   // Mother side - Grandmother (MP)
   if (subject.motherRingId?.motherRingId) {
     nodes.push({
       id: "mother_2_2",
       type: "pigeonNode",
-      position: { x: 640, y: 1400 },
+      position: { x: 500, y: 1400 },
       data: {
         name: subject.motherRingId.motherRingId.name,
         ringNumber: subject.motherRingId.motherRingId.ringNumber,
@@ -372,9 +400,10 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     });
   } else {
     nodes.push(
-      createEmptyNode("mother_2_2", { x: 580, y: 1400 }, "Grandmother (MP)", 2)
+      createEmptyNode("mother_2_2", { x: 500, y: 1372 }, "Grandmother (MP)", 2)
     );
   }
+
 
   edges.push({
     id: "mother_1-mother_2_2",
@@ -383,6 +412,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     type: "smoothstep",
     style: { stroke: "#37B7C3", strokeWidth: 2.5 },
   });
+
 
   // Generation 3 - Only if maxGeneration >= 3
   if (maxGeneration >= 3) {
@@ -425,6 +455,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         nodes.push(createEmptyNode(nodeId, position, nodeId, 3));
       }
 
+
       // Always push edge regardless of data
       const strokeColor = isFromFather ? "#37B7C3" : "#37B7C3";
       edges.push({
@@ -436,90 +467,99 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       });
     };
 
+
     // Father side of father_2_1
     addGen3Node(
       subject.fatherRingId?.fatherRingId?.fatherRingId,
       "father_3_1",
-      { x: 870, y: -200 },
+      { x: 820, y: -200 },
       "Blue Prince",
       "#90EE90",
       "father_2_1",
       true
     );
 
+
     addGen3Node(
       subject.fatherRingId?.fatherRingId?.motherRingId,
       "mother_3_1",
-      { x: 870, y: 60 },
+      { x: 820, y: 60 },
       "Sapphire Queen",
       "#FFFFE0",
       "father_2_1",
       false
     );
 
+
     // Mother side of father_2_1
     addGen3Node(
       subject.fatherRingId?.motherRingId?.fatherRingId,
       "father_3_2",
-      { x: 870, y: 330 },
+      { x: 820, y: 320 },
       "Silver Storm",
       "#fff",
       "mother_2_1",
       true
     );
 
+
     addGen3Node(
       subject.fatherRingId?.motherRingId?.motherRingId,
       "mother_3_2",
-      { x: 870, y: 590 },
+      { x: 820, y: 580 },
       "Pearl Beauty",
       "#fff",
       "mother_2_1",
       false
     );
 
+
     // Father side of father_2_2
     addGen3Node(
       subject.motherRingId?.fatherRingId?.fatherRingId,
       "father_3_3",
-      { x: 870, y: 870 },
+      { x: 820, y: 850 },
       "Golden Eagle",
       "#fff",
       "father_2_2",
       true
     );
 
+
     addGen3Node(
       subject.motherRingId?.fatherRingId?.motherRingId,
       "mother_3_3",
-      { x: 870, y: 1130 },
+      { x: 820, y: 1110 },
       "Amber Star",
       "#fff",
       "father_2_2",
       false
     );
 
+
     // Mother side of father_2_2
     addGen3Node(
       subject.motherRingId?.motherRingId?.fatherRingId,
       "father_3_4",
-      { x: 870, y: 1400 },
+      { x: 820, y: 1370 },
       "Ruby King",
       "#90EE90",
       "mother_2_2",
       true
     );
 
+
     addGen3Node(
       subject.motherRingId?.motherRingId?.motherRingId,
       "mother_3_4",
-      { x: 870, y: 1660 },
+      { x: 820, y: 1633 },
       "Crimson Rose",
       "#FFFFE0",
       "mother_2_2",
       false
     );
   }
+
 
   // Generation 4 - Only if role is PAIDUSER (maxGeneration === 4)
   if (maxGeneration === 4) {
@@ -567,6 +607,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         });
       }
 
+
       edges.push({
         id: `${nodeId}-${nodeId}_father`,
         source: nodeId,
@@ -574,6 +615,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         type: "smoothstep",
         style: { stroke: "#37B7C3", strokeWidth: 1.5 },
       });
+
 
       if (parentPath && parentPath.motherRingId) {
         nodes.push({
@@ -610,6 +652,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         });
       }
 
+
       edges.push({
         id: `${nodeId}-${nodeId}_mother`,
         source: nodeId,
@@ -619,11 +662,12 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       });
     };
 
+
     // Add all generation 4 nodes
     addGen4Node(
       subject.fatherRingId?.fatherRingId?.fatherRingId,
       "father_3_1",
-      { father: { x: 1160, y: -200 }, mother: { x: 1160, y: -70 } },
+      { father: { x: 1140, y: -200 }, mother: { x: 1140, y: -70 } },
       "Ancient",
       "#90EE90",
       "#90EE90"
@@ -631,7 +675,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     addGen4Node(
       subject.fatherRingId?.fatherRingId?.motherRingId,
       "mother_3_1",
-      { father: { x: 1160, y: 60 }, mother: { x: 1160, y: 190 } },
+      { father: { x: 1140, y: 60 }, mother: { x: 1140, y: 190 } },
       "Storm",
       "#FFFFE0",
       "#FFFFE0"
@@ -639,31 +683,31 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     addGen4Node(
       subject.fatherRingId?.motherRingId?.fatherRingId,
       "father_3_2",
-      { father: { x: 1160, y: 330 }, mother: { x: 1160, y: 460 } },
+      { father: { x:1140, y: 320 }, mother: { x:1140, y: 450 } },
       "Silver"
     );
     addGen4Node(
       subject.fatherRingId?.motherRingId?.motherRingId,
       "mother_3_2",
-      { father: { x: 1160, y: 590 }, mother: { x: 1160, y: 720 } },
+      { father: { x:1140, y: 580 }, mother: { x:1140, y: 710 } },
       "Purple"
     );
     addGen4Node(
       subject.motherRingId?.fatherRingId?.fatherRingId,
       "father_3_3",
-      { father: { x: 1160, y: 870 }, mother: { x: 1160, y: 1000 } },
+      { father: { x:1140, y: 850 }, mother: { x:1140, y: 980 } },
       "Golden"
     );
     addGen4Node(
       subject.motherRingId?.fatherRingId?.motherRingId,
       "mother_3_3",
-      { father: { x: 1160, y: 1130 }, mother: { x: 1160, y: 1260 } },
+      { father: { x:1140, y: 1110 }, mother: { x:1140, y: 1240 } },
       "Ruby"
     );
     addGen4Node(
       subject.motherRingId?.motherRingId?.fatherRingId,
       "father_3_4",
-      { father: { x: 1160, y: 1400 }, mother: { x: 1160, y: 1530 } },
+      { father: { x:1140, y: 1370 }, mother: { x:1140, y: 1500 } },
       "Crimson",
       "#90EE90",
       "#90EE90"
@@ -671,13 +715,17 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     addGen4Node(
       subject.motherRingId?.motherRingId?.motherRingId,
       "mother_3_4",
-      { father: { x: 1160, y: 1660 }, mother: { x: 1160, y: 1790 } },
+      { father: { x:1140, y: 1630 }, mother: { x:1140, y: 1760 } },
       "Scarlet",
       "#FFFFE0",
       "#FFFFE0"
     );
   }
 
+
   // Return result
   return { nodes, edges };
 };
+
+
+

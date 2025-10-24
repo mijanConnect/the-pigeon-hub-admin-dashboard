@@ -30,68 +30,98 @@ import { exportPedigreeToPDF } from "./exportPDF";
 
 const PigeonNode = ({ data }) => {
   const countryCode = data.country ? getCode(data.country) : null;
-  // Remove console logs in production
-  // console.log(data.gender);
-  // console.log(data.verified);
+ 
+  // Check if this is the subject node (generation 0)
+  const isSubject = data.generation === 0;
 
-  // Gender is already properly formatted as "Hen" or "Cock" from PedigreeData.jsx
-  // Just use the gender icon function directly
+
   const getGenderIcon = (gender) => {
     if (gender === "Cock") return "♂";
     if (gender === "Hen") return "♀";
     if (gender === "Unspecified") return "⚪";
-    return "⚪"; // default fallback
+    return "⚪";
   };
+
 
   const getGenerationColor = (generation) => {
     switch (generation) {
       case 0:
-        return "border-black"; // Subject
+        return "border-black";
       case 1:
-        return "border-black"; // Parents (2)
+        return "border-black";
       case 2:
-        return "border-black"; // Grandparents (4)
+        return "border-black";
       case 3:
-        return "border-black"; // Great-grandparents (8)
+        return "border-black";
       case 4:
-        return "border-black"; // Great-great-grandparents (16)
+        return "border-black";
       default:
         return "border-black";
     }
   };
 
+
   const getCardSize = (generation) => {
     switch (generation) {
       case 0:
-        return "w-[240px] h-[700px]"; // Subject - largest (narrower)
+        return "w-[270px] h-[680px]";
       case 1:
-        return "w-[240px] h-[700px]"; // Parents
+        return "w-[270px] h-[680px]";
       case 2:
-        return "w-[240px] h-[510px]"; // Grandparents
+        return "w-[270px] h-[508px]";
       case 3:
-        return "w-[240px] h-[250px]"; // Great-grandparents
+        return "w-[270px] h-[246px]";
       case 4:
-        return "w-[240px] h-[120px]"; // Great-great-grandparents - smallest
+        return "w-[270px] h-[114px]";
       default:
-        return "w-[240px] h-24";
+        return "w-[270px] h-[100px]";
     }
   };
+
 
   return (
     <div
       style={{ backgroundColor: data.color }}
       className={`${getCardSize(data?.generation)}
-       
-        border-b-8  border-r-8 border-black
-          text-white rounded-none transition-all duration-300 px-2 py-2
-          ${getGenerationColor(data?.generation)} border`}
+        border-b-8 border-r-10 border-black
+        text-white rounded-none transition-all duration-300 px-2 py-2
+        ${getGenerationColor(data?.generation)} border`}
     >
-      <Handle
-        type="target"
-        position={Position.Left}
-        className=" !bg-slate-400"
-      />
-      <div className="flex items-center justify-between ">
+      {/* Conditional Handles based on generation */}
+      {isSubject ? (
+        // Subject node (Gen 0): Top and Bottom handles only
+        <>
+          <Handle
+            type="source"
+            position={Position.Top}
+            id="top"
+            className="w-3 h-3 !bg-slate-400"
+          />
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            id="bottom"
+            className="w-3 h-3 !bg-slate-400"
+          />
+        </>
+      ) : (
+        // All other nodes: Left (target) and Right (source) handles
+        <>
+          <Handle
+            type="target"
+            position={Position.Left}
+            className="w-3 h-3 !bg-slate-400"
+          />
+          <Handle
+            type="source"
+            position={Position.Right}
+            className="w-3 h-3 !bg-slate-400"
+          />
+        </>
+      )}
+
+
+       <div className="flex items-center justify-between ">
         <div className="flex items-center gap-1">
           {" "}
           {countryCode && (
@@ -207,15 +237,12 @@ const PigeonNode = ({ data }) => {
             </span>
           )} */}
       </div>
-
-      <Handle
-        type="source"
-        position={Position.Right}
-        className=" !bg-slate-400"
-      />
     </div>
   );
 };
+
+
+
 
 const nodeTypes = {
   pigeonNode: PigeonNode,
@@ -738,7 +765,7 @@ export default function PigeonPedigreeChart() {
         <div className="flex gap-3">
           <Button
             onClick={exportToExcel}
-            className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px]"
+            className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 lg:px-4 xl:px-7 font-semibold text-[16px]"
             icon={<DownloadOutlined />}
           >
             Export as Excel
@@ -762,7 +789,7 @@ export default function PigeonPedigreeChart() {
           >
             <Button
               data-export-pdf
-              className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px]"
+              className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 lg:px-4 xl:px-7 font-semibold text-[16px]"
               icon={<DownloadOutlined />}
             >
               Export as PDF
@@ -775,9 +802,9 @@ export default function PigeonPedigreeChart() {
         <img
           src={logo}
           alt="The Pigeon Hub Logo"
-          width={100}
-          height={50}
-          className="absolute top-8 xl:top-16 2xl:top-20 left-0 xl:left-20 2xl:left-50"
+          width={60}
+          height={60}
+          className="w-16 h-16 xl:w-24 xl:h-24 absolute top-8 xl:top-16 2xl:top-20 left-0 xl:left-20 2xl:left-52"
         />
       </div>
       <div className="flex justify-center">
@@ -813,14 +840,14 @@ export default function PigeonPedigreeChart() {
         </div>
       </div>
       <div className="relative">
-        <div className="absolute bottom-7 xl:bottom-14 2xl:bottom-10 left-0 xl:left-20 2xl:left-20 text-black">
-          <p className="text-accent-foreground font-bold">
+        <div className="absolute bottom-20 xl:bottom-28 2xl:bottom-32 -left-5 xl:left-24 2xl:left-52 text-black">
+          <p className="text-accent-foreground text-sm xl:text-base font-bold">
             {pedigreeData?.data?.breeder?.breederName}
           </p>
           {pedigreeData?.data?.breeder?.country && (
-            <p>
-              Country:{" "}
-              <span className="text-accent-foreground font-bold">
+            <p className="text-[10px] xl:text-base">
+              Location:{" "}
+              <span className="text-accent-foreground text-[10px] xl:text-base font-bold">
                 {pedigreeData?.data?.breeder?.country}
               </span>
             </p>

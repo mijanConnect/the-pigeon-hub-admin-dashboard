@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
 import jsPDF from "jspdf";
 
-
 // Helper function to load image as base64
 const loadImageAsBase64 = async (url) => {
   return new Promise((resolve, reject) => {
@@ -107,6 +106,30 @@ export const exportPedigreeToPDF = async (
       // For now, returning first 2 letters as fallback
       if (!countryName) return null;
       return countryName.substring(0, 2).toUpperCase();
+    };
+
+    // Helper: Draw connection line from subject to parents
+    const drawConnectionFromSubject = (
+      subjectX,
+      subjectY,
+      targetX,
+      targetY,
+      isTop,
+      lineWidth = 0.3
+    ) => {
+      pdf.setDrawColor(55, 183, 195);
+      pdf.setLineWidth(lineWidth);
+
+      // Horizontal line from subject center
+      const startX = subjectX;
+      const startY = isTop ? subjectY : subjectY;
+
+      // Create smooth step connection
+      const midX = (startX + targetX) / 2;
+
+      pdf.line(startX, startY, midX, startY);
+      pdf.line(midX, startY, midX, targetY);
+      pdf.line(midX, targetY, targetX, targetY);
     };
 
     // Helper: Draw simple smooth step connection line
@@ -343,20 +366,14 @@ export const exportPedigreeToPDF = async (
 
         let achievementsX = leftMargin;
 
-        // Gold trophy icon
+        pdf.text("Results:", achievementsX, currentY);
+
         if (goldTrophyImage) {
-          pdf.addImage(
-            goldTrophyImage,
-            "PNG",
-            achievementsX,
-            currentY - 2.5,
-            3,
-            3
-          );
-          achievementsX += 4;
+          const textWidth = pdf.getTextWidth("Results:");
+          const imageX = achievementsX + textWidth + 2; 
+          pdf.addImage(goldTrophyImage, "PNG", imageX, currentY - 2.5, 3, 3);
         }
 
-        pdf.text("Results:", achievementsX, currentY);
         currentY += 3;
 
         pdf.setFontSize(5.5);
@@ -381,19 +398,21 @@ export const exportPedigreeToPDF = async (
     }
 
     // === CARD DIMENSIONS ===
-    const cardSpacing = 4;
+    const cardSpacing = generations === 4 ? 7 : generations === 5 ? 5 : 4;
 
-    const gen0 = { w: 35, h: 90 };
-    const gen1 = { w: 30, h: 90 };
+    const cardWidth = generations === 4 ? 40 : 35;
+
+    const gen0 = { w: cardWidth, h: 90 };
+    const gen1 = { w: cardWidth, h: 90 };
 
     const gen2Gap = 3;
-    const gen2 = { w: 30, h: 68.25 - (gen2Gap * 3) / 4 };
+    const gen2 = { w: cardWidth, h: 68.25 - (gen2Gap * 3) / 4 };
 
     const gen3Gap = 3;
-    const gen3 = { w: 30, h: 34.125 - (gen3Gap * 7) / 8 };
+    const gen3 = { w: cardWidth, h: 34.125 - (gen3Gap * 7) / 8 };
 
     const gen4Gap = 2;
-    const gen4 = { w: 30, h: 17.0625 - (gen4Gap * 15) / 16 };
+    const gen4 = { w: cardWidth, h: 17.0625 - (gen4Gap * 15) / 16 };
 
     const gen1Gap = 93;
 
@@ -411,6 +430,8 @@ export const exportPedigreeToPDF = async (
       await drawPigeonCard(node, startX, gen0Y, gen0.w, gen0.h);
     }
 
+    const gen0CenterX = startX + gen0.w / 2;
+
     // === GENERATION 1 (Parents) ===
     const gen1Nodes = filteredNodes
       .filter((n) => n.data.generation === 1)
@@ -419,7 +440,7 @@ export const exportPedigreeToPDF = async (
         return 1;
       });
 
-    const gen1X = startX + gen0.w + cardSpacing;
+    const gen1X = startX + gen0.w - 15 + cardSpacing;
     const gen1Positions = [];
 
     for (const [idx, node] of gen1Nodes.entries()) {
@@ -427,15 +448,32 @@ export const exportPedigreeToPDF = async (
       await drawPigeonCard(node, gen1X, y, gen1.w, gen1.h);
       gen1Positions.push({ y, centerY: y + gen1.h / 2 });
 
-      const subjectCenterY = gen0Y + gen0.h / 2;
       const nodeCenterY = y + gen1.h / 2;
-      drawSimpleConnection(
-        startX + gen0.w,
-        subjectCenterY,
-        gen1X,
-        nodeCenterY,
-        0.3
-      );
+
+      // Connect from top of subject to father (top parent)
+      if (idx === 0) {
+        // Father - connect from top of subject
+        const subjectTopY = gen0Y;
+        drawConnectionFromSubject(
+          gen0CenterX,
+          subjectTopY,
+          gen1X,
+          nodeCenterY,
+          true,
+          0.3
+        );
+      } else {
+        // Mother - connect from bottom of subject
+        const subjectBottomY = gen0Y + gen0.h;
+        drawConnectionFromSubject(
+          gen0CenterX,
+          subjectBottomY,
+          gen1X,
+          nodeCenterY,
+          false,
+          0.3
+        );
+      }
     }
 
     // === GENERATION 2 ===
@@ -525,7 +563,7 @@ export const exportPedigreeToPDF = async (
     }
 
     // === FOOTER: Breeder Info ===
-    const footerY = pageHeight - margin - 8;
+    const footerY = pageHeight - margin - 10;
     pdf.setFontSize(7);
     pdf.setFont("helvetica", "bold");
     pdf.setTextColor(0, 0, 0);
@@ -539,7 +577,7 @@ export const exportPedigreeToPDF = async (
 
     if (pedigreeData?.data?.breeder?.country) {
       pdf.text(
-        `Country: ${pedigreeData.data.breeder.country}`,
+        `Location: ${pedigreeData.data.breeder.country}`,
         margin,
         footerTextY
       );
@@ -608,7 +646,7 @@ const PedigreeExportButton = ({
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M4 16v1a3 3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+          d="M4 16v1a3 3 0 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
         />
       </svg>
       {buttonText}
