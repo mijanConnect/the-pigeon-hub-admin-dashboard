@@ -364,21 +364,6 @@ const AddNewPigeon = ({ onSave }) => {
     }
   }, [fatherOptions]);
 
-  // Resolve motherRingId to display value when motherOptions change (editing scenario)
-  // useEffect(() => {
-  //   try {
-  //     const current = form.getFieldValue("motherRingId");
-  //     if (current) {
-  //       const match = motherOptions.find(
-  //         (p) => p.ringNumber === current || p.ringNumber === String(current)
-  //       );
-  //       if (match) setMotherDisplay(match.ringNumber);
-  //     }
-  //   } catch (e) {
-  //     // ignore
-  //   }
-  // }, [motherOptions]);
-
   // NOTE: we sync breederDisplay via Form's onValuesChange below instead of subscribing.
 
   const [updatePigeon, { isLoading: isUpdating }] = useUpdatePigeonMutation();
