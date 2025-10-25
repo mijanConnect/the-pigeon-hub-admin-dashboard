@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
 import jsPDF from "jspdf";
+import { useCallback } from "react";
 
 // Helper function to load image as base64
 const loadImageAsBase64 = async (url) => {
@@ -60,8 +60,8 @@ export const exportPedigreeToPDF = async (
       goldCupImage = await loadImageAsBase64("/assets/Gold-cup.png");
       cockImage = await loadImageAsBase64("/assets/cock.png");
       goldTrophyImage = await loadImageAsBase64("/assets/Gold-tropy.png");
-      henImage = await loadImageAsBase64("/assets/hen.jpg");
-      unspecifiedImage = await loadImageAsBase64("/assets/unspeficic.jpg");
+      henImage = await loadImageAsBase64("/assets/hen.png");
+      unspecifiedImage = await loadImageAsBase64("/assets/unspeficic.png");
     } catch (error) {
       console.error("Error loading images:", error);
     }
@@ -165,6 +165,9 @@ export const exportPedigreeToPDF = async (
       return y;
     };
 
+    // Collect borders to draw at the end so borders render on top of everything
+    const bordersToDraw = [];
+
     // Helper: Draw pigeon card
     const drawPigeonCard = async (node, x, y, width, height) => {
       const data = node.data;
@@ -174,23 +177,8 @@ export const exportPedigreeToPDF = async (
       const rgb = hexToRgb(bgColor);
       pdf.setFillColor(rgb.r, rgb.g, rgb.b);
       pdf.rect(x, y, width, height, "F");
-
-      // Set draw color for borders (always black)
-      pdf.setDrawColor(0, 0, 0);
-
-      // Set line width for borders
-      const topAndLeftBorderWidth = 0.2; // Thinner borders for top and left
-      const rightAndBottomBorderWidth = 1.2; // Thicker borders for right and bottom
-
-      // Draw top and left borders (normal thickness)
-      pdf.setLineWidth(topAndLeftBorderWidth);
-      pdf.line(x, y, x + width, y); // top
-      pdf.line(x, y, x, y + height); // left
-
-      // Draw right and bottom borders (thicker)
-      pdf.setLineWidth(rightAndBottomBorderWidth);
-      pdf.line(x + width, y, x + width, y + height); // right
-      pdf.line(x, y + height, x + width, y + height); // bottom
+      // Defer drawing borders until the very end so borders appear above lines/other elements
+      bordersToDraw.push({ x, y, width, height });
 
       let currentY = y + 4;
       const leftMargin = x + 2;
@@ -370,7 +358,7 @@ export const exportPedigreeToPDF = async (
 
         if (goldTrophyImage) {
           const textWidth = pdf.getTextWidth("Results:");
-          const imageX = achievementsX + textWidth + 2; 
+          const imageX = achievementsX + textWidth + 2;
           pdf.addImage(goldTrophyImage, "PNG", imageX, currentY - 2.5, 3, 3);
         }
 
@@ -421,12 +409,22 @@ export const exportPedigreeToPDF = async (
     const startY = (pageHeight - totalGen1Height) / 2;
     const startX = margin + 5;
 
-   const gen0Nodes = filteredNodes.filter((n) => n.data.generation === 0);
+    const gen0Nodes = filteredNodes.filter((n) => n.data.generation === 0);
     const gen0Y = startY + (totalGen1Height - gen0.h) / 2;
 
+    // We'll compute positions first and draw connections first so lines are under cards.
+    const gen0Positions = [];
     if (gen0Nodes.length > 0) {
       const node = gen0Nodes[0];
-      await drawPigeonCard(node, startX, gen0Y, gen0.w, gen0.h);
+      gen0Positions.push({
+        node,
+        x: startX,
+        y: gen0Y,
+        w: gen0.w,
+        h: gen0.h,
+        centerX: startX + gen0.w / 2,
+        centerY: gen0Y + gen0.h / 2,
+      });
     }
 
     const gen0CenterX = startX + gen0.w / 2;
@@ -442,14 +440,20 @@ export const exportPedigreeToPDF = async (
     const gen1X = startX + gen0.w - 15 + cardSpacing;
     const gen1Positions = [];
 
+    // First pass: compute positions and draw connections (lines)
     for (const [idx, node] of gen1Nodes.entries()) {
       const y = startY + idx * (gen1.h + gen1Gap);
-      await drawPigeonCard(node, gen1X, y, gen1.w, gen1.h);
-      gen1Positions.push({ y, centerY: y + gen1.h / 2 });
-
       const nodeCenterY = y + gen1.h / 2;
+      gen1Positions.push({
+        node,
+        x: gen1X,
+        y,
+        w: gen1.w,
+        h: gen1.h,
+        centerY: nodeCenterY,
+      });
 
-      // Connect from top of subject to father (top parent)
+      // Connect from subject to parent (draw lines now so they'll be behind cards)
       if (idx === 0) {
         // Father - connect from top of subject
         const subjectTopY = gen0Y;
@@ -475,6 +479,16 @@ export const exportPedigreeToPDF = async (
       }
     }
 
+    // After drawing connections, draw subject and parent cards so cards render on top of lines
+    // Draw subject (gen0) card(s)
+    for (const pos of gen0Positions) {
+      await drawPigeonCard(pos.node, pos.x, pos.y, pos.w, pos.h);
+    }
+
+    // Draw gen1 cards
+    for (const pos of gen1Positions) {
+      await drawPigeonCard(pos.node, pos.x, pos.y, pos.w, pos.h);
+    }
 
     // === GENERATION 2 ===
     if (generations === null || generations > 2) {
@@ -482,6 +496,7 @@ export const exportPedigreeToPDF = async (
       const gen2X = gen1X + gen1.w + cardSpacing;
       const gen2Positions = [];
 
+      // First pass: compute positions and draw connections for gen2
       for (const [idx, node] of gen2Nodes.entries()) {
         const parentIdx = Math.floor(idx / 2);
         const isSecondChild = idx % 2 === 1;
@@ -491,8 +506,14 @@ export const exportPedigreeToPDF = async (
           const cardIndex = parentIdx * 2 + (isSecondChild ? 1 : 0);
           const y = baseY + cardIndex * (gen2.h + gen2Gap);
 
-          await drawPigeonCard(node, gen2X, y, gen2.w, gen2.h);
-          gen2Positions.push({ y, centerY: y + gen2.h / 2 });
+          gen2Positions.push({
+            node,
+            x: gen2X,
+            y,
+            w: gen2.w,
+            h: gen2.h,
+            centerY: y + gen2.h / 2,
+          });
 
           const nodeCenterY = y + gen2.h / 2;
           drawSimpleConnection(
@@ -505,21 +526,36 @@ export const exportPedigreeToPDF = async (
         }
       }
 
+      // Draw gen2 cards after connections
+      for (const pos of gen2Positions) {
+        await drawPigeonCard(pos.node, pos.x, pos.y, pos.w, pos.h);
+      }
+
       // === GENERATION 3 ===
       if (generations === null || generations > 3) {
         const gen3Nodes = filteredNodes.filter((n) => n.data.generation === 3);
         const gen3X = gen2X + gen2.w + cardSpacing;
         const gen3Positions = [];
 
+        // First pass: compute positions and draw connections for gen3 (parent-based positioning to avoid overlap)
         for (const [idx, node] of gen3Nodes.entries()) {
           const gen2ParentIdx = Math.floor(idx / 2);
+          const isSecondChild = idx % 2 === 1;
 
           if (gen2Positions[gen2ParentIdx]) {
             const baseY = startY;
-            const y = baseY + idx * (gen3.h + gen3Gap);
+            // Position relative to parent grouping (each parent produces two children)
+            const cardIndex = gen2ParentIdx * 2 + (isSecondChild ? 1 : 0);
+            const y = baseY + cardIndex * (gen3.h + gen3Gap);
 
-            await drawPigeonCard(node, gen3X, y, gen3.w, gen3.h);
-            gen3Positions.push({ y, centerY: y + gen3.h / 2 });
+            gen3Positions.push({
+              node,
+              x: gen3X,
+              y,
+              w: gen3.w,
+              h: gen3.h,
+              centerY: y + gen3.h / 2,
+            });
 
             const nodeCenterY = y + gen3.h / 2;
             drawSimpleConnection(
@@ -532,6 +568,11 @@ export const exportPedigreeToPDF = async (
           }
         }
 
+        // Draw gen3 cards after connections
+        for (const pos of gen3Positions) {
+          await drawPigeonCard(pos.node, pos.x, pos.y, pos.w, pos.h);
+        }
+
         // === GENERATION 4 ===
         if (generations === null || generations > 4) {
           const gen4Nodes = filteredNodes.filter(
@@ -539,23 +580,36 @@ export const exportPedigreeToPDF = async (
           );
           const gen4X = gen3X + gen3.w + cardSpacing;
 
+          // First pass: compute positions and draw connections for gen4 (parent-based positioning)
           for (const [idx, node] of gen4Nodes.entries()) {
             const gen3ParentIdx = Math.floor(idx / 2);
+            const isSecondChild = idx % 2 === 1;
 
             if (gen3Positions[gen3ParentIdx]) {
               const baseY = startY;
-              const y = baseY + idx * (gen4.h + gen4Gap);
+              const cardIndex = gen3ParentIdx * 2 + (isSecondChild ? 1 : 0);
+              const y = baseY + cardIndex * (gen4.h + gen4Gap);
 
-              await drawPigeonCard(node, gen4X, y, gen4.w, gen4.h);
-
-              const nodeCenterY = y + gen4.h / 2;
+              // store position
+              const pos = {
+                node,
+                x: gen4X,
+                y,
+                w: gen4.w,
+                h: gen4.h,
+                centerY: y + gen4.h / 2,
+              };
+              // draw connection
               drawSimpleConnection(
                 gen3X + gen3.w,
                 gen3Positions[gen3ParentIdx].centerY,
                 gen4X,
-                nodeCenterY,
+                pos.centerY,
                 0.3
               );
+
+              // draw card after connections (to keep cards above lines)
+              await drawPigeonCard(pos.node, pos.x, pos.y, pos.w, pos.h);
             }
           }
         }
@@ -601,6 +655,26 @@ export const exportPedigreeToPDF = async (
       pageHeight - margin + 9,
       { align: "center" }
     );
+
+    // === DRAW CARD BORDERS LAST ===
+    // Draw borders for all pigeon cards so borders are on top of connection lines / other elements
+    try {
+      for (const b of bordersToDraw) {
+        // Top and left - thinner
+        pdf.setDrawColor(0, 0, 0);
+        pdf.setLineWidth(0.2);
+        pdf.line(b.x, b.y, b.x + b.width, b.y); // top
+        pdf.line(b.x, b.y, b.x, b.y + b.height); // left
+
+        // Right and bottom - thicker
+        pdf.setLineWidth(1.2);
+        pdf.line(b.x + b.width, b.y, b.x + b.width, b.y + b.height); // right
+        pdf.line(b.x, b.y + b.height, b.x + b.width, b.y + b.height); // bottom
+      }
+    } catch (err) {
+      // If border drawing fails for any reason, continue to saving the PDF
+      console.error("Error drawing borders:", err);
+    }
 
     // === SAVE PDF ===
     const currentDate = new Date().toISOString().split("T")[0];

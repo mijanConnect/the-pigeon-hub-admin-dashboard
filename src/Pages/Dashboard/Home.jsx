@@ -157,7 +157,7 @@ const Home = () => {
             <div className="bg-white border border-primary rounded-lg flex items-start p-6">
               <div className="flex flex-col items-baseline">
                 <h2 className="text-start text-[16px] font-semibold mb-1">
-                  Total Pigeon
+                  Total Pigeons
                 </h2>
                 <h3 className="text-secondary text-[24px] text-center font-semibold flex items-center gap-3">
                   <img src={PigeonIcon} alt="Logo" /> {stats?.totalPigeons || 0}
@@ -169,7 +169,7 @@ const Home = () => {
             <div className="bg-white border border-primary rounded-lg flex items-start p-6">
               <div className="flex flex-col items-baseline">
                 <h2 className="text-start text-[16px] font-semibold mb-1">
-                  Verified Pigeon
+                  Verified Pigeons
                 </h2>
                 <h3 className="text-secondary text-[24px] text-center font-semibold flex items-center gap-3">
                   <img src={VerifyIcon} alt="Logo" />{" "}
@@ -182,7 +182,7 @@ const Home = () => {
             <div className="bg-white border border-primary rounded-lg flex items-start p-6">
               <div className="flex flex-col items-baseline">
                 <h2 className="text-start text-[16px] font-semibold mb-1">
-                  Iconic Pigeon
+                  Iconic Pigeons
                 </h2>
                 <h3 className="text-secondary text-[24px] text-center font-semibold flex items-center gap-3">
                   <img src={AwardIcon} alt="Logo" /> {stats?.iconPigeons || 0}

@@ -1521,10 +1521,10 @@ const AddNewPigeon = ({ onSave }) => {
               </div>
             </div>
 
-            {/* ===== RACE RESULTS ===== */}
+            {/* ===== PIGEON RESULTS ===== */}
             <div>
               <Form.Item
-                label="Pigeon Result"
+                label="Pigeon Results"
                 name="addresults"
                 className="custom-form-item-ant"
               >
