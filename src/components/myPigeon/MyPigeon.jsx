@@ -521,7 +521,7 @@ const MyPigeon = () => {
             <div className="flex flex-col">
               <label className="mb-1 text-gray-300">Search</label>
               <Input
-                placeholder="Search..."
+                placeholder="Search"
                 className="custom-input-ant custom-input-ant-table"
                 value={filters.search}
                 onChange={(e) => handleFilterChange("search", e.target.value)}
@@ -569,6 +569,7 @@ const MyPigeon = () => {
                 <Option value="all">All</Option>
                 <Option value="Cock">Cock</Option>
                 <Option value="Hen">Hen</Option>
+                <Option value="Unspecified">Unspecified</Option>
               </Select>
             </div>
           </Col>

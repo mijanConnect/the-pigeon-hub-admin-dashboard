@@ -118,7 +118,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       icon: renderIcon(SubscriptionManagement, "/subscription"),
       label: (
         <Link to="/subscription">
-          {collapsed ? "" : "Subscription Package"}
+          {collapsed ? "" : "Subscription Packages"}
         </Link>
       ),
     },

@@ -214,6 +214,12 @@ const AddNewPigeon = ({ onSave }) => {
       // show mother ring in the input (keep typed value if user entered)
       if (pigeonData.motherRingId) {
         setMotherDisplay(pigeonData.motherRingId?.ringNumber || "");
+        // ensure the selected preview box shows on edit (mirror father behavior)
+        const maybeMother =
+          typeof pigeonData.motherRingId === "object"
+            ? pigeonData.motherRingId
+            : { ringNumber: pigeonData.motherRingId, name: "" };
+        setMotherSelected(maybeMother);
       }
 
       // Set iconic enabled state based on existing data
@@ -338,7 +344,7 @@ const AddNewPigeon = ({ onSave }) => {
     } catch (e) {
       // ignore
     }
-  }, [fatherOptions]);
+  }, [motherOptions]);
 
   // Resolve motherRingId to display value when motherOptions change (editing scenario)
   useEffect(() => {
@@ -348,12 +354,30 @@ const AddNewPigeon = ({ onSave }) => {
         const match = motherOptions.find(
           (p) => p.ringNumber === current || p.ringNumber === String(current)
         );
-        if (match) setMotherDisplay(match.ringNumber);
+        if (match) {
+          setMotherDisplay(match.ringNumber);
+          setMotherSelected(match);
+        }
       }
     } catch (e) {
       // ignore
     }
-  }, [motherOptions]);
+  }, [fatherOptions]);
+
+  // Resolve motherRingId to display value when motherOptions change (editing scenario)
+  // useEffect(() => {
+  //   try {
+  //     const current = form.getFieldValue("motherRingId");
+  //     if (current) {
+  //       const match = motherOptions.find(
+  //         (p) => p.ringNumber === current || p.ringNumber === String(current)
+  //       );
+  //       if (match) setMotherDisplay(match.ringNumber);
+  //     }
+  //   } catch (e) {
+  //     // ignore
+  //   }
+  // }, [motherOptions]);
 
   // NOTE: we sync breederDisplay via Form's onValuesChange below instead of subscribing.
 
@@ -1200,8 +1224,89 @@ const AddNewPigeon = ({ onSave }) => {
                 )}
               </div>
 
-              {/* Mother */}
               <div className="w-full">
+                <Form.Item
+                  label="Mother Ring Number"
+                  name="motherRingId"
+                  className="custom-form-item-ant-select"
+                >
+                  <AutoComplete
+                    options={motherOptionsFiltered.map((p) => ({
+                      value: p.ringNumber,
+                      label: `${p.ringNumber} (${p.name || "Unknown"})`,
+                      data: p,
+                    }))}
+                    placeholder="Search by Mother Ring No. or Name"
+                    className="custom-select-ant-modal"
+                    onSearch={setMotherSearch}
+                    value={motherDisplay}
+                    filterOption={(inputValue, option) => {
+                      const q = String(inputValue).toLowerCase();
+                      const ring = String(option.value || "").toLowerCase();
+                      const label = String(option.label || "").toLowerCase();
+                      // match ring number or name
+                      return ring.includes(q) || label.includes(q);
+                    }}
+                    onSelect={(value, option) => {
+                      // when selecting suggestion, store selected ring number and selected pigeon data
+                      form.setFieldsValue({ motherRingId: value });
+                      setMotherDisplay(value);
+                      // option may include the original data under option.data
+                      setMotherSelected(
+                        option?.data ||
+                          motherOptions.find(
+                            (p) => String(p.ringNumber) === String(value)
+                          ) ||
+                          null
+                      );
+                    }}
+                    onChange={(val) => {
+                      // keep typed value in field and form
+                      form.setFieldsValue({ motherRingId: val });
+                      setMotherDisplay(val);
+                      // clear selected when user types a custom value
+                      setMotherSelected(null);
+                    }}
+                    onBlur={() => {
+                      try {
+                        const current = form.getFieldValue("motherRingId");
+                        if (current && typeof current === "string")
+                          setMotherDisplay(current);
+                      } catch (e) {
+                        // ignore
+                      }
+                    }}
+                    allowClear
+                    onClear={() => {
+                      form.setFieldsValue({ motherRingId: undefined });
+                      setMotherDisplay("");
+                      setMotherSelected(null);
+                    }}
+                  />
+                </Form.Item>
+                <p className="text-gray-400 font-normal text-[12px] pt-1">
+                  Enter a part of the ring or part of the name to search for the
+                  Corresponding Pigeon
+                </p>
+                {motherSelected && (
+                  <div className="mt-2 p-2 bg-gray-50 border rounded text-sm">
+                    {/* <strong>Selected Mother:</strong> */}
+                    <div>
+                      <div className="flex gap-1">
+                        <p className="font-semibold">Ring Number:</p>
+                        <p>{motherSelected.ringNumber}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <p className="font-semibold">Name:</p>
+                        <p>{motherSelected.name || "Unknown"}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Mother */}
+              {/* <div className="w-full">
                 <Form.Item
                   label="Mother Ring Number"
                   name="motherRingId"
@@ -1269,7 +1374,7 @@ const AddNewPigeon = ({ onSave }) => {
                     </div>
                   </div>
                 )}
-              </div>
+              </div> */}
             </div>
           </div>
 

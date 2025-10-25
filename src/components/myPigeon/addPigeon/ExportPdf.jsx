@@ -308,11 +308,11 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
         // Table setup
         const colWidths = {
           name: 28,
-          type: 22,
-          ring: 26,
+          type: 26,
+          ring: 22,
           year: 16,
           breeder: 16,
-          racer: 16,
+          racer: 18,
           father: 18,
           mother: 18,
           gender: 16,
@@ -329,7 +329,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
 
         pdf.text("Name", xPos + 1, yPosition);
         xPos += colWidths.name;
-        pdf.text("Type", xPos + 1, yPosition);
+        pdf.text("Siblings Type", xPos + 1, yPosition);
         xPos += colWidths.type;
         pdf.text("Ring Number", xPos + 1, yPosition);
         xPos += colWidths.ring;
@@ -337,7 +337,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
         xPos += colWidths.year;
         pdf.text("Breeder", xPos + 1, yPosition);
         xPos += colWidths.breeder;
-        pdf.text("Racer", xPos + 1, yPosition);
+        pdf.text("Racing Rating", xPos + 1, yPosition);
         xPos += colWidths.racer;
         pdf.text("Father", xPos + 1, yPosition);
         xPos += colWidths.father;
@@ -397,7 +397,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
           );
           xPos += colWidths.breeder;
           pdf.text(
-            truncate(sibling.racerRating, colWidths.racer),
+            truncate(sibling.racingRating, colWidths.racer),
             xPos + 1,
             rowY
           );
