@@ -453,7 +453,7 @@ const ViewPigeon = () => {
               <div className="flex flex-col md:flex-row gap-6 mb-4">
                 <div className="w-full">
                   <p className="font-bold mb-2 text-primary">
-                    Father Information
+                    Father's Information
                   </p>
 
                   {/* Father Information */}
@@ -475,7 +475,7 @@ const ViewPigeon = () => {
 
                 <div className="w-full">
                   <p className="font-bold mb-2 text-primary">
-                    Mother Information
+                    Mother's Information
                   </p>
 
                   {/* Mother Information */}
@@ -632,7 +632,7 @@ const ViewPigeon = () => {
               {siblingsData?.length > 0 && (
                 <>
                   <h3 className="font-bold text-[20px] text-primary mt-6 mb-1">
-                    Siblings Information
+                    Sibling Information
                   </h3>
                   <div className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar">
                     <div className="border rounded-lg shadow-md bg-gray-50">

@@ -1,35 +1,9 @@
-// import React from "react";
-// import { Form } from "antd";
-
-// const FeaturedInput = ({ value = [] }) => {
-//   return (
-//     <Form.List name="features" initialValue={[""]}>
-//       {() => (
-//         <ul className="list-disc pl-5 space-y-2 text-gray-700">
-//           {value.length > 0 ? (
-//             value.map((item, index) => (
-//               <li key={index} className="text-base">
-//                 {item || "—"}
-//               </li>
-//             ))
-//           ) : (
-//             <li className="text-gray-400 italic">No features added</li>
-//           )}
-//         </ul>
-//       )}
-//     </Form.List>
-//   );
-// };
-
-// export default FeaturedInput;
-
-import React from "react";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Form, Input } from "antd";
 
 const FeaturedInput = ({ value = [], onChange }) => {
   return (
-    <Form.List name="features" initialValue={["", ""]}>
+    <Form.List name="features" initialValue={value}>
       {(fields, { add, remove }) => (
         <>
           {fields.map((field, index) => (
@@ -41,7 +15,7 @@ const FeaturedInput = ({ value = [], onChange }) => {
                 rules={[{ required: true, message: "Feature is required" }]}
               >
                 <Input
-                  placeholder="Feature name"
+                  placeholder="Feature Name"
                   className="w-full custom-input-ant-modal"
                   value={value[index] || ""}
                   onChange={(e) => {
@@ -56,9 +30,10 @@ const FeaturedInput = ({ value = [], onChange }) => {
                 <MinusCircleOutlined
                   className="text-red-500 text-lg cursor-pointer mt-3"
                   onClick={() => {
+                    // remove from form list first, then update external value
+                    remove(field.name);
                     const newValues = value.filter((_, i) => i !== index);
                     onChange(newValues);
-                    remove(field.name);
                   }}
                 />
               )}
@@ -69,8 +44,9 @@ const FeaturedInput = ({ value = [], onChange }) => {
             <Button
               type="dashed"
               onClick={() => {
-                onChange([...value, ""]);
+                // add to form list, then update external value once
                 add();
+                onChange([...value, ""]);
               }}
               icon={<PlusOutlined />}
               className="w-full mb-[2px]"

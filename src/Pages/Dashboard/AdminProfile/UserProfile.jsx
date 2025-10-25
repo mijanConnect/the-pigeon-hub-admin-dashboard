@@ -177,7 +177,7 @@ const UserProfile = () => {
             {/* Username */}
             <Form.Item
               name="username"
-              label="Full Name"
+              label="Name"
               style={{ marginBottom: 0 }}
               rules={[
                 { required: true, message: "Please enter your username" },

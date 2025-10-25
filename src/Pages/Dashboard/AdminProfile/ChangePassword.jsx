@@ -106,7 +106,7 @@ const ChangePassword = () => {
           <Form.Item
             style={{ marginBottom: "40px" }}
             name="confirm_password"
-            label={<p style={{ display: "block" }}>Re-Type Password</p>}
+            label={<p style={{ display: "block" }}>Confirm Password</p>}
             dependencies={["new_password"]}
             hasFeedback
             rules={[

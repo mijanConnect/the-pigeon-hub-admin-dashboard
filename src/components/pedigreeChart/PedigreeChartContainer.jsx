@@ -27,14 +27,14 @@ import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedig
 import Spinner from "../common/Spinner";
 import { convertBackendToExistingFormat } from "./PedigreeData";
 import { exportPedigreeToPDF } from "./ExportPDF";
+import SpinnerCustom from "../../Pages/Dashboard/Spinner/SpinnerCustom";
 // import { exportPedigreeToPDF } from "./exportPDF";
 
 const PigeonNode = ({ data }) => {
   const countryCode = data.country ? getCode(data.country) : null;
- 
+
   // Check if this is the subject node (generation 0)
   const isSubject = data.generation === 0;
-
 
   const getGenderIcon = (gender) => {
     if (gender === "Cock") return "♂";
@@ -42,7 +42,6 @@ const PigeonNode = ({ data }) => {
     if (gender === "Unspecified") return "⛔";
     return "⛔";
   };
-
 
   const getGenerationColor = (generation) => {
     switch (generation) {
@@ -61,7 +60,6 @@ const PigeonNode = ({ data }) => {
     }
   };
 
-
   const getCardSize = (generation) => {
     switch (generation) {
       case 0:
@@ -78,7 +76,6 @@ const PigeonNode = ({ data }) => {
         return "w-[270px] h-[100px]";
     }
   };
-
 
   return (
     <div
@@ -121,8 +118,7 @@ const PigeonNode = ({ data }) => {
         </>
       )}
 
-
-       <div className="flex items-center justify-between ">
+      <div className="flex items-center justify-between ">
         <div className="flex items-center gap-1">
           {" "}
           {countryCode && (
@@ -241,9 +237,6 @@ const PigeonNode = ({ data }) => {
     </div>
   );
 };
-
-
-
 
 const nodeTypes = {
   pigeonNode: PigeonNode,
@@ -740,12 +733,7 @@ export default function PigeonPedigreeChart() {
 
   const defaultViewport = { x: 0, y: 0, zoom: 0.7 };
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center h-screen w-full">
-        <Spinner />
-      </div>
-    );
+  if (isLoading) return <SpinnerCustom />;
 
   // if (isLoadingProfile) return <Spinner />;
 
@@ -769,19 +757,19 @@ export default function PigeonPedigreeChart() {
             className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 lg:px-4 xl:px-7 font-semibold text-[16px]"
             icon={<DownloadOutlined />}
           >
-            Export as Excel
+            Export to Excel
           </Button>
           <Dropdown
             menu={{
               items: [
                 {
                   key: "4gen",
-                  label: "Export as PDF (4Gen)",
+                  label: "Export to PDF (4Gen)",
                   onClick: async () => exportToPDFWithGenerations(4),
                 },
                 {
                   key: "5gen",
-                  label: "Export as PDF (5Gen)",
+                  label: "Export to PDF (5Gen)",
                   onClick: async () => exportToPDFWithGenerations(5),
                 },
               ],
@@ -793,7 +781,7 @@ export default function PigeonPedigreeChart() {
               className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 lg:px-4 xl:px-7 font-semibold text-[16px]"
               icon={<DownloadOutlined />}
             >
-              Export as PDF
+              Export to PDF
             </Button>
           </Dropdown>
         </div>

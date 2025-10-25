@@ -103,7 +103,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       key: "/verify-breeder",
       icon: renderIcon(Verified, "/verify-breeder"),
       label: (
-        <Link to="/verify-breeder">{collapsed ? "" : "Verify Breeder"}</Link>
+        <Link to="/verify-breeder">{collapsed ? "" : "Verify Breeders"}</Link>
       ),
     },
     {

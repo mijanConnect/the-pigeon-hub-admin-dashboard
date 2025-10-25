@@ -695,7 +695,7 @@ const PedigreeExportButton = ({
   edges,
   pedigreeData,
   generations = null,
-  buttonText = "Export as PDF",
+  buttonText = "Export to PDF",
 }) => {
   const handleExport = useCallback(async () => {
     try {

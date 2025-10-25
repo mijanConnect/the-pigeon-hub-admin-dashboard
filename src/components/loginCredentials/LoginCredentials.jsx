@@ -518,11 +518,30 @@ const LoginCredentials = () => {
                 <Form.Item name="pageAccess" label="Page Access Control">
                   <Checkbox.Group className="custom-checkbox-ant-modal">
                     <Row>
-                      {pageAccessOptions.map((page) => (
-                        <Col span={8} key={page}>
-                          <Checkbox value={page}>{page}</Checkbox>
-                        </Col>
-                      ))}
+                      <Col span={24}>
+                        <Checkbox value="overview">Dashboard Overview</Checkbox>
+                      </Col>
+                      <Col span={24}>
+                        <Checkbox value="pigeon">My Pigeons</Checkbox>
+                      </Col>
+                      <Col span={24}>
+                        <Checkbox value="breeder">Verify Breeders</Checkbox>
+                      </Col>
+                      <Col span={24}>
+                        <Checkbox value="package">
+                          Subscription Packages
+                        </Checkbox>
+                      </Col>
+                      <Col span={24}>
+                        <Checkbox value="userManagement">
+                          User Management
+                        </Checkbox>
+                      </Col>
+                      <Col span={24}>
+                        <Checkbox value="analytics">
+                          Analytics & Reports
+                        </Checkbox>
+                      </Col>
                     </Row>
                   </Checkbox.Group>
                 </Form.Item>
@@ -559,7 +578,7 @@ const LoginCredentials = () => {
           <Form.Item
             name="roleName"
             label="Role Name"
-            rules={[{ required: true, message: "Please enter role name" }]}
+            rules={[{ required: true, message: "Please enter Role Name" }]}
             className="custom-form-item-ant"
           >
             <Input
@@ -600,7 +619,7 @@ const LoginCredentials = () => {
               <Form.Item
                 name="name"
                 label="Name"
-                rules={[{ required: true, message: "Please enter name" }]}
+                rules={[{ required: true, message: "Please enter Name" }]}
                 className="custom-form-item-ant"
               >
                 <Input
@@ -614,7 +633,7 @@ const LoginCredentials = () => {
                 name="email"
                 label="Email"
                 rules={[
-                  { required: true, message: "Please enter email" },
+                  { required: true, message: "Please enter Email" },
                   {
                     pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                     message: "Please enter a valid email address",
@@ -633,7 +652,7 @@ const LoginCredentials = () => {
               <Form.Item
                 name="role"
                 label="Role"
-                rules={[{ required: true, message: "Please select a role" }]}
+                rules={[{ required: true, message: "Please select a Role" }]}
                 className="custom-form-item-ant-select"
               >
                 <Select
@@ -652,11 +671,13 @@ const LoginCredentials = () => {
               <Form.Item
                 name="phone"
                 label="Phone Number"
-                rules={[{ required: true, message: "Please enter phone" }]}
+                rules={[
+                  { required: true, message: "Please enter Phone Number" },
+                ]}
                 className="custom-form-item-ant"
               >
                 <Input
-                  placeholder="Enter Phone"
+                  placeholder="Enter Phone Number"
                   className="custom-input-ant-modal"
                 />
               </Form.Item>
@@ -666,7 +687,7 @@ const LoginCredentials = () => {
                 name="password"
                 label="Password"
                 rules={[
-                  { required: true, message: "Please enter password" },
+                  { required: true, message: "Please enter Password" },
                   {
                     min: 8,
                     message: "Password must be at least 8 characters long",
@@ -695,11 +716,26 @@ const LoginCredentials = () => {
               >
                 <Checkbox.Group className="custom-checkbox-ant-modal">
                   <Row>
-                    {pageAccessOptions.map((page) => (
-                      <Col span={24} key={page}>
-                        <Checkbox value={page}>{page}</Checkbox>
-                      </Col>
-                    ))}
+                    <Col span={24}>
+                      <Checkbox value="overview">Dashboard Overview</Checkbox>
+                    </Col>
+                    <Col span={24}>
+                      <Checkbox value="pigeon">My Pigeons</Checkbox>
+                    </Col>
+                    <Col span={24}>
+                      <Checkbox value="breeder">Verify Breeders</Checkbox>
+                    </Col>
+                    <Col span={24}>
+                      <Checkbox value="package">Subscription Packages</Checkbox>
+                    </Col>
+                    <Col span={24}>
+                      <Checkbox value="userManagement">
+                        User Management
+                      </Checkbox>
+                    </Col>
+                    <Col span={24}>
+                      <Checkbox value="analytics">Analytics & Reports</Checkbox>
+                    </Col>
                   </Row>
                 </Checkbox.Group>
               </Form.Item>

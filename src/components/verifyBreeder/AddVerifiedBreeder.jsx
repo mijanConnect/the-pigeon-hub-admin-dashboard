@@ -60,7 +60,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             <Form.Item
               label="Loft Name"
               name="loftName"
-              rules={[{ required: true, message: "Please enter loft name" }]}
+              rules={[{ required: true, message: "Please enter Loft Name" }]}
               className="custom-form-item-ant"
             >
               <Input
@@ -75,7 +75,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             <Form.Item
               label="Breeder Name"
               name="breederName"
-              rules={[{ required: true, message: "Please enter breeder name" }]}
+              rules={[{ required: true, message: "Please enter Breeder Name" }]}
               className="custom-form-item-ant"
             >
               <Input
@@ -137,7 +137,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
           {/* Email */}
           <Col xs={24} sm={12} md={12}>
             <Form.Item
-              label="E-mail"
+              label="Email"
               name="email"
               // rules={[
               //   { required: true, message: "Please enter email" },
@@ -146,7 +146,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
               className="custom-form-item-ant"
             >
               <Input
-                placeholder="Enter E-mail"
+                placeholder="Enter Email"
                 className="custom-input-ant-modal"
               />
             </Form.Item>
@@ -234,7 +234,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
           >
             <Checkbox>
               <span className="font-semibold text-[16px]">
-                Verified Breeder (Lock Data)
+                Verify Breeder (Lock Data)
               </span>
             </Checkbox>
           </Form.Item>

@@ -332,7 +332,7 @@ const PigeonPdfExport2 = () => {
         yPosition += 5;
         checkPageBreak(60);
 
-        addSectionHeader("Siblings Information", yPosition);
+        addSectionHeader("Sibling Information", yPosition);
         yPosition += 10;
 
         // Table setup

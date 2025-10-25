@@ -20,6 +20,7 @@ import { IoMdDownload } from "react-icons/io";
 import { PiDnaBold } from "react-icons/pi";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import "../myPigeon/myPigeon.responsive.css";
 import {
   useDeletePigeonMutation,
   useGetAllPigeonsQuery,
@@ -686,7 +687,7 @@ const PigeonManagement = () => {
     <div className="w-full">
       {/* Filters */}
       <div className="bg-[#333D49] rounded-lg shadow-lg border border-gray-200 mb-2 mt-6">
-        <Row gutter={[16, 16]} className="px-4 mb-4 pt-4">
+        <Row gutter={[16, 16]} className="pt-4 filters-row flex flex-wrap px-4 mb-4">
           <Col xs={24} sm={12} md={6} lg={5}>
             <div className="flex flex-col">
               <label className="mb-1 text-gray-300">Search</label>
@@ -743,26 +744,6 @@ const PigeonManagement = () => {
               </Select>
             </div>
           </Col>
-
-          {/* <Col xs={24} sm={12} md={6} lg={4}>
-            <div className="flex flex-col">
-              <label className="mb-1 text-gray-300">Color</label>
-              <Select
-                placeholder="Select Color"
-                className="custom-select-ant"
-                style={{ width: "100%" }}
-                value={filters.color}
-                onChange={(value) => handleFilterChange("color", value)}
-              >
-                <Option value="all">All</Option>
-                <Option value="White">White</Option>
-                <Option value="Red">Red</Option>
-                <Option value="Blue">Blue</Option>
-                <Option value="Green">Green</Option>
-                <Option value="Yellow">Yellow</Option>
-              </Select>
-            </div>
-          </Col> */}
 
           <Col xs={24} sm={12} md={6} lg={4}>
             <div className="flex flex-col">

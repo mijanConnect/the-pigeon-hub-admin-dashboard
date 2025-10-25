@@ -736,7 +736,7 @@ const AddNewPigeon = ({ onSave }) => {
                 </Form.Item>
 
                 <Form.Item
-                  label="Choose a Country"
+                  label="Country"
                   name="country"
                   // rules={[{ required: true, message: "Please select country" }]}
                   className="custom-form-item-ant-select"
@@ -951,7 +951,7 @@ const AddNewPigeon = ({ onSave }) => {
                 </Form.Item>
 
                 <Form.Item
-                  label="Breeder"
+                  label="Breeder Name"
                   name="breeder"
                   // rules={[{ required: true, message: "Please select a breeder" }]}
                   className="custom-form-item-ant-select"
@@ -963,7 +963,9 @@ const AddNewPigeon = ({ onSave }) => {
                       id: b._id,
                     }))}
                     placeholder={
-                      breedersLoading ? "Loading breeders..." : "Select Breeder"
+                      breedersLoading
+                        ? "Loading breeders..."
+                        : "Type or Select Breeder Name"
                     }
                     className="custom-select-ant-modal"
                     value={breederDisplay}
@@ -1101,9 +1103,7 @@ const AddNewPigeon = ({ onSave }) => {
                 >
                   <Select
                     placeholder={
-                      isIconicEnabled
-                        ? "Select Iconic Score (0-100)"
-                        : "Select Iconic Score"
+                      isIconicEnabled ? "Select Score" : "Select Score"
                     }
                     className="custom-select-ant-modal"
                     disabled={!isIconicEnabled}
@@ -1710,7 +1710,7 @@ const AddNewPigeon = ({ onSave }) => {
           loading={isAdding}
           className="bg-[#37B7C3] border border-[#37B7C3] hover:!border-[#37B7C3] text-white hover:!text-[#37B7C3]"
         >
-          Save and create another pigeon
+          Save and Create Another Pigeon
         </Button>
       </div>
     </div>

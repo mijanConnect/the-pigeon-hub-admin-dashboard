@@ -3,6 +3,7 @@ import { getCode, getNames } from "country-list";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import Swal from "sweetalert2";
+import "../myPigeon/myPigeon.responsive.css";
 import {
   useAddBreederMutation,
   useDeleteBreederMutation,
@@ -176,7 +177,7 @@ const VerifyBreeder = () => {
       },
     },
     {
-      title: "E-mail",
+      title: "Email",
       dataIndex: "email",
       key: "email",
       render: (text) => {
@@ -264,12 +265,15 @@ const VerifyBreeder = () => {
 
       {/* Filters */}
       <div className="bg-[#333D49] rounded-lg shadow-lg border border-gray-200 mb-2">
-        <Row gutter={[16, 16]} className="flex flex-wrap px-4 mb-4 mt-4">
+        <Row
+          gutter={[16, 16]}
+          className="filters-row filters-row2 flex flex-wrap px-4 mb-4 pt-4"
+        >
           <Col xs={24} sm={12} md={6} lg={5}>
             <div className="flex flex-col">
               <label className="mb-1 text-gray-300">Search</label>
               <Input
-                placeholder="Search..."
+                placeholder="Search"
                 className="custom-input-ant"
                 value={searchText}
                 onChange={(e) => {

@@ -13,7 +13,6 @@ import PigeonIcon from "../../../src/assets/pigeon.png";
 import SubscriptionIcon from "../../../src/assets/subscription.png";
 import VerifyIcon from "../../../src/assets/verify.png";
 import AwardIcon from "../../../src/assets/win.png";
-import Spinner from "../../components/common/Spinner";
 import OrderTable from "../../components/home/OrderTable";
 import { useGetOverviewStatsQuery } from "../../redux/apiSlices/dashboardSlice";
 import LineChart from "./LineChart";
@@ -115,14 +114,14 @@ const Home = () => {
         </div>
       </div> */}
 
-      <div className="flex flex-col lg:flex-row gap-6 border-primary rounded-lg">
+      <div className="flex flex-col xl:flex-row gap-6 border-primary rounded-lg">
         {/* Line Chart Section */}
-        <div className="flex-1 w-full lg:w-2/3 border border-primary rounded-lg p-6">
+        <div className="flex-1 w-full xl:w-2/3 border border-primary rounded-lg p-6">
           <LineChart />
         </div>
 
         {/* Card Section */}
-        <div className="w-full lg:w-1/3 border border-primary p-6 rounded-lg">
+        <div className="w-full xl:w-1/3 border border-primary p-6 rounded-lg">
           <div className="flex justify-between items-center mb-6 text-white">
             <h2 className="text-secondary text-[24px] font-bold">Statistics</h2>
             <div className="flex items-center gap-2 select-item-home">

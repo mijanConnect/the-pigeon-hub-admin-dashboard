@@ -302,7 +302,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
         yPosition += 5;
         checkPageBreak(60);
 
-        addSectionHeader("Siblings Information", yPosition);
+        addSectionHeader("Sibling Information", yPosition);
         yPosition += 10;
 
         // Table setup
@@ -458,7 +458,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
       className="bg-primary border border-primary text-white"
     >
       <Download className="w-4 h-4" />
-      Export PDF
+      Export to PDF
     </Button>
   );
 };
