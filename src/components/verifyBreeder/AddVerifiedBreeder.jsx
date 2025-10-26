@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
-import { Modal, Form, Input, Select, Row, Col, Button, Checkbox } from "antd";
+import { Button, Checkbox, Col, Form, Input, Modal, Row, Select } from "antd";
 import { getNames } from "country-list";
+import { useEffect } from "react";
 
 const { Option } = Select;
 
@@ -113,7 +113,6 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             <Form.Item
               label="Country"
               name="country"
-              // rules={[{ required: true, message: "Please select country" }]}
               className="custom-form-item-ant-select"
             >
               <Select
@@ -139,10 +138,12 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             <Form.Item
               label="Email"
               name="email"
-              // rules={[
-              //   { required: true, message: "Please enter email" },
-              //   { type: "email", message: "Enter a valid email" },
-              // ]}
+              rules={[
+                {
+                  type: "email",
+                  message: "Please enter a valid Email",
+                },
+              ]}
               className="custom-form-item-ant"
             >
               <Input
@@ -157,12 +158,28 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             <Form.Item
               label="Phone Number"
               name="phoneNumber"
-              // rules={[{ required: true, message: "Please enter phone number" }]}
+              rules={[
+                
+                {
+                  validator: (_, value) => {
+                    if (!value) return Promise.resolve();
+                    const digits = String(value).replace(/\D/g, "").length;
+                    // Allow 7 to 15 digits (E.164 max is 15)
+                    return digits >= 7 && digits <= 15
+                      ? Promise.resolve()
+                      : Promise.reject(
+                          new Error("Please enter a valid Phone Number")
+                        );
+                  },
+                },
+              ]}
               className="custom-form-item-ant"
             >
               <Input
                 placeholder="Enter Phone Number"
                 className="custom-input-ant-modal"
+                inputMode="tel"
+                maxLength={20}
               />
             </Form.Item>
           </Col>

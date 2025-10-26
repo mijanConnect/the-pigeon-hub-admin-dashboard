@@ -506,11 +506,27 @@ const LoginCredentials = () => {
                   name="phone"
                   label="Phone Number"
                   className="custom-form-item-ant"
-                  rules={[{ required: true, message: "Please enter phone" }]}
+                  rules={[
+                    {
+                      validator: (_, value) => {
+                        if (!value) return Promise.resolve();
+                        const digits = String(value).replace(/\D/g, "").length;
+                        // Allow 7 to 15 digits (E.164 max is 15)
+                        return digits >= 7 && digits <= 15
+                          ? Promise.resolve()
+                          : Promise.reject(
+                              new Error("Please enter a valid Phone Number")
+                            );
+                      },
+                    },
+                  ]}
+                  validateTrigger={["onChange", "onBlur"]}
                 >
                   <Input
                     placeholder="Enter Phone Number"
                     className="custom-input-ant-modal"
+                    inputMode="tel"
+                    maxLength={20}
                   />
                 </Form.Item>
               </Col>
@@ -673,12 +689,27 @@ const LoginCredentials = () => {
                 label="Phone Number"
                 rules={[
                   { required: true, message: "Please enter Phone Number" },
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+                      const digits = String(value).replace(/\D/g, "").length;
+                      // Allow 7 to 15 digits (E.164 max is 15)
+                      return digits >= 7 && digits <= 15
+                        ? Promise.resolve()
+                        : Promise.reject(
+                            new Error("Please enter a valid Phone Number")
+                          );
+                    },
+                  },
                 ]}
+                validateTrigger={["onChange", "onBlur"]}
                 className="custom-form-item-ant"
               >
                 <Input
                   placeholder="Enter Phone Number"
                   className="custom-input-ant-modal"
+                  inputMode="tel"
+                  maxLength={20}
                 />
               </Form.Item>
             </Col>
