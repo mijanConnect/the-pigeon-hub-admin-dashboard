@@ -912,3 +912,7 @@ select {
 .profile-avatar-pigeon {
   border-radius: 8px !important;
 }
+
+.ant-select-clear {
+  top: 50% !important;
+}

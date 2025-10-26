@@ -93,13 +93,13 @@ const PigeonNode = ({ data }) => {
             type="source"
             position={Position.Top}
             id="top"
-            className="w-3 h-3 !bg-slate-400"
+            className="w-1 h-1 !bg-slate-400"
           />
           <Handle
             type="source"
             position={Position.Bottom}
             id="bottom"
-            className="w-3 h-3 !bg-slate-400"
+            className="w-1 h-1 !bg-slate-400"
           />
         </>
       ) : (
@@ -108,12 +108,12 @@ const PigeonNode = ({ data }) => {
           <Handle
             type="target"
             position={Position.Left}
-            className="w-3 h-3 !bg-slate-400"
+            className="w-1 h-1 !bg-slate-400"
           />
           <Handle
             type="source"
             position={Position.Right}
-            className="w-3 h-3 !bg-slate-400"
+            className="w-1 h-1 !bg-slate-400"
           />
         </>
       )}
@@ -143,7 +143,7 @@ const PigeonNode = ({ data }) => {
         </div>
         <div className="flex items-center gap-1">
           {data.gender && (
-            <span className="text-black text-xl">
+            <span className="text-black text-lg">
               {getGenderIcon(data.gender)}
             </span>
           )}
