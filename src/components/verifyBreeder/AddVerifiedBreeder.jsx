@@ -75,7 +75,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
             <Form.Item
               label="Breeder Name"
               name="breederName"
-              rules={[{ required: true, message: "Please enter Breeder Name" }]}
+              // rules={[{ required: true, message: "Please enter Breeder Name" }]}
               className="custom-form-item-ant"
             >
               <Input
@@ -159,7 +159,6 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
               label="Phone Number"
               name="phoneNumber"
               rules={[
-                
                 {
                   validator: (_, value) => {
                     if (!value) return Promise.resolve();

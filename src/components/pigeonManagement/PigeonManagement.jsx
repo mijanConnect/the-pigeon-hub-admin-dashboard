@@ -39,7 +39,7 @@ const PigeonManagement = () => {
   const printRef = useRef(null);
   const { id } = useParams();
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize] = useState(10000);
   const [filters, setFilters] = useState({
     search: "",
     country: "all",

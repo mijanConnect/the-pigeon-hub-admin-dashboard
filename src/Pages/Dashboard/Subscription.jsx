@@ -9,19 +9,17 @@ import {
   message,
   Modal,
   Row,
-  Select,
 } from "antd";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import FeaturedInput from "../../components/common/PackageFeatureInput";
-import Spinner from "../../components/common/Spinner";
-import SpinnerCustom from "../Dashboard/Spinner/SpinnerCustom";
 import {
   useAddPackageMutation,
   useDeletePackageMutation,
   useGetPackagesQuery,
   useUpdatePackageMutation,
 } from "../../redux/apiSlices/packageSlice";
+import SpinnerCustom from "../Dashboard/Spinner/SpinnerCustom";
 
 const PackagesPlans = () => {
   // Local state (no hardcoded Freebie)
@@ -331,7 +329,7 @@ const PackagesPlans = () => {
             className="mb-0"
           >
             <Row gutter={[30, 20]}>
-              <Col xs={24} sm={12} md={12}>
+              {/* <Col xs={24} sm={12} md={12}>
                 <Form.Item
                   name="title"
                   label="Package Title"
@@ -342,8 +340,8 @@ const PackagesPlans = () => {
                     placeholder="Select Package"
                     className="custom-select-ant-modal"
                   >
-                    <Select.Option value="Free Trial -1 Month">
-                      Free Trial -1 Month
+                    <Select.Option value="Free Trial – 1 month​">
+                      Free Trial – 1 month​
                     </Select.Option>
                     <Select.Option value="Monthly Plan">
                       Monthly Plan
@@ -352,6 +350,19 @@ const PackagesPlans = () => {
                       Yearly Plan (Best Value)
                     </Select.Option>
                   </Select>
+                </Form.Item>
+              </Col> */}
+              <Col xs={24} sm={12} md={12}>
+                <Form.Item
+                  name="title"
+                  label="Package Title"
+                  rules={[{ required: true, message: "Title is required" }]}
+                  className="custom-form-item-ant"
+                >
+                  <Input
+                    placeholder="Enter package title"
+                    className="custom-input-ant-modal"
+                  />
                 </Form.Item>
               </Col>
 

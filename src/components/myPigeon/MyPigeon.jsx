@@ -58,7 +58,7 @@ const MyPigeon = () => {
   };
 
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize] = useState(10000);
   const countries = getNames();
 
   const showEditModal = (record) => {
@@ -172,6 +172,19 @@ const MyPigeon = () => {
     }
   };
 
+  // Helper to detect whether a stored value or resolved URL points to a PDF
+  const isPdfFile = (storedValue, resolvedUrl) => {
+    try {
+      const v = storedValue ? String(storedValue).toLowerCase() : "";
+      const u = resolvedUrl ? String(resolvedUrl).toLowerCase() : "";
+      if (v.includes(".pdf")) return true;
+      if (u.includes(".pdf")) return true;
+      return false;
+    } catch (e) {
+      return false;
+    }
+  };
+
   const handleDownload = async (record, key) => {
     // pick the appropriate field or generate content
     switch (key) {
@@ -179,34 +192,50 @@ const MyPigeon = () => {
         if (!record.pedigreePhoto) {
           return message.error("Pedigree photo not available for this pigeon");
         }
-        return await downloadUrl(
-          getImageUrl(record.pedigreePhoto),
-          `${record.ringNumber || record._id}-pedigree.jpg`
-        );
+        {
+          const url = getImageUrl(record.pedigreePhoto);
+          const ext = isPdfFile(record.pedigreePhoto, url) ? "pdf" : "jpg";
+          return await downloadUrl(
+            url,
+            `${record.ringNumber || record._id}-pedigree.${ext}`
+          );
+        }
       case "ownership":
         if (!record.ownershipPhoto) {
           return message.error("Ownership card not available for this pigeon");
         }
-        return await downloadUrl(
-          getImageUrl(record.ownershipPhoto),
-          `${record.ringNumber || record._id}-ownership.jpg`
-        );
+        {
+          const url = getImageUrl(record.ownershipPhoto);
+          const ext = isPdfFile(record.ownershipPhoto, url) ? "pdf" : "jpg";
+          return await downloadUrl(
+            url,
+            `${record.ringNumber || record._id}-ownership.${ext}`
+          );
+        }
       case "dna":
         if (!record.DNAPhoto) {
           return message.error("DNA certificate not available for this pigeon");
         }
-        return await downloadUrl(
-          getImageUrl(record.DNAPhoto),
-          `${record.ringNumber || record._id}-dna.jpg`
-        );
+        {
+          const url = getImageUrl(record.DNAPhoto);
+          const ext = isPdfFile(record.DNAPhoto, url) ? "pdf" : "jpg";
+          return await downloadUrl(
+            url,
+            `${record.ringNumber || record._id}-dna.${ext}`
+          );
+        }
       case "photo":
         if (!record.pigeonPhoto) {
           return message.error("Pigeon photo not available");
         }
-        return await downloadUrl(
-          getImageUrl(record.pigeonPhoto),
-          `${record.ringNumber || record._id}-photo.jpg`
-        );
+        {
+          const url = getImageUrl(record.pigeonPhoto);
+          const ext = isPdfFile(record.pigeonPhoto, url) ? "pdf" : "jpg";
+          return await downloadUrl(
+            url,
+            `${record.ringNumber || record._id}-photo.${ext}`
+          );
+        }
       case "details": {
         console.log("[MyPigeon] download details requested for", record?._id);
         showPdfExportModal(record);
@@ -356,11 +385,20 @@ const MyPigeon = () => {
                     handleDownload(record, key);
                   }}
                 >
-                  <Menu.Item key="pedigree">Original pedigree</Menu.Item>
-                  <Menu.Item key="ownership">Ownership card</Menu.Item>
+                  {record.pedigreePhoto ? (
+                    <Menu.Item key="pedigree">Original pedigree</Menu.Item>
+                  ) : null}
+                  {record.ownershipPhoto ? (
+                    <Menu.Item key="ownership">Ownership card</Menu.Item>
+                  ) : null}
+                  {/* Always show details export option */}
                   <Menu.Item key="details">Pigeon details</Menu.Item>
-                  <Menu.Item key="dna">DNA certificate</Menu.Item>
-                  <Menu.Item key="photo">Pigeon photo</Menu.Item>
+                  {record.DNAPhoto ? (
+                    <Menu.Item key="dna">DNA certificate</Menu.Item>
+                  ) : null}
+                  {record.pigeonPhoto ? (
+                    <Menu.Item key="photo">Pigeon photo</Menu.Item>
+                  ) : null}
                 </Menu>
               }
               trigger={["click"]}
@@ -390,6 +428,8 @@ const MyPigeon = () => {
 
   // ref for horizontal scrolling container
   const tableRowRef = useRef(null);
+  // ref for the fixed bottom scrollbar that mirrors the table's horizontal scroll
+  const bottomScrollbarRef = useRef(null);
 
   // enable mouse and touch drag to scroll horizontally on the table container
   useEffect(() => {
@@ -398,6 +438,62 @@ const MyPigeon = () => {
 
     const cleanup = attachDragToElement(el);
     return cleanup;
+  }, [pigeons.length]);
+
+  // Sync a fixed bottom scrollbar with the table's horizontal scroll
+  useEffect(() => {
+    const scrollEl = tableRowRef.current;
+    const bottomWrap = bottomScrollbarRef.current;
+    if (!scrollEl || !bottomWrap) return;
+
+    const inner = bottomWrap.querySelector(".sync-inner");
+    if (!inner) return;
+
+    // update width and visibility
+    const update = () => {
+      try {
+        inner.style.width = `${scrollEl.scrollWidth}px`;
+        // show bottom scroller only when horizontal overflow exists
+        bottomWrap.style.display =
+          scrollEl.scrollWidth > scrollEl.clientWidth ? "block" : "none";
+      } catch (e) {
+        // ignore in environments where DOM isn't ready
+      }
+    };
+
+    update();
+
+    // Use bottomWrap as the scroll container (it is the element with overflowX:auto)
+    const onMainScroll = () => {
+      try {
+        bottomWrap.scrollLeft = scrollEl.scrollLeft;
+      } catch (e) {}
+    };
+    const onBottomScroll = () => {
+      try {
+        scrollEl.scrollLeft = bottomWrap.scrollLeft;
+      } catch (e) {}
+    };
+
+    scrollEl.addEventListener("scroll", onMainScroll);
+    bottomWrap.addEventListener("scroll", onBottomScroll);
+
+    // watch for size changes to keep widths in sync
+    let ro;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => update());
+      ro.observe(scrollEl);
+    }
+
+    // also update on window resize
+    window.addEventListener("resize", update);
+
+    return () => {
+      scrollEl.removeEventListener("scroll", onMainScroll);
+      bottomWrap.removeEventListener("scroll", onBottomScroll);
+      window.removeEventListener("resize", update);
+      if (ro) ro.disconnect();
+    };
   }, [pigeons.length]);
 
   return (
@@ -671,6 +767,26 @@ const MyPigeon = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Fixed bottom scrollbar that mirrors horizontal scroll of the table container */}
+      <div
+        ref={bottomScrollbarRef}
+        style={{
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 12,
+          overflowX: "auto",
+          overflowY: "hidden",
+          display: "none",
+          zIndex: 9999,
+          background: "transparent",
+        }}
+        className="bottom-sync-scrollbar"
+      >
+        <div className="sync-inner" style={{ height: 1 }} />
       </div>
 
       {/* View now navigates to /view-pigeon/:id route — page handles its own data fetching */}

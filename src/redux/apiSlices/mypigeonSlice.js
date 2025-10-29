@@ -159,8 +159,8 @@ const mypigeonSlice = api.injectEndpoints({
     }),
 
     getBreederNames: builder.query({
-      query: (limit = 100) => ({
-        url: `/breeder?limit=${limit}`, // ✅ adjust according to your backend route
+      query: (limit = 10000) => ({
+        url: `/breeder/verify?limit=${limit}`, // ✅ adjust according to your backend route
         method: "GET",
       }),
       transformResponse: (response) => {
@@ -168,7 +168,7 @@ const mypigeonSlice = api.injectEndpoints({
         return (
           response?.data?.breeder?.map((b) => ({
             _id: b._id,
-            breederName: b.breederName,
+            breederName: b.loftName,
           })) || []
         );
       },
@@ -191,6 +191,17 @@ const mypigeonSlice = api.injectEndpoints({
         return response?.data?.data || [];
       },
     }),
+    getFatherMother: builder.query({
+      query: (searchTerm) => ({
+        url: `/pigeon/searchAll`,
+        method: "GET",
+        params: { searchTerm },
+      }),
+      transformResponse: (response) => {
+        return response?.data || [];
+      },
+      providesTags: ["Pigeon"],
+    }),
   }),
 });
 
@@ -204,4 +215,5 @@ export const {
   useUpdatePigeonMutation, // ✅
   useDeletePigeonMutation,
   useGetBreederNamesQuery, // ✅ New hook for breeder names
+  useGetFatherMotherQuery,
 } = mypigeonSlice;

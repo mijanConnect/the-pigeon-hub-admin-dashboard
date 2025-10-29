@@ -345,6 +345,22 @@ select {
   background: transparent;
 }
 
+/* Visible fixed bottom scrollbar used to mirror table horizontal scroll */
+.bottom-sync-scrollbar {
+  -ms-overflow-style: auto; /* Edge */
+  scrollbar-width: auto; /* Firefox */
+}
+.bottom-sync-scrollbar::-webkit-scrollbar {
+  height: 12px;
+}
+.bottom-sync-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+.bottom-sync-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+}
+
 /* Make antd Upload picture-card previews fill the card and use cover */
 .custom-upload-ant .ant-upload-list-item-thumbnail {
   width: 104px; /* match antd picture-card default */
@@ -805,7 +821,7 @@ select {
 }
 
 .custom-textarea-pigeon2 {
-  height: 180px !important; /* Fixed height */
+  height: 127px !important; /* Fixed height */
   resize: none; /* Optional: Disable resizing */
 }
 
@@ -915,4 +931,17 @@ select {
 
 .ant-select-clear {
   top: 50% !important;
+}
+
+/* Pagination removed */
+.ant-pagination-prev {
+  display: none !important;
+}
+
+.ant-pagination-next {
+  display: none !important;
+}
+
+.ant-pagination-item {
+  display: none !important;
 }

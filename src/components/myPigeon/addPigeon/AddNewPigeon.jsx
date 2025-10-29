@@ -23,7 +23,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   useAddPigeonMutation,
   useGetBreederNamesQuery,
-  useGetPigeonSearchQuery,
+  useGetFatherMotherQuery,
   useGetSinglePigeonQuery,
   useUpdatePigeonMutation,
 } from "../../../redux/apiSlices/mypigeonSlice";
@@ -81,13 +81,14 @@ const AddNewPigeon = ({ onSave }) => {
   const [fatherSearch, setFatherSearch] = useState("");
   const [motherSearch, setMotherSearch] = useState("");
   const { data: fatherOptions = [], isLoading: fatherLoading } =
-    useGetPigeonSearchQuery(fatherSearch, { skip: !fatherSearch });
+    useGetFatherMotherQuery(fatherSearch, { skip: !fatherSearch });
   const { data: motherOptions = [], isLoading: motherLoading } =
-    useGetPigeonSearchQuery(motherSearch, { skip: !motherSearch });
+    useGetFatherMotherQuery(motherSearch, { skip: !motherSearch });
 
   // Filter parent options by gender client-side to ensure only appropriate pigeons show
   const fatherOptionsFiltered = (fatherOptions || []).filter((p) => {
     const g = (p.gender || "").toString().toLowerCase();
+    console.log(p.verified);
     return g === "cock"; // only show cocks for father
   });
 
@@ -473,8 +474,31 @@ const AddNewPigeon = ({ onSave }) => {
       });
       //   onCancel();
     } catch (err) {
+      // If validation failed, scroll to the first invalid field and let AntD show field errors.
+      if (
+        err &&
+        err.errorFields &&
+        Array.isArray(err.errorFields) &&
+        err.errorFields.length > 0
+      ) {
+        const first = err.errorFields[0];
+        const namePath = first && first.name ? first.name : null;
+        if (namePath) {
+          try {
+            form.scrollToField(namePath);
+          } catch (e) {
+            // ignore scroll errors
+          }
+        }
+        // don't log the full validation object to console; field errors are visible on the form
+        return;
+      }
+
+      // Non-validation error: log and show message
       console.error(err);
-      message.error(err?.data?.message || err.message);
+      message.error(
+        err?.data?.message || err.message || "Something went wrong"
+      );
     }
   };
 
@@ -570,6 +594,10 @@ const AddNewPigeon = ({ onSave }) => {
       setBreederDisplay("");
       setValue("");
       setValue2("");
+      // Scroll to top so the form is visible for the next entry
+      if (typeof window !== "undefined" && window.scrollTo) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
       // clear editing context if any
       try {
         // if URL had an id param, don't navigate; just clear local editing state
@@ -578,8 +606,30 @@ const AddNewPigeon = ({ onSave }) => {
         // ignore
       }
     } catch (err) {
+      // If validation failed, scroll to the first invalid field and let AntD show field errors.
+      if (
+        err &&
+        err.errorFields &&
+        Array.isArray(err.errorFields) &&
+        err.errorFields.length > 0
+      ) {
+        const first = err.errorFields[0];
+        const namePath = first && first.name ? first.name : null;
+        if (namePath) {
+          try {
+            form.scrollToField(namePath);
+          } catch (e) {
+            // ignore scroll errors
+          }
+        }
+        return;
+      }
+
+      // Non-validation error: log and show message
       console.error(err);
-      message.error(err?.data?.message || err.message);
+      message.error(
+        err?.data?.message || err.message || "Something went wrong"
+      );
     }
   };
 
@@ -617,39 +667,44 @@ const AddNewPigeon = ({ onSave }) => {
     fileList: fileLists[key],
     showUploadList: { showPreviewIcon: true, showRemoveIcon: true },
     onPreview: async (file) => {
-      // Open preview in Ant Design's built-in preview modal
-      let src = file.url;
-      if (!src) {
-        src = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file.originFileObj);
-          reader.onload = () => resolve(reader.result);
-        });
+      // Open file in a new tab. Works for images and PDFs.
+      let src = file.url || file.thumbUrl;
+      if (!src && file.originFileObj) {
+        src = URL.createObjectURL(file.originFileObj);
       }
-      const image = new Image();
-      image.src = src;
-      const imgWindow = window.open(src);
-      imgWindow?.document.write(image.outerHTML);
+      if (src) {
+        window.open(src, "_blank");
+      } else {
+        message.error("Preview not available");
+      }
     },
     beforeUpload: (file) => {
       // Validate file type
-      const allowedTypes = [
+      const imageTypes = [
         "image/jpeg",
         "image/png",
         "image/jpg",
         "image/heic",
         "image/heif",
       ];
+      // Allow PDFs for pedigree and DNA uploads
+      const allowPdf = key === "pedigreePhoto" || key === "DNAPhoto";
+      const allowedTypes = allowPdf
+        ? [...imageTypes, "application/pdf"]
+        : imageTypes;
       const maxBytes = 10 * 1024 * 1024; // 10 MB
 
       if (!allowedTypes.includes(file.type)) {
-        message.error("Only JPEG, JPG, PNG or HEIC/HEIF files are allowed.");
+        const msg = allowPdf
+          ? "Only JPEG, JPG, PNG, HEIC/HEIF or PDF files are allowed."
+          : "Only JPEG, JPG, PNG or HEIC/HEIF files are allowed.";
+        message.error(msg);
         // Prevent adding to upload list
         return Upload.LIST_IGNORE;
       }
 
       if (file.size > maxBytes) {
-        message.error("Image must be less than 10MB.");
+        message.error("File must be less than 10MB.");
         return Upload.LIST_IGNORE;
       }
 
@@ -675,7 +730,17 @@ const AddNewPigeon = ({ onSave }) => {
     },
     onRemove: () => {
       setPhotos((p) => ({ ...p, [key]: null }));
-      setFileLists((fl) => ({ ...fl, [key]: [] }));
+      setFileLists((fl) => {
+        const existing = fl[key] && fl[key][0];
+        if (existing && existing.url && existing.url.startsWith("blob:")) {
+          try {
+            URL.revokeObjectURL(existing.url);
+          } catch (e) {
+            // ignore
+          }
+        }
+        return { ...fl, [key]: [] };
+      });
     },
     customRequest: ({ onSuccess }) => onSuccess && onSuccess(),
   });
@@ -723,7 +788,7 @@ const AddNewPigeon = ({ onSave }) => {
                 <Form.Item
                   label="Country"
                   name="country"
-                  // rules={[{ required: true, message: "Please select country" }]}
+                  rules={[{ required: true, message: "Please select Country" }]}
                   className="custom-form-item-ant-select"
                 >
                   <Select
@@ -794,6 +859,63 @@ const AddNewPigeon = ({ onSave }) => {
                 </Form.Item>
 
                 <Form.Item
+                  label="Loft Name"
+                  name="breeder"
+                  // rules={[{ required: true, message: "Please select a breeder" }]}
+                  className="custom-form-item-ant-select"
+                >
+                  <AutoComplete
+                    options={breederNames.map((b) => ({
+                      value: b.breederName,
+                      label: b.breederName,
+                      id: b._id,
+                    }))}
+                    placeholder={
+                      breedersLoading
+                        ? "Loading Lofts..."
+                        : "Type or Select Loft Name"
+                    }
+                    className="custom-select-ant-modal"
+                    value={breederDisplay}
+                    filterOption={(inputValue, option) =>
+                      option.value
+                        .toLowerCase()
+                        .includes(inputValue.toLowerCase())
+                    }
+                    onSelect={(value, option) => {
+                      const selected = breederNames.find(
+                        (b) => b.breederName === value || b._id === option?.id
+                      );
+                      if (selected) {
+                        form.setFieldsValue({ breeder: selected.breederName });
+                        setBreederDisplay(selected.breederName);
+                      } else {
+                        form.setFieldsValue({ breeder: value });
+                        setBreederDisplay(value);
+                      }
+                    }}
+                    onChange={(val) => {
+                      form.setFieldsValue({ breeder: val });
+                      setBreederDisplay(val);
+                    }}
+                    onBlur={() => {
+                      try {
+                        const current = form.getFieldValue("breeder");
+                        if (current && typeof current === "string")
+                          setBreederDisplay(current);
+                      } catch (e) {
+                        // ignore
+                      }
+                    }}
+                    allowClear
+                    onClear={() => {
+                      form.setFieldsValue({ breeder: undefined });
+                      setBreederDisplay("");
+                    }}
+                  />
+                </Form.Item>
+
+                <Form.Item
                   label="Color & Pattern"
                   name="colorPattern"
                   // rules={[{ required: true, message: "Please select color & pattern" }]}
@@ -857,20 +979,6 @@ const AddNewPigeon = ({ onSave }) => {
                 </Form.Item> */}
 
                 <Form.Item
-                  label="Verification"
-                  name="verification"
-                  // rules={[{ required: true }]}
-                  className="custom-form-item-ant-select"
-                >
-                  <Select
-                    placeholder="Select Verification"
-                    className="custom-select-ant-modal"
-                  >
-                    <Option value="verified">Verified</Option>
-                    <Option value="notverified">Not Verified</Option>
-                  </Select>
-                </Form.Item>
-                <Form.Item
                   label="Iconic"
                   name="iconic"
                   // rules={[{ required: true }]}
@@ -883,6 +991,42 @@ const AddNewPigeon = ({ onSave }) => {
                   >
                     <Option value="yes">Yes</Option>
                     <Option value="no">No</Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item
+                  label="Iconic Score"
+                  name="iconicScore"
+                  rules={[
+                    {
+                      required: isIconicEnabled,
+                      message:
+                        "Please select iconic score when iconic is enabled",
+                    },
+                  ]}
+                  className="custom-form-item-ant-select"
+                >
+                  <Select
+                    placeholder={
+                      isIconicEnabled ? "Select Score" : "Select Score"
+                    }
+                    className="custom-select-ant-modal"
+                    disabled={!isIconicEnabled}
+                    showSearch // Enable search functionality
+                    allowClear // Enable the clear button (cross icon)
+                    optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)
+                    filterOption={(input, option) =>
+                      option?.children
+                        ?.toString()
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                  >
+                    {Array.from({ length: 99 }, (_, i) => 99 - i).map((v) => (
+                      <Option key={v} value={v}>
+                        {v}
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
               </div>
@@ -904,7 +1048,9 @@ const AddNewPigeon = ({ onSave }) => {
                 <Form.Item
                   label="Birth Year"
                   name="birthYear"
-                  // rules={[{ required: true, message: "Please select birth year" }]}
+                  rules={[
+                    { required: true, message: "Please select Birth Year" },
+                  ]}
                   className="custom-form-item-ant-select"
                 >
                   <Select
@@ -936,60 +1082,43 @@ const AddNewPigeon = ({ onSave }) => {
                 </Form.Item>
 
                 <Form.Item
-                  label="Breeder Name"
-                  name="breeder"
-                  // rules={[{ required: true, message: "Please select a breeder" }]}
-                  className="custom-form-item-ant-select"
+                  label="Pigeon Results"
+                  name="addresults"
+                  className="custom-form-item-ant"
                 >
-                  <AutoComplete
-                    options={breederNames.map((b) => ({
-                      value: b.breederName,
-                      label: b.breederName,
-                      id: b._id,
-                    }))}
-                    placeholder={
-                      breedersLoading
-                        ? "Loading breeders..."
-                        : "Type or Select Breeder Name"
-                    }
-                    className="custom-select-ant-modal"
-                    value={breederDisplay}
-                    filterOption={(inputValue, option) =>
-                      option.value
-                        .toLowerCase()
-                        .includes(inputValue.toLowerCase())
-                    }
-                    onSelect={(value, option) => {
-                      const selected = breederNames.find(
-                        (b) => b.breederName === value || b._id === option?.id
-                      );
-                      if (selected) {
-                        form.setFieldsValue({ breeder: selected.breederName });
-                        setBreederDisplay(selected.breederName);
-                      } else {
-                        form.setFieldsValue({ breeder: value });
-                        setBreederDisplay(value);
-                      }
-                    }}
-                    onChange={(val) => {
-                      form.setFieldsValue({ breeder: val });
-                      setBreederDisplay(val);
-                    }}
-                    onBlur={() => {
-                      try {
-                        const current = form.getFieldValue("breeder");
-                        if (current && typeof current === "string")
-                          setBreederDisplay(current);
-                      } catch (e) {
-                        // ignore
-                      }
-                    }}
-                    allowClear
-                    onClear={() => {
-                      form.setFieldsValue({ breeder: undefined });
-                      setBreederDisplay("");
-                    }}
-                  />
+                  <div style={{ position: "relative" }}>
+                    {/* Custom placeholder simulation */}
+                    {!value && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "8px",
+                          left: "10px",
+                          color: "#999",
+                          pointerEvents: "none",
+                          fontSize: "13px",
+                          lineHeight: "19px",
+                        }}
+                      >
+                        For example:
+                        <br />
+                        1st/828p Quiévrain 108km
+                        <br />
+                        4th/3265p Melun 287km
+                        <br />
+                        6th/3418p HotSpot 6 Dubai OLR
+                      </div>
+                    )}
+
+                    {/* Actual TextArea */}
+                    <Input.TextArea
+                      placeholder=""
+                      className="custom-input-ant-modal custom-textarea-pigeon2"
+                      style={{ paddingTop: "40px" }} // Adjust padding to prevent overlapping text
+                      value={value}
+                      onChange={handleChangePlace} // Track the input value
+                    />
+                  </div>
                 </Form.Item>
 
                 <Form.Item
@@ -1075,38 +1204,17 @@ const AddNewPigeon = ({ onSave }) => {
                 </Form.Item>
 
                 <Form.Item
-                  label="Iconic Score"
-                  name="iconicScore"
-                  rules={[
-                    {
-                      required: isIconicEnabled,
-                      message:
-                        "Please select iconic score when iconic is enabled",
-                    },
-                  ]}
+                  label="Verification"
+                  name="verification"
+                  // rules={[{ required: true }]}
                   className="custom-form-item-ant-select"
                 >
                   <Select
-                    placeholder={
-                      isIconicEnabled ? "Select Score" : "Select Score"
-                    }
+                    placeholder="Select Verification"
                     className="custom-select-ant-modal"
-                    disabled={!isIconicEnabled}
-                    showSearch // Enable search functionality
-                    allowClear // Enable the clear button (cross icon)
-                    optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)
-                    filterOption={(input, option) =>
-                      option?.children
-                        ?.toString()
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
                   >
-                    {Array.from({ length: 99 }, (_, i) => 99 - i).map((v) => (
-                      <Option key={v} value={v}>
-                        {v}
-                      </Option>
-                    ))}
+                    <Option value="verified">Verified</Option>
+                    <Option value="notverified">Not Verified</Option>
                   </Select>
                 </Form.Item>
               </div>
@@ -1393,7 +1501,7 @@ const AddNewPigeon = ({ onSave }) => {
               `}</style>
               <p className="text-[16px] font-semibold">Pigeon Photos:</p>
               <p className="mb-2 text-[12px] text-gray-400">
-                Accepted formats: JPEG, PNG, JPG. Maximum file size: 10MB.
+                Accepted formats: JPEG, PNG, JPG, PDF. Maximum file size: 10MB.
               </p>
               <div className="relative">
                 {canScrollLeft && (
@@ -1480,25 +1588,25 @@ const AddNewPigeon = ({ onSave }) => {
 
                     <Col flex="none">
                       <Upload
-                        accept=".jpg,.jpeg,.png,.heic,.heif"
+                        accept=".jpg,.jpeg,.png,.heic,.heif,.pdf"
                         className="custom-upload-ant"
                         {...commonUploadProps("pedigreePhoto")}
                       >
                         {fileLists.pedigreePhoto?.length
                           ? null
-                          : uploadButton("Upload Pedigree Photo")}
+                          : uploadButton("Upload Pedigree Photo/PDF")}
                       </Upload>
                     </Col>
 
                     <Col flex="none">
                       <Upload
-                        accept=".jpg,.jpeg,.png,.heic,.heif"
+                        accept=".jpg,.jpeg,.png,.heic,.heif,.pdf"
                         className="custom-upload-ant"
                         {...commonUploadProps("DNAPhoto")}
                       >
                         {fileLists.DNAPhoto?.length
                           ? null
-                          : uploadButton("Upload DNA Photo")}
+                          : uploadButton("Upload DNA Photo/PDF")}
                       </Upload>
                     </Col>
                   </Row>
@@ -1507,14 +1615,13 @@ const AddNewPigeon = ({ onSave }) => {
             </div>
 
             {/* ===== PIGEON RESULTS ===== */}
-            <div>
+            {/* <div>
               <Form.Item
                 label="Pigeon Results"
                 name="addresults"
                 className="custom-form-item-ant"
               >
                 <div style={{ position: "relative" }}>
-                  {/* Custom placeholder simulation */}
                   {!value && (
                     <div
                       style={{
@@ -1536,8 +1643,6 @@ const AddNewPigeon = ({ onSave }) => {
                       6th/3418p HotSpot 6 Dubai OLR
                     </div>
                   )}
-
-                  {/* Actual TextArea */}
                   <Input.TextArea
                     placeholder=""
                     className="custom-input-ant-modal custom-textarea-pigeon2"
@@ -1547,7 +1652,7 @@ const AddNewPigeon = ({ onSave }) => {
                   />
                 </div>
               </Form.Item>
-            </div>
+            </div> */}
             {/* <div className=" flex flex-col min-h-[300px]">
               <div className="mb-4 flex items-center gap-2">
                 <Switch

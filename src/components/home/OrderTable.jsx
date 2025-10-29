@@ -110,7 +110,7 @@ const PigeonTable = () => {
 
   const { data, isLoading, isError } = useGetRecentPigeonsQuery({
     page,
-    limit: 10,
+    limit: 10000,
   });
   // console.log(data);
 

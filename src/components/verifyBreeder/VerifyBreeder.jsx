@@ -3,7 +3,6 @@ import { getCode, getNames } from "country-list";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import Swal from "sweetalert2";
-import "../myPigeon/myPigeon.responsive.css";
 import {
   useAddBreederMutation,
   useDeleteBreederMutation,
@@ -11,6 +10,7 @@ import {
   useUpdateBreederMutation,
 } from "../../redux/apiSlices/breederSlice";
 import { attachDragToElement } from "../common/dragScroll";
+import "../myPigeon/myPigeon.responsive.css";
 import AddVerifyBreeder from "./AddVerifiedBreeder";
 
 const { Option } = Select;
@@ -37,7 +37,7 @@ const VerifyBreeder = () => {
 
   // Pagination
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(10000);
   const tableContainerRef = useRef(null);
 
   // RTK Query
@@ -153,7 +153,12 @@ const VerifyBreeder = () => {
   };
 
   const getColumns = () => [
-    { title: "Breeder Name", dataIndex: "breederName", key: "breederName" },
+    {
+      title: "Breeder Name",
+      dataIndex: "breederName",
+      key: "breederName",
+      render: (text) => (text ? text : "N/A"),
+    },
     { title: "Loft Name", dataIndex: "loftName", key: "loftName" },
     // { title: "Pigeon Score", dataIndex: "pigeonScore", key: "pigeonScore" },
     {

@@ -36,7 +36,7 @@ const LoginCredentials = () => {
     isLoading: isUsersLoading,
     isError: isUsersError,
     refetch: refetchUsers,
-  } = useGetUsersQuery({ page: 1, limit: 10 });
+  } = useGetUsersQuery({ page: 1, limit: 10000 });
 
   const { data: apiRoles = [] } = useGetRolesQuery();
 
