@@ -4,13 +4,14 @@ import {
   Col,
   Form,
   Input,
+  message,
   Modal,
   Row,
   Select,
+  Spin,
   Switch,
   Table,
   Tooltip,
-  message,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -26,6 +27,7 @@ import {
   useUpdateUserMutation,
 } from "../../redux/apiSlices/usermanageSlice";
 import { attachDragToElement } from "../common/dragScroll";
+import SyncHorizontalScroll from "../common/SyncHorizontalScroll";
 
 const { Option } = Select;
 
@@ -33,7 +35,7 @@ const LoginCredentials = () => {
   // API hooks
   const {
     data: apiUsers = { users: [], pagination: null },
-    isLoading: isUsersLoading,
+    isLoading,
     isError: isUsersError,
     refetch: refetchUsers,
   } = useGetUsersQuery({ page: 1, limit: 10000 });
@@ -347,73 +349,77 @@ const LoginCredentials = () => {
         </div>
       </div>
 
-      <div
-        ref={tableContainerRef}
-        className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 hide-scrollbar custom-scrollbar"
+      <SyncHorizontalScroll
+        containerClassName="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar hide-scrollbar cursor-grab"
+        watch={data.length}
       >
         <div className="border rounded-lg shadow-md bg-gray-50">
           <div
-            style={{ minWidth: "max-content" }}
+            style={{ minWidth: data.length > 0 ? "max-content" : "100%" }}
             className="bg-[#333D49] rounded-lg"
           >
-            <Table
-              // rowSelection={rowSelection}
-              columns={columns}
-              dataSource={data}
-              loading={isUsersLoading}
-              rowClassName={() => "hover-row"}
-              components={{
-                header: {
-                  cell: (props) => (
-                    <th
-                      {...props}
-                      style={{
-                        height: 70,
-                        lineHeight: "70px",
-                        background: "#333D49",
-                        color: "#ffffff",
-                        fontWeight: 600,
-                        padding: "0 16px",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {props.children}
-                    </th>
+            {isLoading ? (
+              <div className="flex justify-center items-center p-6">
+                <Spin size="large" />
+              </div>
+            ) : (
+              <Table
+                // rowSelection={rowSelection}
+                columns={columns}
+                dataSource={data}
+                rowClassName={() => "hover-row"}
+                bordered={false}
+                size="small"
+                rowKey="_id"
+                scroll={data.length > 0 ? { x: "max-content" } : undefined}
+                pagination={true}
+                components={{
+                  header: {
+                    cell: (props) => (
+                      <th
+                        {...props}
+                        style={{
+                          height: 70,
+                          lineHeight: "70px",
+                          background: "#333D49",
+                          color: "#ffffff",
+                          fontWeight: 600,
+                          padding: "0 16px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {props.children}
+                      </th>
+                    ),
+                  },
+                  body: {
+                    cell: (props) => (
+                      <td
+                        {...props}
+                        style={{
+                          background: "#212B35",
+                          padding: "12px 16px",
+                          color: "#ffffff",
+                          borderBottom: "none",
+                        }}
+                      >
+                        {props.children}
+                      </td>
+                    ),
+                  },
+                }}
+                locale={{
+                  emptyText: (
+                    <div className="py-10 text-gray-400 text-center">
+                      No users found
+                    </div>
                   ),
-                },
-                body: {
-                  cell: (props) => (
-                    <td
-                      {...props}
-                      style={{
-                        background: "#212B35",
-                        padding: "12px 16px",
-                        color: "#ffffff",
-                        borderBottom: "none",
-                      }}
-                    >
-                      {props.children}
-                    </td>
-                  ),
-                },
-              }}
-              locale={{
-                emptyText: (
-                  <div className="py-10 text-gray-400 text-center">
-                    No user found
-                  </div>
-                ),
-              }}
-              bordered={false}
-              pagination={true}
-              size="small"
-              // scroll={{ x: "max-content" }}
-              scroll={data.length > 0 ? { x: "max-content" } : undefined}
-              rowKey="_id"
-            />
+                }}
+              />
+            )}
           </div>
         </div>
-      </div>
+      </SyncHorizontalScroll>
 
       {/* View/Edit User Modal */}
       <Modal

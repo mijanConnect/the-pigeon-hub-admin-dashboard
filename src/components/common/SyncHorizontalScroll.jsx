@@ -18,8 +18,7 @@ import { attachDragToElement } from "./dragScroll";
 
 const defaultBottomStyle = {
   position: "fixed",
-  left: 0,
-  right: 0,
+  // left/right will be computed to align with the main container when shown
   bottom: 0,
   height: 12,
   overflowX: "auto",
@@ -27,6 +26,7 @@ const defaultBottomStyle = {
   display: "none",
   zIndex: 9999,
   background: "transparent",
+  boxSizing: "border-box",
 };
 
 const SyncHorizontalScroll = ({
@@ -58,9 +58,24 @@ const SyncHorizontalScroll = ({
 
     const update = () => {
       try {
+        // Set inner width to the scrollable content width so scrollbar range matches
         inner.style.width = `${scrollEl.scrollWidth}px`;
+
+        // Determine whether horizontal scrolling is needed
         const needsScroll = scrollEl.scrollWidth - 1 > scrollEl.clientWidth;
-        bottomWrap.style.display = needsScroll ? "block" : "none";
+
+        // If needed, show the bottom scrollbar and align it with the main container
+        if (needsScroll) {
+          bottomWrap.style.display = "block";
+
+          // Align left/width to match the visible container (respecting gutters)
+          const rect = scrollEl.getBoundingClientRect();
+          // Use left + width to position the fixed bottom scrollbar exactly under the container
+          bottomWrap.style.left = `${Math.max(0, rect.left)}px`;
+          bottomWrap.style.width = `${Math.max(0, rect.width)}px`;
+        } else {
+          bottomWrap.style.display = "none";
+        }
       } catch (e) {
         // ignore
       }

@@ -1,10 +1,11 @@
-import { Table } from "antd";
+import { Table, Spin } from "antd";
 import { getCode } from "country-list";
 import { useEffect, useRef, useState } from "react";
 import VerifyIcon from "../../../src/assets/verify.png";
 import { useGetRecentPigeonsQuery } from "../../redux/apiSlices/dashboardSlice";
 import { attachDragToElement } from "../common/dragScroll";
 import { getImageUrl } from "../common/imageUrl";
+import SyncHorizontalScroll from "../common/SyncHorizontalScroll";
 
 // const getImageUrlTable = (path) =>
 //   path ? `${getImageUrl}${path}` : PigeonImage;
@@ -152,78 +153,83 @@ const PigeonTable = () => {
       </div>
 
       {/* Table */}
-      <div
-        ref={tableContainerRef}
-        className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar hide-scrollbar"
+      <SyncHorizontalScroll
+        containerClassName="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar hide-scrollbar cursor-grab"
+        watch={pigeons.length}
       >
         <div className="border rounded-lg shadow-md bg-gray-50">
           <div
-            style={{ minWidth: "max-content" }}
+            style={{ minWidth: pigeons.length > 0 ? "max-content" : "100%" }}
             className="bg-[#333D49] rounded-lg"
           >
-            <Table
-              // rowSelection={rowSelection}
-              columns={columns}
-              dataSource={pigeons}
-              loading={isLoading}
-              rowClassName={() => "hover-row"}
-              components={{
-                header: {
-                  cell: (props) => (
-                    <th
-                      {...props}
-                      style={{
-                        height: 70,
-                        lineHeight: "70px",
-                        background: "#333D49",
-                        color: "#ffffff",
-                        fontWeight: 600,
-                        padding: "0 16px",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {props.children}
-                    </th>
+            {isLoading ? (
+              <div className="flex justify-center items-center p-6">
+                <Spin size="large" />
+              </div>
+            ) : (
+              <Table
+                // rowSelection={rowSelection}
+                columns={columns}
+                dataSource={pigeons}
+                rowClassName={() => "hover-row"}
+                bordered={false}
+                size="small"
+                rowKey="_id"
+                scroll={pigeons.length > 0 ? { x: "max-content" } : undefined}
+                // pagination={{
+                //   current: page,
+                //   pageSize,
+                //   total,
+                //   showSizeChanger: false,
+                //   onChange: (newPage) => setPage(newPage),
+                // }}
+                components={{
+                  header: {
+                    cell: (props) => (
+                      <th
+                        {...props}
+                        style={{
+                          height: 70,
+                          lineHeight: "70px",
+                          background: "#333D49",
+                          color: "#ffffff",
+                          fontWeight: 600,
+                          padding: "0 16px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {props.children}
+                      </th>
+                    ),
+                  },
+                  body: {
+                    cell: (props) => (
+                      <td
+                        {...props}
+                        style={{
+                          background: "#212B35",
+                          padding: "12px 16px",
+                          color: "#ffffff",
+                          borderBottom: "none",
+                        }}
+                      >
+                        {props.children}
+                      </td>
+                    ),
+                  },
+                }}
+                locale={{
+                  emptyText: (
+                    <div className="py-10 text-gray-400 text-center">
+                      No pigeons found 🕊️
+                    </div>
                   ),
-                },
-                body: {
-                  cell: (props) => (
-                    <td
-                      {...props}
-                      style={{
-                        background: "#212B35",
-                        padding: "12px 16px",
-                        color: "#ffffff",
-                        borderBottom: "none",
-                      }}
-                    >
-                      {props.children}
-                    </td>
-                  ),
-                },
-              }}
-              locale={{
-                emptyText: (
-                  <div className="py-10 text-gray-400 text-center">
-                    No pigeons found 🕊️
-                  </div>
-                ),
-              }}
-              bordered={false}
-              // pagination={{
-              //   current: pagination.page,
-              //   pageSize: pagination.limit,
-              //   total: pagination.total,
-              //   onChange: (page) => setPage(page),
-              // }}
-              pagination={true}
-              size="small"
-              scroll={pigeons.length > 0 ? { x: "max-content" } : undefined}
-              rowKey="key"
-            />
+                }}
+              />
+            )}
           </div>
         </div>
-      </div>
+      </SyncHorizontalScroll>
     </div>
   );
 };
