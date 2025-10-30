@@ -1,4 +1,14 @@
-import { Button, Col, Input, Row, Select, Table, Tooltip, message } from "antd";
+import {
+  Button,
+  Col,
+  Input,
+  message,
+  Row,
+  Select,
+  Spin,
+  Table,
+  Tooltip,
+} from "antd";
 import { getCode, getNames } from "country-list";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -9,7 +19,8 @@ import {
   useGetBreedersQuery,
   useUpdateBreederMutation,
 } from "../../redux/apiSlices/breederSlice";
-import { attachDragToElement } from "../common/dragScroll";
+// drag-to-scroll is handled by SyncHorizontalScroll; no manual import needed
+import SyncHorizontalScroll from "../common/SyncHorizontalScroll";
 import "../myPigeon/myPigeon.responsive.css";
 import AddVerifyBreeder from "./AddVerifiedBreeder";
 
@@ -382,76 +393,79 @@ const VerifyBreeder = () => {
       </div>
 
       {/* Table */}
-      <div
-        ref={tableContainerRef}
-        className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 hide-scrollbar custom-scrollbar"
+      <SyncHorizontalScroll
+        containerClassName="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar hide-scrollbar cursor-grab"
+        watch={filteredData.length}
       >
-        <div
-          style={{ minWidth: "max-content" }}
-          className="bg-[#333D49] rounded-lg"
-        >
-          <Table
-            columns={getColumns()}
-            dataSource={filteredData}
-            loading={isLoading}
-            rowClassName={() => "hover-row"}
-            components={{
-              header: {
-                cell: (props) => (
-                  <th
-                    {...props}
-                    style={{
-                      height: 70,
-                      lineHeight: "70px",
-                      background: "#333D49",
-                      color: "#ffffff",
-                      fontWeight: 600,
-                      padding: "0 16px",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {props.children}
-                  </th>
-                ),
-              },
-              body: {
-                cell: (props) => (
-                  <td
-                    {...props}
-                    style={{
-                      background: "#212B35",
-                      padding: "12px 16px",
-                      color: "#ffffff",
-                      borderBottom: "none",
-                    }}
-                  >
-                    {props.children}
-                  </td>
-                ),
-              },
+        <div className="border rounded-lg shadow-md bg-gray-50">
+          <div
+            style={{
+              minWidth: filteredData.length > 0 ? "max-content" : "100%",
             }}
-            locale={{
-              emptyText: (
-                <div className="py-10 text-gray-400 text-center">
-                  No pigeons found 🕊️
-                </div>
-              ),
-            }}
-            bordered={false}
-            pagination={{
-              current: page,
-              pageSize: limit,
-              total: apiData?.pagination?.total || 0,
-              onChange: (p, l) => {
-                setPage(p);
-                setLimit(l);
-              },
-            }}
-            size="small"
-            rowKey="_id"
-          />
+            className="bg-[#333D49] rounded-lg"
+          >
+            {isLoading ? (
+              <div className="flex justify-center items-center p-6">
+                <Spin size="large" />
+              </div>
+            ) : (
+              <Table
+                columns={getColumns()}
+                dataSource={filteredData}
+                rowClassName={() => "hover-row"}
+                bordered={false}
+                size="small"
+                rowKey="_id"
+                scroll={
+                  filteredData.length > 0 ? { x: "max-content" } : undefined
+                }
+                components={{
+                  header: {
+                    cell: (props) => (
+                      <th
+                        {...props}
+                        style={{
+                          height: 70,
+                          lineHeight: "70px",
+                          background: "#333D49",
+                          color: "#ffffff",
+                          fontWeight: 600,
+                          padding: "0 16px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {props.children}
+                      </th>
+                    ),
+                  },
+                  body: {
+                    cell: (props) => (
+                      <td
+                        {...props}
+                        style={{
+                          background: "#212B35",
+                          padding: "12px 16px",
+                          color: "#ffffff",
+                          borderBottom: "none",
+                        }}
+                      >
+                        {props.children}
+                      </td>
+                    ),
+                  },
+                }}
+                locale={{
+                  emptyText: (
+                    <div className="py-10 text-gray-400 text-center">
+                      No pigeons found 🕊️
+                    </div>
+                  ),
+                }}
+              />
+            )}
+          </div>
         </div>
-      </div>
+      </SyncHorizontalScroll>
 
       <AddVerifyBreeder
         visible={isModalVisible}

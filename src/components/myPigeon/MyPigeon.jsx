@@ -13,7 +13,7 @@ import {
   message,
 } from "antd";
 import { getCode, getNames } from "country-list";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import { IoMdDownload } from "react-icons/io";
 import { PiDnaBold } from "react-icons/pi";
@@ -24,7 +24,7 @@ import {
   useDeletePigeonMutation,
   useGetMyPigeonsQuery,
 } from "../../redux/apiSlices/mypigeonSlice";
-import { attachDragToElement } from "../common/dragScroll";
+import SyncHorizontalScroll from "../common/SyncHorizontalScroll";
 import { getImageUrl } from "../common/imageUrl";
 import "./myPigeon.responsive.css";
 
@@ -426,75 +426,9 @@ const MyPigeon = () => {
     },
   };
 
-  // ref for horizontal scrolling container
-  const tableRowRef = useRef(null);
-  // ref for the fixed bottom scrollbar that mirrors the table's horizontal scroll
-  const bottomScrollbarRef = useRef(null);
-
-  // enable mouse and touch drag to scroll horizontally on the table container
-  useEffect(() => {
-    const el = tableRowRef.current;
-    if (!el) return;
-
-    const cleanup = attachDragToElement(el);
-    return cleanup;
-  }, [pigeons.length]);
-
-  // Sync a fixed bottom scrollbar with the table's horizontal scroll
-  useEffect(() => {
-    const scrollEl = tableRowRef.current;
-    const bottomWrap = bottomScrollbarRef.current;
-    if (!scrollEl || !bottomWrap) return;
-
-    const inner = bottomWrap.querySelector(".sync-inner");
-    if (!inner) return;
-
-    // update width and visibility
-    const update = () => {
-      try {
-        inner.style.width = `${scrollEl.scrollWidth}px`;
-        // show bottom scroller only when horizontal overflow exists
-        bottomWrap.style.display =
-          scrollEl.scrollWidth > scrollEl.clientWidth ? "block" : "none";
-      } catch (e) {
-        // ignore in environments where DOM isn't ready
-      }
-    };
-
-    update();
-
-    // Use bottomWrap as the scroll container (it is the element with overflowX:auto)
-    const onMainScroll = () => {
-      try {
-        bottomWrap.scrollLeft = scrollEl.scrollLeft;
-      } catch (e) {}
-    };
-    const onBottomScroll = () => {
-      try {
-        scrollEl.scrollLeft = bottomWrap.scrollLeft;
-      } catch (e) {}
-    };
-
-    scrollEl.addEventListener("scroll", onMainScroll);
-    bottomWrap.addEventListener("scroll", onBottomScroll);
-
-    // watch for size changes to keep widths in sync
-    let ro;
-    if (typeof ResizeObserver !== "undefined") {
-      ro = new ResizeObserver(() => update());
-      ro.observe(scrollEl);
-    }
-
-    // also update on window resize
-    window.addEventListener("resize", update);
-
-    return () => {
-      scrollEl.removeEventListener("scroll", onMainScroll);
-      bottomWrap.removeEventListener("scroll", onBottomScroll);
-      window.removeEventListener("resize", update);
-      if (ro) ro.disconnect();
-    };
-  }, [pigeons.length]);
+  // We use the reusable SyncHorizontalScroll component below to provide
+  // drag-to-scroll and a mirrored bottom scrollbar. This keeps this
+  // component focused on table data & layout only.
 
   return (
     <div className="w-full">
@@ -690,10 +624,11 @@ const MyPigeon = () => {
         </Row>
       </div>
 
-      {/* Table */}
-      <div
-        ref={tableRowRef}
-        className="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar hide-scrollbar cursor-grab"
+      {/* Table wrapped with reusable SyncHorizontalScroll which provides
+          drag-to-scroll and a mirrored bottom scrollbar when needed */}
+      <SyncHorizontalScroll
+        containerClassName="overflow-x-auto border rounded-lg shadow-md bg-gray-50 custom-scrollbar hide-scrollbar cursor-grab"
+        watch={pigeons.length}
       >
         <div className="border rounded-lg shadow-md bg-gray-50">
           <div
@@ -767,27 +702,7 @@ const MyPigeon = () => {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Fixed bottom scrollbar that mirrors horizontal scroll of the table container */}
-      <div
-        ref={bottomScrollbarRef}
-        style={{
-          position: "fixed",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: 12,
-          overflowX: "auto",
-          overflowY: "hidden",
-          display: "none",
-          zIndex: 9999,
-          background: "transparent",
-        }}
-        className="bottom-sync-scrollbar"
-      >
-        <div className="sync-inner" style={{ height: 1 }} />
-      </div>
+      </SyncHorizontalScroll>
 
       {/* View now navigates to /view-pigeon/:id route — page handles its own data fetching */}
     </div>
