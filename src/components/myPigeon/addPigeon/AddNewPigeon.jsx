@@ -1226,8 +1226,13 @@ const AddNewPigeon = ({ onSave }) => {
                     { required: true, message: "Please enter a name" },
                     {
                       validator: (_, value) => {
+                        // If there is no input, skip duplicate check
+                        if (!value || value.trim() === "") {
+                          return Promise.resolve();
+                        }
+
                         const existingNames = allNames || [];
-                        const normalizedInput = value?.trim().toLowerCase();
+                        const normalizedInput = value.trim().toLowerCase();
                         const isDuplicate = existingNames.some(
                           (pigeon) =>
                             pigeon.name?.trim().toLowerCase() ===
@@ -1241,6 +1246,7 @@ const AddNewPigeon = ({ onSave }) => {
                             )
                           );
                         }
+
                         return Promise.resolve();
                       },
                     },

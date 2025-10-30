@@ -1,6 +1,5 @@
 // import { useMyProfileQuery } from "@/redux/featured/auth/authApi";
 
-
 export const convertBackendToExistingFormat = (backendResponse, role) => {
   if (!backendResponse?.data) {
     return {
@@ -9,14 +8,11 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     };
   }
 
-
   const subject = backendResponse.data;
   const nodes = [];
   const edges = [];
 
-
-const maxGeneration = role === "PAIDUSER" ? 4 : 4;
-
+  const maxGeneration = role === "PAIDUSER" ? 4 : 4;
 
   // Helper function to format results
   const formatResults = (results) => {
@@ -24,10 +20,8 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       return null;
     }
 
-
     return results.map((item) => String(item).trim()).join("\n");
   };
-
 
   // Helper function to get gender from data
   const getGender = (genderData) => {
@@ -40,16 +34,14 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     return "Unspecified";
   };
 
-
   // Helper function to get breeder name
   const getBreederInfo = (breeder) => {
     if (typeof breeder === "object" && breeder) {
-      const name = breeder.breederName;
+      const name = breeder.loftName;
       return name;
     }
     return breeder;
   };
-
 
   // Helper function to get breeder verification/status
   const getBreederStatus = (breeder) => {
@@ -60,24 +52,20 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     return false;
   };
 
-
   // Helper function to get pigeon verification status
   const getPigeonVerification = (pigeon) => {
     return pigeon?.verified === true;
   };
-
 
   // Helper function to get pigeon iconic status
   const getPigeonIconic = (pigeon) => {
     return pigeon?.iconic === true;
   };
 
-
   // Helper function to get pigeon iconic score
   const getPigeonIconicScore = (pigeon) => {
     return pigeon?.iconicScore || null;
   };
-
 
   // Helper function to create empty node
   const createEmptyNode = (id, position, positionLabel, generation) => {
@@ -91,7 +79,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       },
     };
   };
-
 
   // Subject node (Generation 0) - All data included
   // CHANGED: handles set to "top-bottom" for connections from top and bottom
@@ -110,7 +97,7 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       birthYear: subject.birthYear?.toString(),
       color: "#FFFFE0",
       colorName: subject.color,
-      // description: subject.notes || subject.shortInfo,
+      description: subject.shortInfo,
       achievements: formatResults(subject.addresults),
       verified: getPigeonVerification(subject),
       breederVerified: getBreederStatus(subject.breeder),
@@ -120,7 +107,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       isEmpty: false,
     },
   });
-
 
   // Generation 1 - Father
   // CHANGED: Position adjusted to be above subject, handles changed
@@ -140,8 +126,7 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         birthYear: subject.fatherRingId.birthYear?.toString(),
         color: "#ADD8E6",
         colorName: subject.fatherRingId.color,
-        // description:
-        //   subject.fatherRingId.notes || subject.fatherRingId.shortInfo,
+        description: subject.fatherRingId.shortInfo,
         achievements: formatResults(subject.fatherRingId.addresults),
         verified: getPigeonVerification(subject.fatherRingId),
         breederVerified: getBreederStatus(subject.fatherRingId.breeder),
@@ -155,7 +140,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     nodes.push(createEmptyNode("father_1", { x: 180, y: -200 }, "Father", 1)); // Changed position
   }
 
-
   edges.push({
     id: "subject-father_1",
     source: "subject",
@@ -165,7 +149,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     type: "smoothstep",
     style: { stroke: "#37B7C3", strokeWidth: 3 },
   });
-
 
   // Generation 1 - Mother
   // CHANGED: Position adjusted to be below subject
@@ -185,8 +168,7 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         birthYear: subject.motherRingId.birthYear?.toString(),
         color: "#fff",
         colorName: subject.motherRingId.color,
-        // description:
-        //   subject.motherRingId.notes || subject.motherRingId.shortInfo,
+        description: subject.motherRingId.shortInfo,
         achievements: formatResults(subject.motherRingId.addresults),
         verified: getPigeonVerification(subject.motherRingId),
         breederVerified: getBreederStatus(subject.motherRingId.breeder),
@@ -196,7 +178,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         isEmpty: false,
       },
     });
-
 
     edges.push({
       id: "subject-mother_1",
@@ -218,7 +199,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     });
   }
 
-
   // Generation 2 - Grandparents
   // Father side - Grandfather (FP)
   if (subject.fatherRingId?.fatherRingId) {
@@ -237,10 +217,7 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         birthYear: subject.fatherRingId.fatherRingId.birthYear?.toString(),
         color: "#fff",
         colorName: subject.fatherRingId.fatherRingId.color,
-        // description:
-        //   subject.fatherRingId.fatherRingId.notes ||
-        //   subject.fatherRingId.fatherRingId.shortInfo ||
-        //   "Top racing cock.",
+        description: subject.fatherRingId.fatherRingId.shortInfo,
         achievements: formatResults(
           subject.fatherRingId.fatherRingId.addresults
         ),
@@ -259,7 +236,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     );
   }
 
-
   edges.push({
     id: "father_1-father_2_1",
     source: "father_1",
@@ -267,7 +243,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     type: "smoothstep",
     style: { stroke: "#37B7C3", strokeWidth: 2.5 },
   });
-
 
   // Father side - Grandmother (FP)
   if (subject.fatherRingId?.motherRingId) {
@@ -286,9 +261,7 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         birthYear: subject.fatherRingId.motherRingId.birthYear?.toString(),
         color: "#fff",
         colorName: subject.fatherRingId.motherRingId.color,
-        // description:
-        //   subject.fatherRingId.motherRingId.notes ||
-        //   subject.fatherRingId.motherRingId.shortInfo,
+        description: subject.fatherRingId.motherRingId.shortInfo,
         achievements:
           formatResults(subject.fatherRingId.motherRingId.addresults) ||
           "Top producer",
@@ -307,7 +280,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     );
   }
 
-
   edges.push({
     id: "father_1-mother_2_1",
     source: "father_1",
@@ -315,7 +287,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     type: "smoothstep",
     style: { stroke: "#37B7C3", strokeWidth: 2.5 },
   });
-
 
   // Mother side - Grandfather (MP)
   if (subject.motherRingId?.fatherRingId) {
@@ -334,9 +305,7 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         birthYear: subject.motherRingId.fatherRingId.birthYear?.toString(),
         color: "#fff",
         colorName: subject.motherRingId.fatherRingId.color,
-        // description:
-        //   subject.motherRingId.fatherRingId.notes ||
-        //   subject.motherRingId.fatherRingId.shortInfo,
+        description: subject.motherRingId.fatherRingId.shortInfo,
         achievements:
           formatResults(subject.motherRingId.fatherRingId.addresults) ||
           "National ace",
@@ -355,7 +324,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     );
   }
 
-
   edges.push({
     id: "mother_1-father_2_2",
     source: "mother_1",
@@ -363,7 +331,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     type: "smoothstep",
     style: { stroke: "#37B7C3", strokeWidth: 2.5 },
   });
-
 
   // Mother side - Grandmother (MP)
   if (subject.motherRingId?.motherRingId) {
@@ -382,10 +349,7 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         birthYear: subject.motherRingId.motherRingId.birthYear?.toString(),
         color: "#fff",
         colorName: subject.motherRingId.motherRingId.color,
-        // description:
-        //   subject.motherRingId.motherRingId.notes ||
-        //   subject.motherRingId.motherRingId.shortInfo ||
-        //   "Foundation hen.",
+        description: subject.motherRingId.motherRingId.shortInfo,
         achievements: formatResults(
           subject.motherRingId.motherRingId.addresults
         ),
@@ -404,7 +368,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     );
   }
 
-
   edges.push({
     id: "mother_1-mother_2_2",
     source: "mother_1",
@@ -412,7 +375,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     type: "smoothstep",
     style: { stroke: "#37B7C3", strokeWidth: 2.5 },
   });
-
 
   // Generation 3 - Only if maxGeneration >= 3
   if (maxGeneration >= 3) {
@@ -455,7 +417,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         nodes.push(createEmptyNode(nodeId, position, nodeId, 3));
       }
 
-
       // Always push edge regardless of data
       const strokeColor = isFromFather ? "#37B7C3" : "#37B7C3";
       edges.push({
@@ -466,7 +427,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         style: { stroke: strokeColor, strokeWidth: 2 },
       });
     };
-
 
     // Father side of father_2_1
     addGen3Node(
@@ -479,7 +439,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       true
     );
 
-
     addGen3Node(
       subject.fatherRingId?.fatherRingId?.motherRingId,
       "mother_3_1",
@@ -489,7 +448,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       "father_2_1",
       false
     );
-
 
     // Mother side of father_2_1
     addGen3Node(
@@ -502,7 +460,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       true
     );
 
-
     addGen3Node(
       subject.fatherRingId?.motherRingId?.motherRingId,
       "mother_3_2",
@@ -512,7 +469,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       "mother_2_1",
       false
     );
-
 
     // Father side of father_2_2
     addGen3Node(
@@ -525,7 +481,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       true
     );
 
-
     addGen3Node(
       subject.motherRingId?.fatherRingId?.motherRingId,
       "mother_3_3",
@@ -535,7 +490,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       "father_2_2",
       false
     );
-
 
     // Mother side of father_2_2
     addGen3Node(
@@ -548,7 +502,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       true
     );
 
-
     addGen3Node(
       subject.motherRingId?.motherRingId?.motherRingId,
       "mother_3_4",
@@ -559,7 +512,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
       false
     );
   }
-
 
   // Generation 4 - Only if role is PAIDUSER (maxGeneration === 4)
   if (maxGeneration === 4) {
@@ -607,7 +559,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         });
       }
 
-
       edges.push({
         id: `${nodeId}-${nodeId}_father`,
         source: nodeId,
@@ -615,7 +566,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         type: "smoothstep",
         style: { stroke: "#37B7C3", strokeWidth: 1.5 },
       });
-
 
       if (parentPath && parentPath.motherRingId) {
         nodes.push({
@@ -652,7 +602,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         });
       }
 
-
       edges.push({
         id: `${nodeId}-${nodeId}_mother`,
         source: nodeId,
@@ -661,7 +610,6 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
         style: { stroke: "#37B7C3", strokeWidth: 1.5 },
       });
     };
-
 
     // Add all generation 4 nodes
     addGen4Node(
@@ -683,31 +631,31 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     addGen4Node(
       subject.fatherRingId?.motherRingId?.fatherRingId,
       "father_3_2",
-      { father: { x:1140, y: 320 }, mother: { x:1140, y: 450 } },
+      { father: { x: 1140, y: 320 }, mother: { x: 1140, y: 450 } },
       "Silver"
     );
     addGen4Node(
       subject.fatherRingId?.motherRingId?.motherRingId,
       "mother_3_2",
-      { father: { x:1140, y: 580 }, mother: { x:1140, y: 710 } },
+      { father: { x: 1140, y: 580 }, mother: { x: 1140, y: 710 } },
       "Purple"
     );
     addGen4Node(
       subject.motherRingId?.fatherRingId?.fatherRingId,
       "father_3_3",
-      { father: { x:1140, y: 850 }, mother: { x:1140, y: 980 } },
+      { father: { x: 1140, y: 850 }, mother: { x: 1140, y: 980 } },
       "Golden"
     );
     addGen4Node(
       subject.motherRingId?.fatherRingId?.motherRingId,
       "mother_3_3",
-      { father: { x:1140, y: 1110 }, mother: { x:1140, y: 1240 } },
+      { father: { x: 1140, y: 1110 }, mother: { x: 1140, y: 1240 } },
       "Ruby"
     );
     addGen4Node(
       subject.motherRingId?.motherRingId?.fatherRingId,
       "father_3_4",
-      { father: { x:1140, y: 1370 }, mother: { x:1140, y: 1500 } },
+      { father: { x: 1140, y: 1370 }, mother: { x: 1140, y: 1500 } },
       "Crimson",
       "#90EE90",
       "#90EE90"
@@ -715,17 +663,13 @@ const maxGeneration = role === "PAIDUSER" ? 4 : 4;
     addGen4Node(
       subject.motherRingId?.motherRingId?.motherRingId,
       "mother_3_4",
-      { father: { x:1140, y: 1630 }, mother: { x:1140, y: 1760 } },
+      { father: { x: 1140, y: 1630 }, mother: { x: 1140, y: 1760 } },
       "Scarlet",
       "#FFFFE0",
       "#FFFFE0"
     );
   }
 
-
   // Return result
   return { nodes, edges };
 };
-
-
-

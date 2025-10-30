@@ -1,6 +1,7 @@
 import { Button, Spin, Table } from "antd";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { FileText } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import {
   IoIosArrowBack,
@@ -16,7 +17,6 @@ import {
 } from "../../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../../common/imageUrl";
 import PigeonPdfExport from "./ExportPdf";
-import { FileText } from "lucide-react";
 
 const safeValue = (value) => {
   if (value === null || value === undefined || value === "" || value === "-")
@@ -597,7 +597,7 @@ const ViewPigeon = () => {
                           </p>
                         </div>
                         <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">Breeder: </p>
+                          <p className="font-normal text-[14px]">Loft Name: </p>
                           <p className="font-semibold text-[14px]">
                             {safeValue(
                               pigeonData.fatherRingId?.breeder?.loftName
@@ -675,7 +675,7 @@ const ViewPigeon = () => {
                           </p>
                         </div>
                         <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">Breeder: </p>
+                          <p className="font-normal text-[14px]">Loft Name: </p>
                           <p className="font-semibold text-[14px]">
                             {safeValue(
                               pigeonData.motherRingId?.breeder?.loftName
@@ -722,15 +722,7 @@ const ViewPigeon = () => {
                 </h3>
                 <div className="space-y-2 mt-2">
                   <div className="flex gap-1">
-                    <p className="font-normal text-[14px]">Breeder: </p>
-                    <p className="font-semibold text-[14px]">
-                      {safeValue(pigeonData.breeder?.breederName)}
-                    </p>
-                  </div>
-                  <div className="flex gap-1">
-                    <p className="font-normal text-[14px]">
-                      Breeder Loft Name:{" "}
-                    </p>
+                    <p className="font-normal text-[14px]">Loft Name: </p>
                     <p className="font-semibold text-[14px]">
                       {safeValue(pigeonData.breeder?.loftName)}
                     </p>
@@ -815,11 +807,15 @@ const ViewPigeon = () => {
                       {safeValue(pigeonData.iconicScore) || "N/A"}
                     </p>
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 mt-6 border p-4 rounded-lg">
                     <p className="font-semibold text-[14px]">
                       Your Story:{" "}
-                      <span className="font-normal text-[14px]">
-                        {safeValue(pigeonData.shortInfo) || "N/A"}
+                      <span className="font-normal text-[14px] whitespace-pre-line break-words">
+                        {pigeonData.shortInfo ? (
+                          <>{pigeonData.shortInfo}</>
+                        ) : (
+                          "N/A"
+                        )}
                       </span>
                     </p>
                   </div>
@@ -873,6 +869,12 @@ const ViewPigeon = () => {
                             // rowSelection={rowSelection}
                             dataSource={siblingsData}
                             rowClassName={() => "hover-row"}
+                            onRow={(record) => ({
+                              onClick: () => {
+                                if (record && record._id)
+                                  navigate(`/pigeon-management/${record._id}`);
+                              },
+                            })}
                             bordered={false}
                             size="small"
                             // rowKey="_id"
@@ -889,10 +891,27 @@ const ViewPigeon = () => {
                                 render: (value) => value || "N/A",
                               },
                               {
-                                title: "Siblings Type",
+                                title: "Sibling Type",
                                 dataIndex: "type",
                                 key: "type",
-                                render: (value) => value || "N/A",
+                                render: (value, record) =>
+                                  record && record._id ? (
+                                    <a
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/pigeon-management/${record._id}`);
+                                      }}
+                                      style={{
+                                        cursor: "pointer",
+                                        color: "#3AB27F",
+                                        textDecoration: "none",
+                                      }}
+                                    >
+                                      {value || "N/A"}
+                                    </a>
+                                  ) : (
+                                    value || "N/A"
+                                  ),
                               },
                               {
                                 title: "Ring Number",

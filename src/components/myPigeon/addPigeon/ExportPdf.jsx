@@ -186,29 +186,197 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
       yPosition = Math.max(contentStartY + imageSize + 15, rightY + 10);
 
       // Parents Information Section (Full Width)
-      checkPageBreak(40);
-      addSectionHeader("Parents Information", yPosition);
-      yPosition += 10;
+      checkPageBreak(60);
 
-      pdf.setFontSize(9);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(
-        `Father: ${String(pigeon?.fatherRingId?.name || "N/A")} (${String(
-          pigeon?.fatherRingId?.ringNumber || "N/A"
-        )})`,
-        margin,
-        yPosition
-      );
-      yPosition += 6;
+      const parentsStartY = yPosition;
+      const leftParentX = margin;
+      const rightParentX = pageWidth / 2 + 5;
+      const columnWidth = (pageWidth - 2 * margin - 10) / 2;
 
-      pdf.text(
-        `Mother: ${String(pigeon?.motherRingId?.name || "N/A")} (${String(
-          pigeon?.motherRingId?.ringNumber || "N/A"
-        )})`,
-        margin,
-        yPosition
-      );
-      yPosition += 12;
+      // Father Section (Left)
+      addSectionHeader("Father Information", parentsStartY);
+      let fatherY = parentsStartY + 10;
+
+      const fatherInfo = [
+        { label: "Name", value: String(pigeon?.fatherRingId?.name || "N/A") },
+        {
+          label: "Ring Number",
+          value: String(pigeon?.fatherRingId?.ringNumber || "N/A"),
+        },
+        {
+          label: "Birth Year",
+          value: String(pigeon?.fatherRingId?.birthYear || "N/A"),
+        },
+        {
+          label: "Country",
+          value: String(pigeon?.fatherRingId?.country || "N/A"),
+        },
+        {
+          label: "Gender",
+          value: String(pigeon?.fatherRingId?.gender || "N/A"),
+        },
+        {
+          label: "Loft Name",
+          value: String(pigeon?.fatherRingId?.breeder?.loftName || "N/A"),
+        },
+        {
+          label: "Story",
+          value: String(pigeon?.fatherRingId?.shortInfo || "N/A"),
+        },
+      ];
+
+      pdf.setFontSize(8);
+      fatherInfo.forEach((item) => {
+        pdf.setFont("helvetica", "normal");
+        const label = `${item.label}: `;
+        pdf.text(label, leftParentX, fatherY);
+
+        const labelWidth = pdf.getTextWidth(label);
+        pdf.setFont("helvetica", "bold");
+        const valueLines = pdf.splitTextToSize(
+          item.value,
+          columnWidth - labelWidth - 2
+        );
+        pdf.text(valueLines[0], leftParentX + labelWidth, fatherY);
+
+        fatherY += 7;
+      });
+
+
+      // Father Results Section
+      // if (
+      //   pigeon?.fatherRingId?.addresults &&
+      //   Array.isArray(pigeon.fatherRingId.addresults) &&
+      //   pigeon.fatherRingId.addresults.length > 0
+      // ) {
+      //   fatherY += 3;
+      //   pdf.setFont("helvetica", "bold");
+      //   pdf.setFontSize(8);
+      //   pdf.text("Results:", leftParentX, fatherY);
+      //   fatherY += 5;
+
+      //   pdf.setFont("helvetica", "normal");
+      //   pdf.setFontSize(7);
+      //   pigeon.fatherRingId.addresults.forEach((result, index) => {
+      //     const resultLines = pdf.splitTextToSize(
+      //       `${index + 1}. ${result}`,
+      //       columnWidth - 2
+      //     );
+      //     resultLines.forEach((line) => {
+      //       pdf.text(line, leftParentX, fatherY);
+      //       fatherY += 4;
+      //     });
+      //   });
+      // }
+
+      // Mother Section (Right)
+      pdf.setFillColor(55, 183, 195);
+      pdf.rect(rightParentX, parentsStartY - 5, columnWidth, 8, "F");
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Mother Information", rightParentX + 2, parentsStartY);
+      pdf.setTextColor(0, 0, 0);
+
+      let motherY = parentsStartY + 10;
+
+      const motherInfo = [
+        { label: "Name", value: String(pigeon?.motherRingId?.name || "N/A") },
+        {
+          label: "Ring Number",
+          value: String(pigeon?.motherRingId?.ringNumber || "N/A"),
+        },
+        {
+          label: "Birth Year",
+          value: String(pigeon?.motherRingId?.birthYear || "N/A"),
+        },
+        {
+          label: "Country",
+          value: String(pigeon?.motherRingId?.country || "N/A"),
+        },
+        {
+          label: "Gender",
+          value: String(pigeon?.motherRingId?.gender || "N/A"),
+        },
+        {
+          label: "Loft Name",
+          value: String(pigeon?.motherRingId?.breeder?.loftName || "N/A"),
+        },
+        {
+          label: "Story",
+          value: String(pigeon?.motherRingId?.shortInfo || "N/A"),
+        },
+      ];
+
+      pdf.setFontSize(8);
+      motherInfo.forEach((item) => {
+        pdf.setFont("helvetica", "normal");
+        const label = `${item.label}: `;
+        pdf.text(label, rightParentX, motherY);
+
+        const labelWidth = pdf.getTextWidth(label);
+        pdf.setFont("helvetica", "bold");
+        const valueLines = pdf.splitTextToSize(
+          item.value,
+          columnWidth - labelWidth - 2
+        );
+        pdf.text(valueLines[0], rightParentX + labelWidth, motherY);
+
+        motherY += 7;
+      });
+
+      // Helper function to clean result text
+      const cleanResult = (text) => text.replace(/^\d+[\.\)]\s*/, "").trim();
+
+      // Mother Results Section
+      if (
+        pigeon?.motherRingId?.addresults &&
+        Array.isArray(pigeon.motherRingId.addresults) &&
+        pigeon.motherRingId.addresults.length > 0
+      ) {
+        motherY += 3;
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(8);
+        pdf.text("Results:", rightParentX, motherY);
+        motherY += 5;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7);
+        pigeon.motherRingId.addresults.forEach((result) => {
+          const cleanText = cleanResult(result);
+          const resultLines = pdf.splitTextToSize(cleanText, columnWidth - 2);
+          resultLines.forEach((line) => {
+            pdf.text(line, rightParentX, motherY);
+            motherY += 4;
+          });
+        });
+      }
+
+      // Father Results Section
+      if (
+        pigeon?.fatherRingId?.addresults &&
+        Array.isArray(pigeon.fatherRingId.addresults) &&
+        pigeon.fatherRingId.addresults.length > 0
+      ) {
+        fatherY += 3;
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(8);
+        pdf.text("Results:", leftParentX, fatherY);
+        fatherY += 5;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7);
+        pigeon.fatherRingId.addresults.forEach((result) => {
+          const cleanText = cleanResult(result);
+          const resultLines = pdf.splitTextToSize(cleanText, columnWidth - 2);
+          resultLines.forEach((line) => {
+            pdf.text(line, leftParentX, fatherY);
+            fatherY += 4;
+          });
+        });
+      }
+
+      yPosition = Math.max(fatherY, motherY) + 10;
 
       // Additional Information Section
       checkPageBreak(50);
@@ -217,11 +385,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
 
       const additionalInfo = [
         {
-          label: "Breeder",
-          value: String(pigeon?.breeder?.breederName || "N/A"),
-        },
-        {
-          label: "Breeder Loft Name",
+          label: "Loft Name",
           value: String(pigeon?.breeder?.loftName || "N/A"),
         },
         { label: "Location", value: String(pigeon?.location || "N/A") },

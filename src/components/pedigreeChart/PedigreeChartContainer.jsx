@@ -11,23 +11,24 @@ import { DownloadOutlined } from "@ant-design/icons";
 import { Button, Dropdown } from "antd";
 import "reactflow/dist/style.css";
 import logo from "../../../src/assets/image4.png";
+import Cock from "../../../public/assets/cock.png";
+import Hen from "../../../public/assets/hen.png";
+import Unspeficic from "../../../public/assets/unspeficic.png";
 
 import { useGetProfileQuery } from "../../redux/apiSlices/profileSlice";
 // import { useParams } from "next/navigation";
 // import Spinner from "@/app/(commonLayout)/Spinner";
 import { getCode } from "country-list";
 // import { WinnerPedigree } from "../share/svg/howItWorkSvg";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
 // import { convertBackendToExistingFormat } from "./PigeonData";
 // import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
 import { useParams } from "react-router-dom";
-import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
-import Spinner from "../common/Spinner";
-import { convertBackendToExistingFormat } from "./PedigreeData";
-import { exportPedigreeToPDF } from "./ExportPDF";
 import SpinnerCustom from "../../Pages/Dashboard/Spinner/SpinnerCustom";
+import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
+import { exportPedigreeToPDF } from "./ExportPDF";
+import { convertBackendToExistingFormat } from "./PedigreeData";
+import { getImageUrl } from "../common/imageUrl";
 // import { exportPedigreeToPDF } from "./exportPDF";
 
 const PigeonNode = ({ data }) => {
@@ -36,11 +37,38 @@ const PigeonNode = ({ data }) => {
   // Check if this is the subject node (generation 0)
   const isSubject = data.generation === 0;
 
+  // const getGenderIcon = (gender) => {
+  //   if (gender === "Cock") return "♂";
+  //   if (gender === "Hen") return "♀";
+  //   if (gender === "Unspecified") return "⛔";
+  //   return "⛔";
+  // };
+
   const getGenderIcon = (gender) => {
-    if (gender === "Cock") return "♂";
-    if (gender === "Hen") return "♀";
-    if (gender === "Unspecified") return "⛔";
-    return "⛔";
+    switch (gender) {
+      case "Cock":
+        return <img src="/assets/cock.png" alt="Cock" width={20} height={20} />;
+      case "Hen":
+        return <img src="/assets/hen.png" alt="Hen" width={20} height={20} />;
+      case "Unspecified":
+        return (
+          <img
+            src="/assets/unspecified.png"
+            alt="Unspecified"
+            width={20}
+            height={20}
+          />
+        );
+      default:
+        return (
+          <img
+            src="/assets/unspecified.png"
+            alt="Unspecified"
+            width={20}
+            height={20}
+          />
+        );
+    }
   };
 
   const getGenerationColor = (generation) => {
@@ -126,7 +154,7 @@ const PigeonNode = ({ data }) => {
               <img
                 src={`https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`}
                 alt={data.country}
-                className="w-6 h-5 rounded-sm"
+                className="w-5 h-4 rounded-sm"
               />
               <p className="text-black">{countryCode}</p>
             </div>
@@ -138,7 +166,7 @@ const PigeonNode = ({ data }) => {
             </span>
           )}
           {data.ringNumber && (
-            <span className=" font-bold text-[#C33739]">{data.ringNumber}</span>
+            <span className=" text-[#C33739]">{data.ringNumber}</span>
           )}
         </div>
         <div className="flex items-center gap-1">
@@ -203,27 +231,28 @@ const PigeonNode = ({ data }) => {
 
         {data.description && (
           <div className="">
-            <p className="text-sm text-slate-700">
-              {data.description.slice(0, 600)}
-            </p>
+            <p className=" text-black">{data.description.slice(0, 600)}</p>
           </div>
         )}
         {data.colorName && (
           <div className="">
-            <p className="text-sm text-slate-700"> color : {data.colorName}</p>
+            <p className=" text-black"> {data.colorName}</p>
           </div>
         )}
         {data.achievements && (
           <div className="flex items-start gap-1">
-            <p className="text-xs text-black">Results:</p>
-            <img
+            {/* <p className="text-xs text-black">Results:</p> */}
+            {/* <img
               src="/assets/GoldTrophy.png"
               alt="Letter P"
               width={24}
               height={24}
               className="w-6 h-6 mt-[2px]"
-            />
-            <p className="text-xs text-black whitespace-pre-line">
+            /> */}
+            <p
+              className="text-black whitespace-pre-line break-words max-w-[250px] overflow-hidden"
+              style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+            >
               {data.achievements}
             </p>
           </div>
@@ -789,7 +818,7 @@ export default function PigeonPedigreeChart() {
 
       <div className="relative">
         <img
-          src={logo}
+          src={getImageUrl(data.profile)}
           alt="The Pigeon Hub Logo"
           width={60}
           height={60}
@@ -830,30 +859,30 @@ export default function PigeonPedigreeChart() {
       </div>
       <div className="relative">
         <div className="absolute bottom-20 xl:bottom-28 2xl:bottom-32 -left-5 xl:left-24 2xl:left-52 text-black">
-          <p className="text-accent-foreground text-xs 2xl:text-lg  font-bold">
-            {pedigreeData?.data?.breeder?.breederName}
+          <p className="text-accent-foreground text-[11px] 2xl:text-lg  font-bold">
+            {data?.name}
           </p>
-          {pedigreeData?.data?.breeder?.country && (
-            <p className="text-[10px] ">
-              Location:{" "}
+          {data?.contact && (
+            <p className="text-[8px] ">
+              {/* Phone:{" "} */}
               <span className="text-accent-foreground text-[10px]  font-bold">
-                {pedigreeData?.data?.breeder?.country}
+                {data?.contact}
               </span>
             </p>
           )}
-          {pedigreeData?.data?.breeder?.phone && (
-            <p className="text-[10px] 2xl:text-xl">
-              Phone:{" "}
+          {data?.email && (
+            <p className="text-[8px]">
+              {/* Email:{" "} */}
               <span className="text-accent-foreground font-bold">
-                {pedigreeData?.data?.breeder?.phone}
+                {data?.email}
               </span>
             </p>
           )}
         </div>
       </div>
       <div className="w-full flex justify-center">
-        <h2 className="text-accent-foreground font-bold  mb-10">
-          Generated by <span className="text-accent">thepigeonhub.com</span>
+        <h2 className="text-[#37B7C3] font-bold  mb-10">
+          Generated by <span className="text-black">ThePigeonHub.Com</span>
         </h2>
       </div>
     </div>

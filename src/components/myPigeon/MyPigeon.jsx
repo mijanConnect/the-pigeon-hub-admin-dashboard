@@ -430,14 +430,171 @@ const MyPigeon = () => {
   // drag-to-scroll and a mirrored bottom scrollbar. This keeps this
   // component focused on table data & layout only.
 
+  const handleExportPDF = () => {
+    if (!pigeons?.length) {
+      alert("No data available to export");
+      return;
+    }
+
+    // Check if jspdf is available
+    if (typeof window !== "undefined") {
+      // Dynamic import for jspdf
+      import("jspdf").then((jsPDFModule) => {
+        const jsPDF = jsPDFModule.default;
+        import("jspdf-autotable").then((autoTableModule) => {
+          const autoTable = autoTableModule.default;
+          try {
+            const doc = new jsPDF();
+
+            // Add title
+            doc.setFontSize(16);
+            doc.text("Pigeon Data Export", 14, 22);
+            doc.setFontSize(8);
+            doc.setTextColor(100);
+
+            // Get table data
+            const tableColumn = [
+              "Name",
+              "Country",
+              "Breeder",
+              "Ring Number",
+              "Birth Year",
+              "Breeder Rating",
+              "Racing Rating",
+              "Color",
+              "Status",
+              "Gender",
+            ];
+
+            const tableRows = [];
+
+            pigeons.forEach((pigeon) => {
+              tableRows.push([
+                pigeon.name || "-",
+                pigeon.country || "-",
+                pigeon.breeder?.breederName || "-",
+                pigeon.ringNumber || "-",
+                pigeon.birthYear || "-",
+
+                pigeon.breederRating || "-",
+                pigeon.racingRating || "-",
+                pigeon.color || "-",
+                pigeon.status || "-",
+                pigeon.gender || "-",
+              ]);
+            });
+
+            autoTable(doc, {
+              head: [tableColumn],
+              body: tableRows,
+              startY: 30,
+              theme: "striped",
+              headStyles: {
+                fillColor: [58, 178, 127],
+                textColor: [255, 255, 255],
+                fontSize: 8,
+              },
+              alternateRowStyles: {
+                fillColor: [240, 240, 240],
+              },
+              styles: {
+                fontSize: 7,
+              },
+            });
+
+            // Add date
+            const date = new Date();
+            doc.setFontSize(8);
+            doc.text(
+              `Generated on ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`,
+              14,
+              doc.lastAutoTable.finalY + 10
+            );
+
+            doc.save(`pigeon-data-${date.toISOString().split("T")[0]}.pdf`);
+          } catch (error) {
+            console.error("Error generating PDF:", error);
+            alert(
+              "Error generating PDF. Please make sure jspdf and jspdf-autotable are installed."
+            );
+          }
+        });
+      });
+    }
+  };
+
+  const handleExportExcel = () => {
+    if (!pigeons.length) {
+      alert("No data available to export");
+      return;
+    }
+
+    // Check if xlsx is available
+    if (typeof window !== "undefined") {
+      // Dynamic import for xlsx
+      import("xlsx")
+        .then((XLSX) => {
+          try {
+            // Prepare the data
+            const worksheet = XLSX.utils.json_to_sheet(
+              pigeons.map((pigeon) => ({
+                Name: pigeon.name || "-",
+                Country: pigeon.country || "-",
+                Breeder: pigeon.breeder?.breederName || "-",
+                "Ring Number": pigeon.ringNumber || "-",
+                "Birth Year": pigeon.birthYear || "-",
+                "Breeder Rating": pigeon.breederRating || "-",
+                // "Racer Rating": pigeon.racerRating || "-",
+                "Racing Rating": pigeon.racingRating || "-",
+                // Pattern: pigeon.pattern || "-",
+                Status: pigeon.status || "-",
+                Gender: pigeon.gender || "-",
+                Color: pigeon.color || "-",
+                Location: pigeon.location || "-",
+              }))
+            );
+
+            // Create workbook
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Pigeons");
+
+            // Generate Excel file
+            const date = new Date().toISOString().split("T")[0];
+            XLSX.writeFile(workbook, `pigeon-data-${date}.xlsx`);
+          } catch (error) {
+            console.error("Error generating Excel:", error);
+            alert(
+              "Error generating Excel file. Please make sure xlsx is installed."
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading xlsx:", error);
+          alert("Please install xlsx by running: npm install xlsx");
+        });
+    }
+  };
+
   return (
     <div className="w-full">
-      <div className="flex justify-end mb-4 mt-4">
+      <div className="flex justify-end gap-2 mb-4 mt-4">
         <Button
           className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px]"
           onClick={handleAddPigeon}
         >
           Add New Pigeon
+        </Button>
+        <Button
+          className="bg-[#37B7C3] hover:!bg-cyan-300 text-white border-[#37B7C3] hover:!border-cyan-300 hover:!text-white py-5 px-7 font-semibold text-[16px]"
+          onClick={handleExportPDF}
+        >
+          Export to PDF
+        </Button>
+        <Button
+          className="bg-[#37B7C3] hover:!bg-cyan-300 text-white border-[#37B7C3] hover:!border-cyan-300 hover:!text-white py-5 px-7 font-semibold text-[16px]"
+          onClick={handleExportExcel}
+        >
+          Export to Excel
         </Button>
       </div>
 

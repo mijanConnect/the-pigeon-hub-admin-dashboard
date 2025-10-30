@@ -687,7 +687,10 @@ const PigeonManagement = () => {
     <div className="w-full">
       {/* Filters */}
       <div className="bg-[#333D49] rounded-lg shadow-lg border border-gray-200 mb-2 mt-6">
-        <Row gutter={[16, 16]} className="pt-4 filters-row flex flex-wrap px-4 mb-4">
+        <Row
+          gutter={[16, 16]}
+          className="pt-4 filters-row flex flex-wrap px-4 mb-4"
+        >
           <Col xs={24} sm={12} md={6} lg={5}>
             <div className="flex flex-col">
               <label className="mb-1 text-gray-300">Search</label>
