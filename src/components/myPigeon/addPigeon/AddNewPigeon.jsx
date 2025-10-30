@@ -19,6 +19,7 @@ import {
   message,
 } from "antd";
 import { getNames } from "country-list";
+import { FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -29,7 +30,6 @@ import {
   useUpdatePigeonMutation,
 } from "../../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../../common/imageUrl";
-import { FileText } from "lucide-react";
 
 const { Option } = Select;
 
@@ -70,11 +70,23 @@ const AddNewPigeon = ({ onSave }) => {
   const [motherSelected, setMotherSelected] = useState(null);
 
   const handleChangePlace = (e) => {
-    setValue(e.target.value);
+    const v = e.target.value;
+    setValue(v);
+    try {
+      form.setFieldsValue({ addresults: v });
+    } catch (e) {
+      /* ignore if form not ready */
+    }
   };
 
   const handleChangePlace2 = (e) => {
-    setValue2(e.target.value);
+    const v = e.target.value;
+    setValue2(v);
+    try {
+      form.setFieldsValue({ shortInfo: v });
+    } catch (e) {
+      /* ignore if form not ready */
+    }
   };
 
   // console.log("id", id);
@@ -198,6 +210,7 @@ const AddNewPigeon = ({ onSave }) => {
         motherRingId: pigeonData.motherRingId?.ringNumber || "",
         colorPattern: { color, pattern },
         verification: pigeonData.verified ? "verified" : "notverified",
+        shortInfo: pigeonData?.shortInfo || "",
         iconic: pigeonData.iconic ? "yes" : "no",
         breeder:
           pigeonData.breeder && typeof pigeonData.breeder === "object"
@@ -220,6 +233,11 @@ const AddNewPigeon = ({ onSave }) => {
       } catch (e) {
         // ignore
       }
+
+      // Set local controlled textarea state for shortInfo so the custom
+      // placeholder and controlled Input.TextArea show the value when
+      // editing. We also already set the form field above.
+      setValue2(pigeonData?.shortInfo || "");
 
       // show father ring in the input (keep typed value if user entered)
       if (pigeonData.fatherRingId) {
@@ -294,6 +312,8 @@ const AddNewPigeon = ({ onSave }) => {
       setBreederDisplay("");
       // reset addresults textarea value
       setValue("");
+      // reset shortInfo controlled textarea value
+      setValue2("");
     }
   }, [pigeonData, id, form]);
 
