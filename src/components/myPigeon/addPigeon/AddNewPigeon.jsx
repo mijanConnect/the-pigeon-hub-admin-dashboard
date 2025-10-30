@@ -28,6 +28,7 @@ import {
   useGetFatherMotherQuery,
   useGetSinglePigeonQuery,
   useUpdatePigeonMutation,
+  useGetAllNameQuery,
 } from "../../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../../common/imageUrl";
 
@@ -68,6 +69,23 @@ const AddNewPigeon = ({ onSave }) => {
   const [motherDisplay, setMotherDisplay] = useState("");
   const [fatherSelected, setFatherSelected] = useState(null);
   const [motherSelected, setMotherSelected] = useState(null);
+
+  const { data: allNames = [] } = useGetAllNameQuery();
+
+  console.log(allNames);
+
+  const validatePigeonName = (inputName) => {
+    // Get all existing pigeon names from API
+    const existingNames = allNames || [];
+
+    // Normalize the input name (lowercase and trim)
+    const normalizedInput = inputName?.trim().toLowerCase();
+    const isDuplicate = existingNames.some(
+      (pigeon) => pigeon.name?.trim().toLowerCase() === normalizedInput
+    );
+
+    return isDuplicate;
+  };
 
   const handleChangePlace = (e) => {
     const v = e.target.value;
@@ -1188,7 +1206,7 @@ const AddNewPigeon = ({ onSave }) => {
               </div>
 
               <div className="right flex w-full justify-start flex-col gap-4">
-                <Form.Item
+                {/* <Form.Item
                   label="Name"
                   name="name"
                   rules={[{ required: true }]}
@@ -1198,6 +1216,40 @@ const AddNewPigeon = ({ onSave }) => {
                     placeholder="Enter Name"
                     className="custom-input-ant-modal"
                     // required
+                  />
+                </Form.Item> */}
+
+                <Form.Item
+                  label="Name"
+                  name="name"
+                  rules={[
+                    { required: true, message: "Please enter a name" },
+                    {
+                      validator: (_, value) => {
+                        const existingNames = allNames || [];
+                        const normalizedInput = value?.trim().toLowerCase();
+                        const isDuplicate = existingNames.some(
+                          (pigeon) =>
+                            pigeon.name?.trim().toLowerCase() ===
+                            normalizedInput
+                        );
+
+                        if (isDuplicate) {
+                          return Promise.reject(
+                            new Error(
+                              "This pigeon is already registered in our database."
+                            )
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                  className="custom-form-item-ant"
+                >
+                  <Input
+                    placeholder="Enter Name"
+                    className="custom-input-ant-modal"
                   />
                 </Form.Item>
 
