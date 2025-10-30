@@ -20,7 +20,6 @@ import { IoMdDownload } from "react-icons/io";
 import { PiDnaBold } from "react-icons/pi";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import "../myPigeon/myPigeon.responsive.css";
 import {
   useDeletePigeonMutation,
   useGetAllPigeonsQuery,
@@ -28,6 +27,7 @@ import {
   useTogglePigeonStatusMutation,
   useUpdatePigeonMutation,
 } from "../../redux/apiSlices/allpigeonSlice";
+import "../myPigeon/myPigeon.responsive.css";
 // view handled by route /view-pigeon/:id
 import { attachDragToElement } from "../common/dragScroll";
 import { getImageUrl } from "../common/imageUrl";
@@ -706,14 +706,13 @@ const PigeonManagement = () => {
             doc.setFontSize(8);
             doc.setTextColor(100);
 
-            // Get table data
+            // Get table data (exclude Breeder column for exports and normalize country)
             const tableColumn = [
               "Name",
               "Country",
               "Breeder",
               "Ring Number",
               "Birth Year",
-              "Racing Rating",
               "Color",
               "Status",
               "Gender",
@@ -721,14 +720,23 @@ const PigeonManagement = () => {
 
             const tableRows = [];
 
+            const formatCountryForExport = (country) => {
+              if (!country) return "-";
+              if (typeof country === "object") {
+                return (
+                  country.name || country.country || JSON.stringify(country)
+                );
+              }
+              return String(country);
+            };
+
             pigeons.forEach((pigeon) => {
               tableRows.push([
                 pigeon.name || "-",
-                pigeon.country || "-",
-                pigeon.breeder?.breederName || "-",
+                formatCountryForExport(pigeon.country),
+                pigeon.breeder || "-",
                 pigeon.ringNumber || "-",
                 pigeon.birthYear || "-",
-                pigeon.racingRating || "-",
                 pigeon.color || "-",
                 pigeon.status || "-",
                 pigeon.gender || "-",
@@ -787,15 +795,25 @@ const PigeonManagement = () => {
         .then((XLSX) => {
           try {
             // Prepare the data
+            const formatCountryForExport = (country) => {
+              if (!country) return "-";
+              if (typeof country === "object") {
+                return (
+                  country.name || country.country || JSON.stringify(country)
+                );
+              }
+              return String(country);
+            };
+
             const worksheet = XLSX.utils.json_to_sheet(
               pigeons.map((pigeon) => ({
                 Name: pigeon.name || "-",
-                Country: pigeon.country || "-",
-                Breeder: pigeon.breeder?.breederName || "-",
+                Country: formatCountryForExport(pigeon.country),
+                Breeder: pigeon.breeder || "-",
                 "Ring Number": pigeon.ringNumber || "-",
                 "Birth Year": pigeon.birthYear || "-",
                 // "Racer Rating": pigeon.racerRating || "-",
-                "Racing Rating": pigeon.racingRating || "-",
+                // "Racing Rating": pigeon.racingRating || "-",
                 // Pattern: pigeon.pattern || "-",
                 Status: pigeon.status || "-",
                 Gender: pigeon.gender || "-",

@@ -429,7 +429,7 @@ const MyPigeon = () => {
   // We use the reusable SyncHorizontalScroll component below to provide
   // drag-to-scroll and a mirrored bottom scrollbar. This keeps this
   // component focused on table data & layout only.
-
+console.log(pigeons)
   const handleExportPDF = () => {
     if (!pigeons?.length) {
       alert("No data available to export");
@@ -459,7 +459,6 @@ const MyPigeon = () => {
               "Breeder",
               "Ring Number",
               "Birth Year",
-              "Racing Rating",
               "Color",
               "Status",
               "Gender",
@@ -467,14 +466,24 @@ const MyPigeon = () => {
 
             const tableRows = [];
 
+            const formatCountryForExport = (country) => {
+              if (!country) return "-";
+              if (typeof country === "object") {
+                // some APIs return { name: 'Country Name' } or similar
+                return (
+                  country.name || country.country || JSON.stringify(country)
+                );
+              }
+              return String(country);
+            };
+
             pigeons.forEach((pigeon) => {
               tableRows.push([
                 pigeon.name || "-",
-                pigeon.country || "-",
-                pigeon.breeder?.breederName || "-",
+                formatCountryForExport(pigeon.country),
+                pigeon.breeder || "-",
                 pigeon.ringNumber || "-",
                 pigeon.birthYear || "-",
-                pigeon.racingRating || "-",
                 pigeon.color || "-",
                 pigeon.status || "-",
                 pigeon.gender || "-",
@@ -533,15 +542,25 @@ const MyPigeon = () => {
         .then((XLSX) => {
           try {
             // Prepare the data
+            const formatCountryForExport = (country) => {
+              if (!country) return "-";
+              if (typeof country === "object") {
+                return (
+                  country.name || country.country || JSON.stringify(country)
+                );
+              }
+              return String(country);
+            };
+
             const worksheet = XLSX.utils.json_to_sheet(
               pigeons.map((pigeon) => ({
                 Name: pigeon.name || "-",
-                Country: pigeon.country || "-",
-                Breeder: pigeon.breeder?.breederName || "-",
+                Country: formatCountryForExport(pigeon.country),
+                Breeder: pigeon.breeder || "-",
                 "Ring Number": pigeon.ringNumber || "-",
                 "Birth Year": pigeon.birthYear || "-",
                 // "Racer Rating": pigeon.racerRating || "-",
-                "Racing Rating": pigeon.racingRating || "-",
+                // "Racing Rating": pigeon.racingRating || "-",
                 // Pattern: pigeon.pattern || "-",
                 Status: pigeon.status || "-",
                 Gender: pigeon.gender || "-",
