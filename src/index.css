@@ -945,3 +945,7 @@ select {
 .ant-pagination-item {
   display: none !important;
 }
+
+.ant-upload-list-item::before{
+  display: none !important;
+}

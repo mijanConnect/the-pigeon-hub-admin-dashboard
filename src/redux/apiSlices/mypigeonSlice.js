@@ -202,6 +202,17 @@ const mypigeonSlice = api.injectEndpoints({
       },
       providesTags: ["Pigeon"],
     }),
+
+    getAllName: builder.query({
+      query: () => ({
+        url: `/pigeon/searchAllName`,
+        method: "GET",
+      }),
+      transformResponse: (response) => {
+        return response?.data || [];
+      },
+      providesTags: ["Pigeon"],
+    }),
   }),
 });
 
@@ -216,4 +227,5 @@ export const {
   useDeletePigeonMutation,
   useGetBreederNamesQuery, // ✅ New hook for breeder names
   useGetFatherMotherQuery,
+  useGetAllNameQuery,
 } = mypigeonSlice;

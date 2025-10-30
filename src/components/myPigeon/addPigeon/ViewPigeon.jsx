@@ -2,7 +2,11 @@ import { Button, Spin, Table } from "antd";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import React, { useEffect, useRef, useState } from "react";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import {
+  IoIosArrowBack,
+  IoIosArrowForward,
+  IoMdDownload,
+} from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
 import PlaceholderImg from "../../../assets/placeholder.png";
 import VerifyIcon from "../../../assets/verify.png";
@@ -12,6 +16,7 @@ import {
 } from "../../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../../common/imageUrl";
 import PigeonPdfExport from "./ExportPdf";
+import { FileText } from "lucide-react";
 
 const safeValue = (value) => {
   if (value === null || value === undefined || value === "" || value === "-")
@@ -172,19 +177,122 @@ const ImageSlider = ({
           </button>
         )}
 
-        <img
-          src={getImageUrl(photos[index].url)}
-          alt={photos[index].label}
-          style={{
-            width: "100%",
-            height: "100%",
-            borderRadius: 8,
-            objectFit: "cover",
-            userSelect: "none",
-            WebkitUserDrag: "none",
-          }}
-          draggable={false}
-        />
+        {(() => {
+          const url = photos[index].url;
+          const resolved = getImageUrl(url);
+          const isPdf =
+            typeof resolved === "string" &&
+            String(resolved).toLowerCase().includes(".pdf");
+
+          if (isPdf) {
+            const filename =
+              `${photos[index].label || "document"}`.replace(/\s+/g, "-") +
+              ".pdf";
+            return (
+              <div
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 8,
+                  background: "rgba(0,0,0,0.1)",
+                  position: "relative",
+                }}
+              >
+                <div
+                  style={{
+                    textAlign: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <FileText size={120} color="#E33E3E" />
+                  <div
+                    style={{ marginTop: 8, color: "#111827", fontWeight: 600 }}
+                  >
+                    {`${photos[index].label} Document` || "PDF"}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    // Try to fetch the file as a blob and force a download. This works
+                    // even for cross-origin resources if the server permits CORS.
+                    // If fetching fails (CORS or network issues), fallback to opening
+                    // the URL in a new tab.
+                    try {
+                      const resp = await fetch(resolved, { mode: "cors" });
+                      if (!resp.ok)
+                        throw new Error("Network response was not ok");
+                      const blob = await resp.blob();
+                      const blobUrl = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = blobUrl;
+                      a.download = filename;
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      // Revoke the object URL shortly after to free memory
+                      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+                    } catch (err) {
+                      // Fallback: open the file in a new tab (best-effort)
+                      // Note: anchor download won't work for cross-origin resources
+                      // unless the server sets proper headers. Opening in a new tab
+                      // at least allows the user to manually save the file.
+                      // eslint-disable-next-line no-console
+                      console.error("Download failed, opening in new tab", err);
+                      const a = document.createElement("a");
+                      a.href = resolved;
+                      a.target = "_blank";
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                    }
+                  }}
+                  style={{
+                    position: "absolute",
+                    right: "45%",
+                    top: "75%",
+                    color: "#E33E3E",
+                    border: "none",
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                  }}
+                  aria-label="Download PDF"
+                >
+                  <IoMdDownload size={18} />
+                </button>
+              </div>
+            );
+          }
+
+          return (
+            <img
+              src={resolved}
+              alt={photos[index].label}
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: 8,
+                objectFit: "cover",
+                userSelect: "none",
+                WebkitUserDrag: "none",
+              }}
+              draggable={false}
+            />
+          );
+        })()}
 
         {showArrows && (
           <button

@@ -1,4 +1,5 @@
 import {
+  DeleteOutlined,
   DownOutlined,
   LeftOutlined,
   PlusOutlined,
@@ -28,6 +29,7 @@ import {
   useUpdatePigeonMutation,
 } from "../../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../../common/imageUrl";
+import { FileText } from "lucide-react";
 
 const { Option } = Select;
 
@@ -141,9 +143,37 @@ const AddNewPigeon = ({ onSave }) => {
             name: String(url).split("/").pop() || "image",
             status: "done",
             url: String(url).startsWith("http") ? url : getImageUrl(url),
+            // If the URL points to a PDF file, provide a thumbnail data URL so
+            // the Upload picture-card shows a PDF icon instead of a broken image.
+            thumbUrl: String(url).toLowerCase().includes(".pdf")
+              ? pdfThumbDataUrl(String(url).split("/").pop() || "PDF")
+              : undefined,
           },
         ]
       : [];
+
+  // Helper to generate a small SVG thumbnail data URL for a PDF file.
+  // Label is used as a small filename hint inside the SVG.
+  const pdfThumbDataUrl = (label = "PDF") => {
+    const safeLabel = String(label).slice(0, 20);
+    // SVG that resembles a document with a small file-text icon and red accent.
+    const svg = `
+      <svg xmlns='http://www.w3.org/2000/svg' width='240' height='180' viewBox='0 0 120 90'>
+        <rect width='120' height='90' rx='6' fill='%23ffffff' />
+        <!-- document -->
+        <path d='M12 6h60l30 30v48a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6V12a6 6 0 0 1 6-6z' fill='%23f8fafc' stroke='%23e5e7eb' />
+        <!-- folded corner -->
+        <path d='M72 6v24h24' fill='%23fff' stroke='%23e5e7eb' />
+        <!-- icon square -->
+        <rect x='24' y='30' width='24' height='24' rx='3' fill='%23E33E3E' />
+        <!-- small text lines -->
+        <rect x='54' y='34' width='32' height='4' rx='2' fill='%23111' />
+        <rect x='54' y='42' width='32' height='4' rx='2' fill='%234b5563' />
+        <rect x='24' y='60' width='62' height='4' rx='2' fill='%23c7cdd3' />
+        <text x='24' y='82' font-size='6' fill='%234b5563' font-family='Arial, Helvetica, sans-serif'>${safeLabel}</text>
+      </svg>`;
+    return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+  };
 
   useEffect(() => {
     if (pigeonData) {
@@ -666,6 +696,102 @@ const AddNewPigeon = ({ onSave }) => {
     multiple: false,
     fileList: fileLists[key],
     showUploadList: { showPreviewIcon: true, showRemoveIcon: true },
+    // Custom renderer for upload list items so we can show a proper PDF
+    // icon (inline SVG) instead of a black/empty thumbnail when the item
+    // is a PDF. The actions object gives us preview/remove handlers.
+    itemRender: (originNode, file, fileListRender, actions) => {
+      try {
+        const isPdfFile =
+          (file && file.type === "application/pdf") ||
+          (file &&
+            file.name &&
+            String(file.name).toLowerCase().endsWith(".pdf")) ||
+          (file && file.thumbUrl && String(file.thumbUrl).includes("svg"));
+
+        if (!isPdfFile) return originNode;
+
+        // Use Ant's preview/remove actions
+        const { preview, remove } = actions || {};
+
+        return (
+          <div
+            className="ant-upload-list-item ant-upload-list-item-done"
+            style={{ position: "relative", width: "100%", height: "100%" }}
+          >
+            <div
+              className="ant-upload-list-item-info"
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                className="ant-upload-list-item-thumbnail"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {/* Inline SVG file icon (red accent) to avoid relying on img rendering */}
+                <FileText size={70} color="#E33E3E" />
+              </span>
+
+              {/* Overlay actions (preview/remove) positioned top-right.
+                  Use Ant Design's actions markup (ul > li) so the styling and
+                  hover behavior match image thumbnails. */}
+              <ul
+                className="ant-upload-list-item-actions"
+                style={{ position: "absolute", right: 6, top: 6 }}
+              >
+                {preview && (
+                  <li
+                    className="ant-upload-list-item-action"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      try {
+                        preview(file);
+                      } catch (err) {
+                        const src =
+                          file.url ||
+                          file.thumbUrl ||
+                          (file.originFileObj &&
+                            URL.createObjectURL(file.originFileObj));
+                        if (src) window.open(src, "_blank");
+                      }
+                    }}
+                  >
+                    {/* <span className="ant-upload-list-item-action-btn"><EyeOutlined /></span> */}
+                  </li>
+                )}
+
+                {remove && (
+                  <li
+                    className="ant-upload-list-item-action"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      remove(file);
+                    }}
+                  >
+                    <span className="ant-upload-list-item-action-btn">
+                      <DeleteOutlined />
+                    </span>
+                  </li>
+                )}
+              </ul>
+            </div>
+          </div>
+        );
+      } catch (e) {
+        // if anything goes wrong, fall back to Ant origin node
+        return originNode;
+      }
+    },
     onPreview: async (file) => {
       // Open file in a new tab. Works for images and PDFs.
       let src = file.url || file.thumbUrl;
@@ -710,7 +836,17 @@ const AddNewPigeon = ({ onSave }) => {
 
       // Valid file — create preview and set into controlled state
       setPhotos((p) => ({ ...p, [key]: file }));
-      const previewUrl = URL.createObjectURL(file);
+      // For images we can use an object URL for preview. For PDFs we create
+      // a small SVG data URL so the Upload UI shows an icon-like thumbnail and
+      // the remove/preview overlays still work the same as for images.
+      const isPdf =
+        file.type === "application/pdf" ||
+        String(file.name || "")
+          .toLowerCase()
+          .endsWith(".pdf");
+      const previewUrl = isPdf
+        ? pdfThumbDataUrl(file.name || "PDF")
+        : URL.createObjectURL(file);
       setFileLists((fl) => ({
         ...fl,
         [key]: [
@@ -718,7 +854,7 @@ const AddNewPigeon = ({ onSave }) => {
             uid: `${Math.random()}`,
             name: file.name,
             status: "done",
-            url: previewUrl,
+            url: isPdf ? undefined : previewUrl,
             thumbUrl: previewUrl,
             originFileObj: file,
           },
