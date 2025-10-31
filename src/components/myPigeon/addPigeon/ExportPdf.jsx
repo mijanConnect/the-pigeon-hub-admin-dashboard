@@ -242,7 +242,6 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
         fatherY += 7;
       });
 
-
       // Father Results Section
       // if (
       //   pigeon?.fatherRingId?.addresults &&
