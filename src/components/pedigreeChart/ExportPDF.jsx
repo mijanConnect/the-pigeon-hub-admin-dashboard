@@ -2,16 +2,30 @@ import jsPDF from "jspdf";
 import { useCallback } from "react";
 
 // Helper function to load image as base64
-const loadImageAsBase64 = async (url) => {
+const loadImageAsBase64 = async (url, isCircular = false) => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
+      const size = Math.min(img.width, img.height);
+      canvas.width = size;
+      canvas.height = size;
       const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0);
+
+      if (isCircular) {
+        // Create circular clipping path
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+      }
+
+      // Draw image (centered if dimensions differ)
+      const offsetX = (size - img.width) / 2;
+      const offsetY = (size - img.height) / 2;
+      ctx.drawImage(img, offsetX, offsetY, img.width, img.height);
+
       resolve(canvas.toDataURL("image/png"));
     };
     img.onerror = () => {
@@ -27,6 +41,7 @@ export const exportPedigreeToPDF = async (
   nodes,
   edges,
   pedigreeData,
+  data,
   generations = null
 ) => {
   try {
@@ -51,9 +66,21 @@ export const exportPedigreeToPDF = async (
     let unspecifiedImage = null;
 
     try {
+      const getImageUrl = (path) => {
+        if (path?.startsWith("http://") || path?.startsWith("https://")) {
+          return path;
+        } else {
+          const baseUrl = "https://ftp.thepigeonhub.com";
+          // const baseUrl = "http://10.10.7.41:5001";
+          // const baseUrl = baseUrlApi;
+          return `${baseUrl}/${path?.replace(/^\/+/, "")}`; // Remove leading slashes
+        }
+      };
+
       // Load logo from pedigreeData if available, otherwise use default
-      const logoUrl = pedigreeData?.data?.breeder?.logo || "/assets/logo.png";
-      logoImage = await loadImageAsBase64(logoUrl);
+      const profilePath = data?.profile || "/assests/logo.png";
+      const logoUrl = getImageUrl(profilePath);
+      logoImage = await loadImageAsBase64(logoUrl, true); // true for circular
 
       letterBImage = await loadImageAsBase64("/assets/Letter-B.png");
       letterPImage = await loadImageAsBase64("/assets/Letter-P.png");
@@ -618,31 +645,23 @@ export const exportPedigreeToPDF = async (
 
     // === FOOTER: Breeder Info ===
     const footerY = pageHeight - margin - 10;
-    pdf.setFontSize(7);
+    pdf.setFontSize(5.8);
     pdf.setFont("helvetica", "bold");
     pdf.setTextColor(0, 0, 0);
 
-    if (pedigreeData?.data?.breeder?.loftName) {
-      pdf.text(pedigreeData.data.breeder.loftName, margin, footerY);
+    if (data?.name) {
+      pdf.text(data.name, margin, footerY);
     }
 
     pdf.setFont("helvetica", "normal");
     let footerTextY = footerY + 3.5;
 
-    if (pedigreeData?.data?.breeder?.country) {
-      pdf.text(
-        `Location: ${pedigreeData.data.breeder.country}`,
-        margin,
-        footerTextY
-      );
+    if (data?.contact) {
+      pdf.text(` ${data.contact}`, margin, footerTextY);
       footerTextY += 3.5;
     }
-    if (pedigreeData?.data?.breeder?.phone) {
-      pdf.text(
-        `Phone: ${pedigreeData.data.breeder.phone}`,
-        margin,
-        footerTextY
-      );
+    if (data?.email) {
+      pdf.text(`${data.email}`, margin, footerTextY);
     }
 
     // === BOTTOM CENTER ===

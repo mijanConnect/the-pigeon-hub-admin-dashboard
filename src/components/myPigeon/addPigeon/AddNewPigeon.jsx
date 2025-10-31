@@ -1033,7 +1033,7 @@ const AddNewPigeon = ({ onSave }) => {
                 </Form.Item>
 
                 <Form.Item
-                  label="Loft Name"
+                  label="Breeder Name"
                   name="breeder"
                   // rules={[{ required: true, message: "Please select a breeder" }]}
                   className="custom-form-item-ant-select"
@@ -1046,8 +1046,8 @@ const AddNewPigeon = ({ onSave }) => {
                     }))}
                     placeholder={
                       breedersLoading
-                        ? "Loading Lofts..."
-                        : "Type or Select Loft Name"
+                        ? "Loading Breeders..."
+                        : "Type or Select Breeder Name"
                     }
                     className="custom-select-ant-modal"
                     value={breederDisplay}
