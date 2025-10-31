@@ -18,7 +18,7 @@ const Main = () => {
 
   return (
     <div
-      className="min-h-screen w-full flex bg-baseBg overflow-hidden"
+      className="min-h-screen w-full flex bg-baseBg overflow-visible"
       style={{ maxWidth: "1880px", margin: "0 auto" }}
     >
       {/* Sidebar */}

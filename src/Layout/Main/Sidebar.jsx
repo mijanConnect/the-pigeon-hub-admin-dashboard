@@ -1,31 +1,19 @@
-import { Menu, Modal } from "antd";
-import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { IoIosLogOut } from "react-icons/io";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { Menu, Modal } from "antd";
+import { useEffect, useState } from "react";
+import { IoIosLogOut } from "react-icons/io";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import image4 from "../../assets/image4.png";
 import {
+  Analytics,
   Dashboard,
-  Marchant,
-  SalesRepsManagement,
-  Settings,
-  RetailersManagement,
-  InventoryManagement,
-  LoyaltyProgram,
-  SubscriptionManagement,
-  OrderManagement,
-  People,
-  PromotionManagement,
-  SalesRep,
-  AuditLog,
   loginCredentials,
-  Rewords,
   MyPigeon,
   PigeonManagement,
-  Analytics,
+  Settings,
+  SubscriptionManagement,
   Verified,
 } from "../../components/common/Svg";
-import image4 from "../../assets/image4.png";
-import VerifySidebar from "../../assets/verify-sidebar.png";
 
 const Sidebar = ({ collapsed, setCollapsed }) => {
   const location = useLocation();
@@ -285,7 +273,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   return (
     <div
-      className="h-full flex flex-col bg-white transition-all duration-300"
+      className="sticky top-0 self-start h-screen flex flex-col bg-white transition-all duration-300 overflow-y-auto"
       style={{ width: collapsed ? 80 : 250 }}
     >
       {/* Toggle Button */}
