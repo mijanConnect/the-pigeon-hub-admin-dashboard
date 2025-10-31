@@ -566,7 +566,7 @@ const ViewPigeon = () => {
 
                   {/* Father Information */}
                   <p className="border p-4 rounded-lg">
-                    {pigeonData.fatherRingId?.name ? (
+                    {/* {pigeonData.fatherRingId?.name ? ( */}
                       <div className="space-y-2">
                         <div className="flex gap-1">
                           <p className="font-normal text-[14px]">
@@ -629,11 +629,11 @@ const ViewPigeon = () => {
                           </p>
                         </div>
                       </div>
-                    ) : (
+                    {/* ) : (
                       <p className="font-normal text-[14px] text-gray-400">
                         No Information Available
                       </p>
-                    )}
+                    )} */}
                   </p>
                 </div>
 
@@ -644,7 +644,7 @@ const ViewPigeon = () => {
 
                   {/* Mother Information */}
                   <p className="border p-4 rounded-lg">
-                    {pigeonData.motherRingId?.name ? (
+                    {/* {pigeonData.motherRingId?.name ? ( */}
                       <div className="space-y-2">
                         <div className="flex gap-1">
                           <p className="font-normal text-[14px]">
@@ -707,11 +707,11 @@ const ViewPigeon = () => {
                           </p>
                         </div>
                       </div>
-                    ) : (
+                    {/* ) : (
                       <p className="font-normal text-[14px] text-gray-400">
                         No Information Available
                       </p>
-                    )}
+                    )} */}
                   </p>
                 </div>
               </div>
@@ -899,7 +899,9 @@ const ViewPigeon = () => {
                                     <a
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        navigate(`/pigeon-management/${record._id}`);
+                                        navigate(
+                                          `/pigeon-management/${record._id}`
+                                        );
                                       }}
                                       style={{
                                         cursor: "pointer",
