@@ -647,11 +647,20 @@ const PigeonManagement = () => {
                     handleDownload(record, key);
                   }}
                 >
-                  <Menu.Item key="pedigree">Original pedigree</Menu.Item>
-                  <Menu.Item key="ownership">Ownership card</Menu.Item>
+                  {record.pedigreePhoto ? (
+                    <Menu.Item key="pedigree">Original pedigree</Menu.Item>
+                  ) : null}
+                  {record.ownershipPhoto ? (
+                    <Menu.Item key="ownership">Ownership card</Menu.Item>
+                  ) : null}
+                  {/* Always show details export option */}
                   <Menu.Item key="details">Pigeon details</Menu.Item>
-                  <Menu.Item key="dna">DNA certificate</Menu.Item>
-                  <Menu.Item key="photo">Pigeon photo</Menu.Item>
+                  {record.DNAPhoto ? (
+                    <Menu.Item key="dna">DNA certificate</Menu.Item>
+                  ) : null}
+                  {record.pigeonPhoto ? (
+                    <Menu.Item key="photo">Pigeon photo</Menu.Item>
+                  ) : null}
                 </Menu>
               }
               trigger={["click"]}

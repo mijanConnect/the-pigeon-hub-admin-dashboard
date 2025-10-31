@@ -429,7 +429,7 @@ const MyPigeon = () => {
   // We use the reusable SyncHorizontalScroll component below to provide
   // drag-to-scroll and a mirrored bottom scrollbar. This keeps this
   // component focused on table data & layout only.
-console.log(pigeons)
+  console.log(pigeons);
   const handleExportPDF = () => {
     if (!pigeons?.length) {
       alert("No data available to export");

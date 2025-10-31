@@ -11,9 +11,9 @@ import { DownloadOutlined } from "@ant-design/icons";
 import { Button, Dropdown } from "antd";
 import "reactflow/dist/style.css";
 import logo from "../../../src/assets/image4.png";
-import Cock from "../../../public/assets/cock.png";
-import Hen from "../../../public/assets/hen.png";
-import Unspeficic from "../../../public/assets/unspeficic.png";
+import Cock from "../../../src/assets/cock.png";
+import Hen from "../../../src/assets/hen.png";
+import Unspeficic from "../../../src/assets/unspeficic.png";
 
 import { useGetProfileQuery } from "../../redux/apiSlices/profileSlice";
 // import { useParams } from "next/navigation";
@@ -47,13 +47,13 @@ const PigeonNode = ({ data }) => {
   const getGenderIcon = (gender) => {
     switch (gender) {
       case "Cock":
-        return <img src="/assets/cock.png" alt="Cock" width={20} height={20} />;
+        return <img src={Cock} alt="Cock" width={20} height={20} />;
       case "Hen":
-        return <img src="/assets/hen.png" alt="Hen" width={20} height={20} />;
+        return <img src={Hen} alt="Hen" width={20} height={20} />;
       case "Unspecified":
         return (
           <img
-            src="/assets/unspecified.png"
+            src={Unspeficic}
             alt="Unspecified"
             width={20}
             height={20}
