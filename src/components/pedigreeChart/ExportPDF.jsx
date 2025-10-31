@@ -277,7 +277,7 @@ export const exportPedigreeToPDF = async (
         pdf.addImage(cockImage, "PNG", rightX, currentY - 2.5, 3, 3);
         rightX += iconWidth + iconSpacing;
       } else if (data.gender === "Hen") {
-        pdf.addImage(henImage, "PNG", rightX, currentY - 2.5, 2, 2.5);
+        pdf.addImage(henImage, "PNG", rightX, currentY - 2.2, 2.7, 2.4);
         rightX += iconWidth + iconSpacing;
       } else if (data.gender === "Unspecified") {
         pdf.addImage(unspecifiedImage, "PNG", rightX, currentY - 2.5, 2.5, 2.5);
