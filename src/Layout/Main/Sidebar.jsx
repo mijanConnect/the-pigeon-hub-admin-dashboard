@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { IoIosLogOut } from "react-icons/io";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import image4 from "../../assets/image4.png";
+import Verify from "../../assets/verify.png";
 import {
   Analytics,
   Dashboard,
@@ -12,7 +13,6 @@ import {
   PigeonManagement,
   Settings,
   SubscriptionManagement,
-  Verified,
 } from "../../components/common/Svg";
 
 const Sidebar = ({ collapsed, setCollapsed }) => {
@@ -89,7 +89,19 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     },
     {
       key: "/verify-breeder",
-      icon: renderIcon(Verified, "/verify-breeder"),
+      icon: (
+        <div
+          style={{ width: 24, height: 24 }}
+          className={isItemActive("/verify-breeder") ? "svg-active" : ""}
+        >
+          <img
+            src={Verify}
+            alt="verify"
+            className="menu-icon"
+            style={{ width: 24, height: 24 }}
+          />
+        </div>
+      ),
       label: (
         <Link to="/verify-breeder">{collapsed ? "" : "Verify Breeders"}</Link>
       ),
@@ -183,6 +195,33 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       className="sticky top-0 self-start h-screen flex flex-col bg-white transition-all duration-300 overflow-y-auto"
       style={{ width: collapsed ? 80 : 250 }}
     >
+      {/* Force menu icon paths to follow currentColor and become white on hover/active */}
+      <style>{`
+        /* Only normalize fills so stroke-based icons keep their original stroke thickness */
+        .menu-icon path {
+          fill: currentColor !important;
+        }
+
+        /* default icon color */
+        .menu-icon { color: #1E1E1E; }
+
+        /* make icons white on hover/active/selected (paths will become white) */
+        .ant-menu-item:hover .menu-icon,
+        .ant-menu-submenu-title:hover .menu-icon,
+        .ant-menu-item-active .menu-icon,
+        .ant-menu-item-selected .menu-icon,
+        .svg-active .menu-icon {
+          color: #ffffff !important;
+        }
+
+        /* target path elements directly to override explicit fills (no stroke changes) */
+        .ant-menu-item:hover .menu-icon path,
+        .ant-menu-submenu-title:hover .menu-icon path,
+        .ant-menu-item-active .menu-icon path,
+        .ant-menu-item-selected .menu-icon path {
+          fill: #ffffff !important;
+        }
+      `}</style>
       {/* Toggle Button */}
       <div
         className="flex justify-end items-center p-2 cursor-pointer"
