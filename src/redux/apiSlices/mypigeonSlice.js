@@ -49,7 +49,7 @@ const mypigeonSlice = api.injectEndpoints({
           pigeonPhoto: pigeon?.pigeonPhoto || "",
           name: pigeon.name || "N/A",
           country: { name: pigeon.country, icon: "" },
-          breeder: pigeon.breeder?.breederName || "N/A",
+          breeder: pigeon.breeder?.loftName || "N/A",
           ringNumber: pigeon.ringNumber || "N/A",
           birthYear: pigeon.birthYear || "N/A",
           father: pigeon.fatherRingId

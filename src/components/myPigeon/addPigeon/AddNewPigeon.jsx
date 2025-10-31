@@ -232,9 +232,7 @@ const AddNewPigeon = ({ onSave }) => {
         iconic: pigeonData.iconic ? "yes" : "no",
         breeder:
           pigeonData.breeder && typeof pigeonData.breeder === "object"
-            ? pigeonData.breeder.breederName ||
-              pigeonData.breeder.name ||
-              pigeonData.breeder._id
+            ? pigeonData.breeder.loftName
             : pigeonData.breeder,
       });
 
@@ -273,9 +271,7 @@ const AddNewPigeon = ({ onSave }) => {
       // show breeder name/string in the input (resolve later when breederNames arrive)
       if (pigeonData.breeder) {
         if (typeof pigeonData.breeder === "object")
-          setBreederDisplay(
-            pigeonData.breeder.breederName || pigeonData.breeder.name || ""
-          );
+          setBreederDisplay(pigeonData.breeder.loftName || "");
         else setBreederDisplay(pigeonData.breeder);
       }
       // show mother ring in the input (keep typed value if user entered)
@@ -384,12 +380,16 @@ const AddNewPigeon = ({ onSave }) => {
       const current = form.getFieldValue("breeder");
       if (current) {
         const match = breederNames.find(
-          (b) => b._id === current || b.breederName === current
+          (b) =>
+            b._id === current ||
+            b.loftName === current ||
+            b.breederName === current
         );
         if (match) {
-          // show the breeder name in the input; keep the form value as the name
-          setBreederDisplay(match.breederName);
-          form.setFieldsValue({ breeder: match.breederName });
+          // prefer loftName for display but fall back to breederName
+          const display = match.loftName || match.breederName || "";
+          setBreederDisplay(display);
+          form.setFieldsValue({ breeder: display });
         }
       }
     } catch (e) {
@@ -1040,8 +1040,8 @@ const AddNewPigeon = ({ onSave }) => {
                 >
                   <AutoComplete
                     options={breederNames.map((b) => ({
-                      value: b.breederName,
-                      label: b.breederName,
+                      value: b.loftName || b.breederName,
+                      label: b.loftName || b.breederName,
                       id: b._id,
                     }))}
                     placeholder={
@@ -1058,11 +1058,16 @@ const AddNewPigeon = ({ onSave }) => {
                     }
                     onSelect={(value, option) => {
                       const selected = breederNames.find(
-                        (b) => b.breederName === value || b._id === option?.id
+                        (b) =>
+                          b.loftName === value ||
+                          b.breederName === value ||
+                          b._id === option?.id
                       );
                       if (selected) {
-                        form.setFieldsValue({ breeder: selected.breederName });
-                        setBreederDisplay(selected.breederName);
+                        const display =
+                          selected.loftName || selected.breederName;
+                        form.setFieldsValue({ breeder: display });
+                        setBreederDisplay(display);
                       } else {
                         form.setFieldsValue({ breeder: value });
                         setBreederDisplay(value);
@@ -2017,7 +2022,7 @@ const AddNewPigeon = ({ onSave }) => {
           key="save-another"
           onClick={handleSaveAndCreateAnother}
           loading={isAdding}
-          className="bg-[#37B7C3] border border-[#37B7C3] hover:!border-[#37B7C3] text-white hover:!text-[#37B7C3]"
+          className="bg-[#088395] border border-[#088395] hover:!border-[#088395] text-white hover:!text-[#088395]"
         >
           Save and Create Another Pigeon
         </Button>

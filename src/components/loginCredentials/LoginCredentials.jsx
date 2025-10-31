@@ -179,7 +179,7 @@ const LoginCredentials = () => {
       text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#37B7C3",
+      confirmButtonColor: "#088395",
       cancelButtonColor: "#C33739",
       confirmButtonText: "Yes, delete it!",
     }).then(async (result) => {
@@ -219,7 +219,7 @@ const LoginCredentials = () => {
       render: (status) => (
         <span
           style={{
-            color: status === "Active" ? "#37B7C3" : "#ff4d4f",
+            color: status === "Active" ? "#088395" : "#ff4d4f",
             fontWeight: "500",
           }}
         >
@@ -271,7 +271,7 @@ const LoginCredentials = () => {
                 checked={record.status === "Active"}
                 style={{
                   backgroundColor:
-                    record.status === "Active" ? "#37B7C3" : "gray",
+                    record.status === "Active" ? "#088395" : "gray",
                 }}
                 onChange={(checked) => {
                   Swal.fire({
@@ -281,7 +281,7 @@ const LoginCredentials = () => {
                     }.`,
                     icon: "warning",
                     showCancelButton: true,
-                    confirmButtonColor: "#37B7C3",
+                    confirmButtonColor: "#088395",
                     cancelButtonColor: "#d33",
                     confirmButtonText: "Yes, change it!",
                   }).then(async (result) => {
@@ -333,8 +333,8 @@ const LoginCredentials = () => {
         <div className="flex gap-5">
           <Button
             onClick={() => setIsUserModalVisible(true)}
-            // className="bg-[#37B7C3] py-5 px-7 font-semibold text-[16px]"
-            className="bg-[#37B7C3] hover:!bg-[#37B7C3]/80 text-white hover:!text-white py-5 px-7 font-semibold text-[16px] border-[#37B7C3] hover:!border-[#37B7C3]"
+            // className="bg-[#088395] py-5 px-7 font-semibold text-[16px]"
+            className="bg-[#088395] hover:!bg-[#088395]/80 text-white hover:!text-white py-5 px-7 font-semibold text-[16px] border-[#088395] hover:!border-[#088395]"
             loading={isAdding}
           >
             Add New User

@@ -329,7 +329,7 @@ const PigeonManagement = () => {
       title: "Delete Pigeon?",
       text: `Are you sure you want to delete ${record.name}?`,
       icon: "warning",
-      confirmButtonColor: "#37B7C3",
+      confirmButtonColor: "#088395",
       cancelButtonColor: "#C33739",
       showCancelButton: true,
       confirmButtonText: "Yes, delete it!",
@@ -353,7 +353,7 @@ const PigeonManagement = () => {
       }.`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#37B7C3",
+      confirmButtonColor: "#088395",
       cancelButtonColor: "#C33739",
       confirmButtonText: "Yes, change it!",
     }).then(async (result) => {
@@ -856,13 +856,13 @@ const PigeonManagement = () => {
     <div className="w-full">
       <div className="flex justify-end gap-2 mb-4 mt-4">
         <Button
-          className="bg-[#37B7C3] hover:!bg-cyan-300 text-white border-[#37B7C3] hover:!border-cyan-300 hover:!text-white py-5 px-7 font-semibold text-[16px]"
+          className="bg-[#088395] hover:!bg-[#088395]/80 text-white border-[#088395] hover:!border-cyan-300 hover:!text-white py-5 px-7 font-semibold text-[16px]"
           onClick={handleExportPDF}
         >
           Export to PDF
         </Button>
         <Button
-          className="bg-[#37B7C3] hover:!bg-cyan-300 text-white border-[#37B7C3] hover:!border-cyan-300 hover:!text-white py-5 px-7 font-semibold text-[16px]"
+          className="bg-[#088395] hover:!bg-[#088395]/80 text-white border-[#088395] hover:!border-cyan-300 hover:!text-white py-5 px-7 font-semibold text-[16px]"
           onClick={handleExportExcel}
         >
           Export to Excel
