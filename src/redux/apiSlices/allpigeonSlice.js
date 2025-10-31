@@ -7,7 +7,7 @@ const allpigeonSlice = api.injectEndpoints({
     getAllPigeons: builder.query({
       query: ({
         page = 1,
-        limit = 10,
+        limit = 10000,
         search,
         searchTerm,
         country,

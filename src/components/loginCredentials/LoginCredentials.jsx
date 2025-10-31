@@ -38,7 +38,7 @@ const LoginCredentials = () => {
     isLoading,
     isError: isUsersError,
     refetch: refetchUsers,
-  } = useGetUsersQuery({ page: 1, limit: 10000 });
+  } = useGetUsersQuery({ page: 10000, limit: 10000 });
 
   const { data: apiRoles = [] } = useGetRolesQuery();
 
@@ -372,7 +372,7 @@ const LoginCredentials = () => {
                 size="small"
                 rowKey="_id"
                 scroll={data.length > 0 ? { x: "max-content" } : undefined}
-                pagination={true}
+                pagination={false}
                 components={{
                   header: {
                     cell: (props) => (

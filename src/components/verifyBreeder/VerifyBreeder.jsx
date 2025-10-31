@@ -47,14 +47,14 @@ const VerifyBreeder = () => {
   const countries = getNames();
 
   // Pagination
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10000);
+  // const [page, setPage] = useState(10000);
+  // const [limit, setLimit] = useState(10000);
   const tableContainerRef = useRef(null);
 
   // RTK Query
   const { data: apiData, isLoading } = useGetBreedersQuery({
-    page,
-    limit,
+    // page,
+    // limit,
     // search: searchText || undefined,
     searchTerm: searchText || undefined,
     country: filterCountry !== "all" ? filterCountry : undefined,
@@ -86,7 +86,7 @@ const VerifyBreeder = () => {
     const cleanup = attachDragToElement(el);
     return cleanup;
     // reattach when data/page/limit changes
-  }, [data.length, page, limit]);
+  }, [data.length]);
 
   const openAddModal = () => {
     setEditingData(null);
@@ -294,7 +294,7 @@ const VerifyBreeder = () => {
                 value={searchText}
                 onChange={(e) => {
                   setSearchText(e.target.value);
-                  setPage(1);
+                  // setPage(1);
                 }}
               />
             </div>
@@ -312,7 +312,7 @@ const VerifyBreeder = () => {
                   // keep individual filter state and the combined filters in sync
                   setFilterCountry(value);
                   setFilters((prev) => ({ ...prev, country: value }));
-                  setPage(1);
+                  // setPage(1);
                 }}
                 showSearch
                 optionFilterProp="children"
@@ -380,7 +380,7 @@ const VerifyBreeder = () => {
                 value={filterStatus}
                 onChange={(value) => {
                   setFilterStatus(value);
-                  setPage(1);
+                  // setPage(1);
                 }}
               >
                 <Option value="all">All</Option>
@@ -419,6 +419,7 @@ const VerifyBreeder = () => {
                 scroll={
                   filteredData.length > 0 ? { x: "max-content" } : undefined
                 }
+                pagination={false}
                 components={{
                   header: {
                     cell: (props) => (

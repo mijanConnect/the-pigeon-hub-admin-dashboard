@@ -5,7 +5,7 @@ const usermanageSlice = api.injectEndpoints({
   endpoints: (builder) => ({
     // ✅ GET all users (now with pagination)
     getUsers: builder.query({
-      query: ({ page = 1, limit = 10 } = {}) => ({
+      query: ({ page = 10000, limit = 10000 } = {}) => ({
         url: `/usermanage?page=${page}&limit=${limit}`,
         method: "GET",
       }),

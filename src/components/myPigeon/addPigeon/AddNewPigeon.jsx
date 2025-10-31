@@ -24,11 +24,11 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useAddPigeonMutation,
+  useGetAllNameQuery,
   useGetBreederNamesQuery,
   useGetFatherMotherQuery,
   useGetSinglePigeonQuery,
   useUpdatePigeonMutation,
-  useGetAllNameQuery,
 } from "../../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../../common/imageUrl";
 
@@ -1226,6 +1226,11 @@ const AddNewPigeon = ({ onSave }) => {
                     { required: true, message: "Please enter a name" },
                     {
                       validator: (_, value) => {
+                        // If we're editing an existing pigeon (id present),
+                        // skip duplicate name validation so editing other fields
+                        // doesn't fail due to the existing name.
+                        if (id) return Promise.resolve();
+
                         // If there is no input, skip duplicate check
                         if (!value || value.trim() === "") {
                           return Promise.resolve();

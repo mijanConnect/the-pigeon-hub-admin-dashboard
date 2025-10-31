@@ -249,7 +249,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     nodes.push({
       id: "mother_2_1",
       type: "pigeonNode",
-      position: { x: 500, y: 310 },
+      position: { x: 500, y: 320 },
       data: {
         name: subject.fatherRingId.motherRingId.name,
         ringNumber: subject.fatherRingId.motherRingId.ringNumber,
@@ -293,7 +293,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     nodes.push({
       id: "father_2_2",
       type: "pigeonNode",
-      position: { x: 500, y: 880 },
+      position: { x: 500, y: 850 },
       data: {
         name: subject.motherRingId.fatherRingId.name,
         ringNumber: subject.motherRingId.fatherRingId.ringNumber,
@@ -337,7 +337,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     nodes.push({
       id: "mother_2_2",
       type: "pigeonNode",
-      position: { x: 500, y: 1400 },
+      position: { x: 500, y: 1373 },
       data: {
         name: subject.motherRingId.motherRingId.name,
         ringNumber: subject.motherRingId.motherRingId.ringNumber,
@@ -364,7 +364,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     });
   } else {
     nodes.push(
-      createEmptyNode("mother_2_2", { x: 500, y: 1372 }, "Grandmother (MP)", 2)
+      createEmptyNode("mother_2_2", { x: 500, y: 1373 }, "Grandmother (MP)", 2)
     );
   }
 

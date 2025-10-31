@@ -4,8 +4,8 @@ const breederSlice = api.injectEndpoints({
   endpoints: (builder) => ({
     getBreeders: builder.query({
       query: ({
-        page = 1,
-        limit = 10,
+        // page = 10000,
+        // limit = 10000,
         searchTerm,
         country,
         gender,
@@ -13,8 +13,8 @@ const breederSlice = api.injectEndpoints({
         experience,
       }) => {
         const params = new URLSearchParams();
-        params.append("page", page);
-        params.append("limit", limit);
+        // params.append("page", page);
+        // params.append("limit", limit);
         // if (search) params.append("search", search);
         if (searchTerm) params.append("searchTerm", searchTerm); // ✅ fixed here
         if (country && country !== "all") params.append("country", country);
@@ -44,7 +44,7 @@ const breederSlice = api.injectEndpoints({
         }));
         return {
           breeders,
-          pagination: response?.data?.pagination || {},
+          // pagination: response?.data?.pagination || {},
         };
       },
       providesTags: (result) =>
