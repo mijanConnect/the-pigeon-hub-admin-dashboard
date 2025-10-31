@@ -221,7 +221,26 @@ const UserProfile = () => {
               name="contact"
               label="Contact Number"
               style={{ marginBottom: 0 }}
-              rules={[{ required: true, message: "Please enter your contact" }]}
+              rules={[
+                { required: true, message: "Please enter your contact" },
+                {
+                  validator: (_, value) => {
+                    // If empty, required rule will handle it
+                    if (!value) return Promise.resolve();
+                    // Remove common separators and parentheses
+                    const cleaned = String(value).replace(/[\s\-()]/g, "");
+                    // Allow optional leading +, then 7-15 digits
+                    const isValid = /^\+?\d{7,15}$/.test(cleaned);
+                    return isValid
+                      ? Promise.resolve()
+                      : Promise.reject(
+                          new Error(
+                            "Please enter a valid phone number (7-15 digits)."
+                          )
+                        );
+                  },
+                },
+              ]}
             >
               <Input
                 placeholder="Enter your Contact Number"
@@ -231,6 +250,7 @@ const UserProfile = () => {
                   borderRadius: "6px",
                   outline: "none",
                 }}
+                inputMode="tel"
               />
             </Form.Item>
 
