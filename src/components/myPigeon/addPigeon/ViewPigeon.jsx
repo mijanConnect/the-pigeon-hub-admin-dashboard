@@ -567,68 +567,63 @@ const ViewPigeon = () => {
                   {/* Father Information */}
                   <p className="border p-4 rounded-lg">
                     {/* {pigeonData.fatherRingId?.name ? ( */}
-                      <div className="space-y-2">
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">
-                            Ring Number:{" "}
-                          </p>
-                          <p className="font-semibold text-[14px]">
-                            {safeValue(pigeonData.fatherRingId?.ringNumber)}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">Name: </p>
-                          <p className="font-semibold text-[14px]">
-                            {safeValue(pigeonData.fatherRingId?.name)}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">
-                            Birth Year:{" "}
-                          </p>
-                          <p className="font-semibold text-[14px]">
-                            {safeValue(pigeonData.fatherRingId?.birthYear)}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">Country: </p>
-                          <p className="font-semibold text-[14px]">
-                            {safeValue(pigeonData.fatherRingId?.country)}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">Loft Name: </p>
-                          <p className="font-semibold text-[14px]">
-                            {safeValue(
-                              pigeonData.fatherRingId?.breeder?.loftName
-                            )}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">Story: </p>
-                          <p className="font-semibold text-[14px]">
-                            {safeValue(pigeonData.fatherRingId?.shortInfo)}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">Results: </p>
-                          <p className="font-semibold text-[14px]">
-                            {/* {safeValue(pigeonData.fatherRingId?.results)} */}
-                            <span className="font-normal text-[14px]">
-                              {Array.isArray(
-                                pigeonData.fatherRingId?.addresults
-                              ) &&
-                              pigeonData.fatherRingId?.addresults.length > 0
-                                ? pigeonData.fatherRingId?.addresults.map(
-                                    (result, index) => (
-                                      <div key={index}>{result}</div>
-                                    )
-                                  )
-                                : "N/A"}
-                            </span>
-                          </p>
-                        </div>
+                    <div className="space-y-2">
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Ring Number: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(pigeonData.fatherRingId?.ringNumber)}
+                        </p>
                       </div>
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Name: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(pigeonData.fatherRingId?.name)}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Birth Year: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(pigeonData.fatherRingId?.birthYear)}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Country: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(pigeonData.fatherRingId?.country)}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Loft Name: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(
+                            pigeonData.fatherRingId?.breeder?.loftName
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Story: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(pigeonData.fatherRingId?.shortInfo)}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Results: </p>
+                        <p className="font-semibold text-[14px]">
+                          {/* {safeValue(pigeonData.fatherRingId?.results)} */}
+                          <span className="font-normal text-[14px]">
+                            {Array.isArray(
+                              pigeonData.fatherRingId?.addresults
+                            ) && pigeonData.fatherRingId?.addresults.length > 0
+                              ? pigeonData.fatherRingId?.addresults.map(
+                                  (result, index) => (
+                                    <div key={index}>{result}</div>
+                                  )
+                                )
+                              : "N/A"}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
                     {/* ) : (
                       <p className="font-normal text-[14px] text-gray-400">
                         No Information Available
@@ -645,68 +640,63 @@ const ViewPigeon = () => {
                   {/* Mother Information */}
                   <p className="border p-4 rounded-lg">
                     {/* {pigeonData.motherRingId?.name ? ( */}
-                      <div className="space-y-2">
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">
-                            Ring Number:{" "}
-                          </p>
-                          <p className="font-semibold text-[14px]">
-                            {safeValue(pigeonData.motherRingId?.ringNumber)}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">Name: </p>
-                          <p className="font-semibold text-[14px]">
-                            {safeValue(pigeonData.motherRingId?.name)}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">
-                            Birth Year:{" "}
-                          </p>
-                          <p className="font-semibold text-[14px]">
-                            {safeValue(pigeonData.motherRingId?.birthYear)}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">Country: </p>
-                          <p className="font-semibold text-[14px]">
-                            {safeValue(pigeonData.motherRingId?.country)}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">Loft Name: </p>
-                          <p className="font-semibold text-[14px]">
-                            {safeValue(
-                              pigeonData.motherRingId?.breeder?.loftName
-                            )}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">Story: </p>
-                          <p className="font-semibold text-[14px]">
-                            {safeValue(pigeonData.motherRingId?.shortInfo)}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <p className="font-normal text-[14px]">Results: </p>
-                          <p className="font-semibold text-[14px]">
-                            {/* {safeValue(pigeonData.fatherRingId?.results)} */}
-                            <span className="font-normal text-[14px]">
-                              {Array.isArray(
-                                pigeonData.motherRingId?.addresults
-                              ) &&
-                              pigeonData.motherRingId?.addresults.length > 0
-                                ? pigeonData.motherRingId?.addresults.map(
-                                    (result, index) => (
-                                      <div key={index}>{result}</div>
-                                    )
-                                  )
-                                : "N/A"}
-                            </span>
-                          </p>
-                        </div>
+                    <div className="space-y-2">
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Ring Number: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(pigeonData.motherRingId?.ringNumber)}
+                        </p>
                       </div>
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Name: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(pigeonData.motherRingId?.name)}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Birth Year: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(pigeonData.motherRingId?.birthYear)}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Country: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(pigeonData.motherRingId?.country)}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Loft Name: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(
+                            pigeonData.motherRingId?.breeder?.loftName
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Story: </p>
+                        <p className="font-semibold text-[14px]">
+                          {safeValue(pigeonData.motherRingId?.shortInfo)}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <p className="font-normal text-[14px]">Results: </p>
+                        <p className="font-semibold text-[14px]">
+                          {/* {safeValue(pigeonData.fatherRingId?.results)} */}
+                          <span className="font-normal text-[14px]">
+                            {Array.isArray(
+                              pigeonData.motherRingId?.addresults
+                            ) && pigeonData.motherRingId?.addresults.length > 0
+                              ? pigeonData.motherRingId?.addresults.map(
+                                  (result, index) => (
+                                    <div key={index}>{result}</div>
+                                  )
+                                )
+                              : "N/A"}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
                     {/* ) : (
                       <p className="font-normal text-[14px] text-gray-400">
                         No Information Available
