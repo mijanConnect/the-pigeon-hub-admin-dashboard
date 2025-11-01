@@ -398,10 +398,9 @@ const PigeonManagement = () => {
       };
 
       const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("data", JSON.stringify(dataToSend));
 
-      await updatePigeon({ id, formData, token }).unwrap();
+      // Send minimal JSON for partial update (avoid FormData) so unrelated fields are not cleared
+      await updatePigeon({ id, formData: dataToSend, token }).unwrap();
 
       message.success("Verification updated successfully");
     } catch (err) {
@@ -434,13 +433,13 @@ const PigeonManagement = () => {
 
       const numeric = parseInt(value, 10) || 0;
       // If score is 0 => not iconic, otherwise iconic
+      // Send a minimal JSON PATCH body (no FormData) so backend can merge fields
       const dataToSend = { iconicScore: numeric, iconic: numeric > 0 };
 
       const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("data", JSON.stringify(dataToSend));
 
-      await updatePigeon({ id, formData, token }).unwrap();
+      // Call updatePigeon with a plain object; the API slice now sends JSON when body is not FormData
+      await updatePigeon({ id, formData: dataToSend, token }).unwrap();
 
       message.success("Iconic score updated");
     } catch (err) {

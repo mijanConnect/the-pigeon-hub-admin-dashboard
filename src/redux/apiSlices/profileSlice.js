@@ -63,7 +63,7 @@ export const profileSlice = api.injectEndpoints({
         email: response?.data?.email,
         contact: response?.data?.contact,
         role: response?.data?.role,
-        profile: response?.data?.profile || null,
+        profile: response?.data?.profile,
         verified: response?.data?.verified,
         totalPigeons: response?.data?.totalPigeons,
         ...response?.data,

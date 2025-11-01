@@ -93,14 +93,20 @@ const allpigeonSlice = api.injectEndpoints({
 
     // ---------- UPDATE PIGEON ----------
     updatePigeon: builder.mutation({
-      query: ({ id, formData, token }) => ({
-        url: `/pigeon/${id}`,
-        method: "PATCH",
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }),
+      query: ({ id, formData, token }) => {
+        // Support both FormData (for file uploads) and plain objects (JSON partial update)
+        const isFormData =
+          typeof FormData !== "undefined" && formData instanceof FormData;
+        return {
+          url: `/pigeon/${id}`,
+          method: "PATCH",
+          body: isFormData ? formData : JSON.stringify(formData),
+          headers: {
+            Authorization: `Bearer ${token}`,
+            ...(isFormData ? {} : { "Content-Type": "application/json" }),
+          },
+        };
+      },
       invalidatesTags: (result, error, { id }) => [
         { type: "Pigeon", id },
         { type: "Pigeon", id: "LIST" },
