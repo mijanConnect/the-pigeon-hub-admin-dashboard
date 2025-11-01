@@ -184,7 +184,7 @@ const Home = () => {
                   Iconic Pigeons
                 </h2>
                 <h3 className="text-secondary text-[24px] text-center font-semibold flex items-center gap-3">
-                  <img src={AwardIcon} alt="Logo" /> {stats?.iconPigeons || 0}
+                  <img src={AwardIcon} alt="Logo" className="w-8 h-8" /> {stats?.iconPigeons || 0}
                 </h3>
               </div>
             </div>

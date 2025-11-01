@@ -188,9 +188,9 @@ const PigeonNode = ({ data }) => {
             <img
               src="/assets/GoldCup.png"
               alt="Letter P"
-              width={30}
-              height={30}
-              className="w-7 h-7"
+              width={24}
+              height={24}
+              className="w-6 h-6"
             />
           )}
         </div>
