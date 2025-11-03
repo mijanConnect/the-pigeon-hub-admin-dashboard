@@ -24,8 +24,7 @@ const AddVerifyBreeder = ({ visible, onCancel, onSave, initialValues }) => {
     form
       .validateFields()
       .then((values) => {
-        onSave(values);
-        form.resetFields();
+        onSave(values, form); // Pass form instance to parent so it can reset on success
       })
       .catch((info) => console.log("Validate Failed:", info));
   };

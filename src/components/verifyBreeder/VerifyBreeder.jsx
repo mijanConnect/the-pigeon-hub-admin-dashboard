@@ -127,6 +127,7 @@ const VerifyBreeder = () => {
           token: "your-auth-token",
         }).unwrap();
         message.success("Breeder updated successfully!");
+        setIsModalVisible(false); // ✅ Close modal only on success
       } else {
         const res = await addBreeder({
           data: payload,
@@ -134,14 +135,21 @@ const VerifyBreeder = () => {
         }).unwrap();
         if (res.success) {
           message.success("Breeder added successfully!");
+          setIsModalVisible(false); // ✅ Close modal only on success
         } else {
-          message.error("Something went wrong!");
+          message.error(
+            error?.data?.message ||
+              `A verified breeder with loft name "${values.loftName}" already exists.`
+          );
+          // Don't close modal - keep fields intact
         }
       }
-      setIsModalVisible(false);
     } catch (error) {
       console.error(error);
-      message.error("Something went wrong!");
+      message.error(
+        error?.data?.message || `Failed to save breeder. Please try again.`
+      );
+      // Don't close modal - keep fields intact so user can fix the error
     }
   };
 
