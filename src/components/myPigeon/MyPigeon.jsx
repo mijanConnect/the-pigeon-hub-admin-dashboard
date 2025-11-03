@@ -95,21 +95,13 @@ const MyPigeon = () => {
   });
 
   const apiPigeons = data?.pigeons || [];
-  const pigeons = sortedPigeons.length > 0 ? sortedPigeons : apiPigeons;
+  const pigeons = sortedPigeons;
   const total = data?.pagination?.total || 0;
 
-  // Sync sorted pigeons when API data changes
+  // Sync sorted pigeons when API data changes - always sync to show empty tabs correctly
   useEffect(() => {
-    if (apiPigeons.length > 0) {
-      const currentLength = apiPigeons.length;
-
-      // Only update if the data actually changed
-      if (currentLength !== lastDataLengthRef.current) {
-        setSortedPigeons(apiPigeons);
-        lastDataLengthRef.current = currentLength;
-      }
-    }
-  }, [apiPigeons]);
+    setSortedPigeons(apiPigeons);
+  }, [data]); // Use data as dependency, not apiPigeons
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
