@@ -93,8 +93,21 @@ const PigeonManagement = () => {
   // Optimistic values for iconic score inline edits
   const [iconicScoreValues, setIconicScoreValues] = useState({});
 
-  const pigeons = data?.pigeons || [];
+  // Client-side sorting state
+  const [originalPigeons, setOriginalPigeons] = useState([]);
+  const [sortedPigeons, setSortedPigeons] = useState([]);
+
+  const pigeons =
+    sortedPigeons.length > 0 ? sortedPigeons : data?.pigeons || [];
   const total = data?.pagination?.total || 0;
+
+  // Sync original and sorted pigeons when data changes
+  useEffect(() => {
+    if (data?.pigeons) {
+      setOriginalPigeons(data.pigeons);
+      setSortedPigeons(data.pigeons);
+    }
+  }, [data?.pigeons]);
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -461,6 +474,38 @@ const PigeonManagement = () => {
     }
   };
 
+  const handleTableChange = (pagination, filters, sorter) => {
+    if (sorter && sorter.columnKey) {
+      const { columnKey, order } = sorter;
+
+      if (!order) {
+        // Clear sorting - restore original order
+        setSortedPigeons([...originalPigeons]);
+      } else {
+        // Apply sorting
+        const sorted = [...originalPigeons].sort((a, b) => {
+          let comparison = 0;
+
+          if (columnKey === "name") {
+            const aValue = (a?.name || "").toString();
+            const bValue = (b?.name || "").toString();
+            comparison = aValue.localeCompare(bValue, undefined, {
+              sensitivity: "base",
+            });
+          } else if (columnKey === "birthYear") {
+            const aYear = parseInt(a?.birthYear) || 0;
+            const bYear = parseInt(b?.birthYear) || 0;
+            comparison = aYear - bYear;
+          }
+
+          return order === "ascend" ? comparison : -comparison;
+        });
+
+        setSortedPigeons(sorted);
+      }
+    }
+  };
+
   const columns = [
     {
       title: "Image",
@@ -501,7 +546,17 @@ const PigeonManagement = () => {
         );
       },
     },
-    { title: "Name", dataIndex: "name", key: "name" },
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      sorter: (a, b) =>
+        (a?.name || "")
+          .toString()
+          .localeCompare((b?.name || "").toString(), undefined, {
+            sensitivity: "base",
+          }),
+    },
     {
       title: "Verified",
       dataIndex: "verified",
@@ -582,7 +637,16 @@ const PigeonManagement = () => {
     },
     // { title: "Pigeon ID", dataIndex: "pigeonId", key: "pigeonId" },
     { title: "Ring Number", dataIndex: "ringNumber", key: "ringNumber" },
-    { title: "Birth Year", dataIndex: "birthYear", key: "birthYear" },
+    {
+      title: "Birth Year",
+      dataIndex: "birthYear",
+      key: "birthYear",
+      sorter: (a, b) => {
+        const aYear = parseInt(a?.birthYear) || 0;
+        const bYear = parseInt(b?.birthYear) || 0;
+        return aYear - bYear;
+      },
+    },
     { title: "Father", dataIndex: "father", key: "father" },
     { title: "Mother", dataIndex: "mother", key: "mother" },
     { title: "Gender", dataIndex: "gender", key: "gender" },
@@ -980,6 +1044,7 @@ const PigeonManagement = () => {
                   showSizeChanger: false,
                   onChange: (newPage) => setPage(newPage),
                 }}
+                onChange={handleTableChange}
                 components={{
                   header: {
                     cell: (props) => (

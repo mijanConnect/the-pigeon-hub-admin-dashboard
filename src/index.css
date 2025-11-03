@@ -949,3 +949,8 @@ select {
 .ant-upload-list-item::before{
   display: none !important;
 }
+
+/* Sort icons */
+.ant-table-wrapper .ant-table-column-sorter {
+  color: #ffffff !important;
+}

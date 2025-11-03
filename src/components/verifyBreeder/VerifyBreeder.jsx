@@ -28,6 +28,8 @@ const { Option } = Select;
 
 const VerifyBreeder = () => {
   const [data, setData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
+  const [sortedData, setSortedData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingData, setEditingData] = useState(null);
 
@@ -76,6 +78,8 @@ const VerifyBreeder = () => {
   useEffect(() => {
     if (apiData?.breeders) {
       setData(apiData.breeders);
+      setOriginalData(apiData.breeders);
+      setSortedData(apiData.breeders);
     }
   }, [apiData]);
 
@@ -170,7 +174,17 @@ const VerifyBreeder = () => {
       key: "breederName",
       render: (text) => (text ? text : "N/A"),
     },
-    { title: "Loft Name", dataIndex: "loftName", key: "loftName" },
+    {
+      title: "Loft Name",
+      dataIndex: "loftName",
+      key: "loftName",
+      sorter: (a, b) =>
+        (a?.loftName || "")
+          .toString()
+          .localeCompare((b?.loftName || "").toString(), undefined, {
+            sensitivity: "base",
+          }),
+    },
     // { title: "Pigeon Score", dataIndex: "pigeonScore", key: "pigeonScore" },
     {
       title: "Country",
@@ -260,13 +274,41 @@ const VerifyBreeder = () => {
   ];
 
   const filteredData = useMemo(() => {
-    return data.filter((item) => {
+    return sortedData.filter((item) => {
       const experienceMatch =
         filterExperience === "all" ||
         item.experienceLevel.toLowerCase() === filterExperience.toLowerCase();
       return experienceMatch;
     });
-  }, [data, filterExperience]);
+  }, [sortedData, filterExperience]);
+
+  const handleTableChange = (pagination, filters, sorter) => {
+    if (sorter && sorter.columnKey) {
+      const { columnKey, order } = sorter;
+
+      if (!order) {
+        // Clear sorting - restore original order
+        setSortedData([...originalData]);
+      } else {
+        // Apply sorting
+        const sorted = [...originalData].sort((a, b) => {
+          let comparison = 0;
+
+          if (columnKey === "loftName") {
+            const aValue = (a?.loftName || "").toString();
+            const bValue = (b?.loftName || "").toString();
+            comparison = aValue.localeCompare(bValue, undefined, {
+              sensitivity: "base",
+            });
+          }
+
+          return order === "ascend" ? comparison : -comparison;
+        });
+
+        setSortedData(sorted);
+      }
+    }
+  };
 
   return (
     <div className="w-full">
@@ -420,6 +462,7 @@ const VerifyBreeder = () => {
                   filteredData.length > 0 ? { x: "max-content" } : undefined
                 }
                 pagination={false}
+                onChange={handleTableChange}
                 components={{
                   header: {
                     cell: (props) => (

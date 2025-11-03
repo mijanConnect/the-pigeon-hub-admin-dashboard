@@ -13,7 +13,7 @@ import {
   message,
 } from "antd";
 import { getCode, getNames } from "country-list";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import { IoMdDownload } from "react-icons/io";
 import { PiDnaBold } from "react-icons/pi";
@@ -51,6 +51,10 @@ const MyPigeon = () => {
     color: "all",
     status: "all",
   });
+
+  // Client-side sorting state
+  const [sortedPigeons, setSortedPigeons] = useState([]);
+  const lastDataLengthRef = useRef(0);
 
   const handleView = (record) => {
     // navigate to the standalone view page
@@ -90,8 +94,22 @@ const MyPigeon = () => {
     status: tabKey !== "all" ? tabKey : undefined,
   });
 
-  const pigeons = data?.pigeons || [];
+  const apiPigeons = data?.pigeons || [];
+  const pigeons = sortedPigeons.length > 0 ? sortedPigeons : apiPigeons;
   const total = data?.pagination?.total || 0;
+
+  // Sync sorted pigeons when API data changes
+  useEffect(() => {
+    if (apiPigeons.length > 0) {
+      const currentLength = apiPigeons.length;
+
+      // Only update if the data actually changed
+      if (currentLength !== lastDataLengthRef.current) {
+        setSortedPigeons(apiPigeons);
+        lastDataLengthRef.current = currentLength;
+      }
+    }
+  }, [apiPigeons]);
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -246,6 +264,38 @@ const MyPigeon = () => {
     }
   };
 
+  const handleTableChange = (pagination, filters, sorter) => {
+    if (sorter && sorter.columnKey) {
+      const { columnKey, order } = sorter;
+
+      if (!order) {
+        // Clear sorting - restore original order
+        setSortedPigeons([...apiPigeons]);
+      } else {
+        // Apply sorting
+        const sorted = [...apiPigeons].sort((a, b) => {
+          let comparison = 0;
+
+          if (columnKey === "name") {
+            const aValue = (a?.name || "").toString();
+            const bValue = (b?.name || "").toString();
+            comparison = aValue.localeCompare(bValue, undefined, {
+              sensitivity: "base",
+            });
+          } else if (columnKey === "birthYear") {
+            const aYear = parseInt(a?.birthYear) || 0;
+            const bYear = parseInt(b?.birthYear) || 0;
+            comparison = aYear - bYear;
+          }
+
+          return order === "ascend" ? comparison : -comparison;
+        });
+
+        setSortedPigeons(sorted);
+      }
+    }
+  };
+
   const columns = [
     {
       title: "Image",
@@ -286,7 +336,17 @@ const MyPigeon = () => {
         );
       },
     },
-    { title: "Name", dataIndex: "name", key: "name" },
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      sorter: (a, b) =>
+        (a?.name || "")
+          .toString()
+          .localeCompare((b?.name || "").toString(), undefined, {
+            sensitivity: "base",
+          }),
+    },
     {
       title: "Country",
       dataIndex: "country",
@@ -317,7 +377,16 @@ const MyPigeon = () => {
 
     { title: "Breeder", dataIndex: "breeder", key: "breeder" },
     { title: "Ring Number", dataIndex: "ringNumber", key: "ringNumber" },
-    { title: "Birth Year", dataIndex: "birthYear", key: "birthYear" },
+    {
+      title: "Birth Year",
+      dataIndex: "birthYear",
+      key: "birthYear",
+      sorter: (a, b) => {
+        const aYear = parseInt(a?.birthYear) || 0;
+        const bYear = parseInt(b?.birthYear) || 0;
+        return aYear - bYear;
+      },
+    },
     { title: "Father", dataIndex: "father", key: "father" },
     { title: "Mother", dataIndex: "mother", key: "mother" },
     { title: "Gender", dataIndex: "gender", key: "gender" },
@@ -828,6 +897,7 @@ const MyPigeon = () => {
                   showSizeChanger: false,
                   onChange: (newPage) => setPage(newPage),
                 }}
+                onChange={handleTableChange}
                 components={{
                   header: {
                     cell: (props) => (

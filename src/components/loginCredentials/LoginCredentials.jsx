@@ -38,7 +38,7 @@ const LoginCredentials = () => {
     isLoading,
     isError: isUsersError,
     refetch: refetchUsers,
-  } = useGetUsersQuery({ page: 10000, limit: 10000 });
+  } = useGetUsersQuery({ page: 1, limit: 10000 });
 
   const { data: apiRoles = [] } = useGetRolesQuery();
 
@@ -50,6 +50,8 @@ const LoginCredentials = () => {
 
   // Local UI / form state
   const [data, setData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
+  const [sortedData, setSortedData] = useState([]);
   const [roles, setRoles] = useState([]);
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -78,6 +80,8 @@ const LoginCredentials = () => {
   useEffect(() => {
     if (Array.isArray(apiUsers.users)) {
       setData(apiUsers.users);
+      setOriginalData(apiUsers.users);
+      setSortedData(apiUsers.users);
     }
   }, [apiUsers]);
 
@@ -196,7 +200,19 @@ const LoginCredentials = () => {
   };
 
   const columns = [
-    { title: "User Name", dataIndex: "name", key: "name", align: "center" },
+    {
+      title: "User Name",
+      dataIndex: "name",
+      key: "name",
+      align: "center",
+      sorter: (a, b) =>
+        (a?.name || "")
+          .toString()
+          .localeCompare((b?.name || "").toString(), undefined, {
+            sensitivity: "base",
+          }),
+      sortDirections: ["ascend", "descend"],
+    },
     { title: "Email", dataIndex: "email", key: "email", align: "center" },
     {
       title: "Current Plan",
@@ -366,7 +382,7 @@ const LoginCredentials = () => {
               <Table
                 // rowSelection={rowSelection}
                 columns={columns}
-                dataSource={data}
+                dataSource={sortedData}
                 rowClassName={() => "hover-row"}
                 bordered={false}
                 size="small"
@@ -414,6 +430,37 @@ const LoginCredentials = () => {
                       No users found
                     </div>
                   ),
+                }}
+                onChange={(pagination, filters, sorter) => {
+                  // Handle client-side sorting
+                  const s = Array.isArray(sorter) ? sorter[0] : sorter;
+
+                  if (!s || !s.column) {
+                    setSortedData(originalData);
+                    return;
+                  }
+
+                  const key = s.field || s.columnKey || s.column?.key;
+                  const order = s.order;
+
+                  if (!order) {
+                    setSortedData(originalData);
+                    return;
+                  }
+
+                  const next = [...originalData];
+                  if (key === "name") {
+                    next.sort((a, b) => {
+                      const A = (a?.name || "").toString();
+                      const B = (b?.name || "").toString();
+                      const cmp = A.localeCompare(B, undefined, {
+                        sensitivity: "base",
+                      });
+                      return order === "ascend" ? cmp : -cmp;
+                    });
+                  }
+
+                  setSortedData(next);
                 }}
               />
             )}
