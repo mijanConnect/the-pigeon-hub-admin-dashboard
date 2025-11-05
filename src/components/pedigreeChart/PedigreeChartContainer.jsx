@@ -52,12 +52,7 @@ const PigeonNode = ({ data }) => {
         return <img src={Hen} alt="Hen" width={20} height={20} />;
       case "Unspecified":
         return (
-          <img
-            src={Unspeficic}
-            alt="Unspecified"
-            width={20}
-            height={20}
-          />
+          <img src={Unspeficic} alt="Unspecified" width={20} height={20} />
         );
       default:
         return (
@@ -105,13 +100,44 @@ const PigeonNode = ({ data }) => {
     }
   };
 
+  // ✅ এই পুরো function টা নতুন যোগ করা হয়েছে
+  const getTextLimits = (generation) => {
+    switch (generation) {
+      case 0:
+        return {
+          description: "line-clamp-[20]",
+          achievements: "line-clamp-[15]",
+        };
+      case 1:
+        return {
+          description: "line-clamp-[20]",
+          achievements: "line-clamp-[15]",
+        };
+      case 2:
+        return {
+          description: "line-clamp-[12]",
+          achievements: "line-clamp-[10]",
+        };
+      case 3:
+        return { description: "line-clamp-4", achievements: "line-clamp-3" };
+      case 4:
+        return { description: "line-clamp-1", achievements: "line-clamp-1" };
+      default:
+        return { description: "line-clamp-1", achievements: "line-clamp-1" };
+    }
+  };
+
+  // ✅ এই line টাও নতুন যোগ করা হয়েছে
+  const textLimits = getTextLimits(data.generation);
+
   return (
     <div
       style={{ backgroundColor: data.color }}
-      className={`${getCardSize(data?.generation)}
-        border-b-8 border-r-10 border-black
-        text-white rounded-none transition-all duration-300 px-2 py-2
-        ${getGenerationColor(data?.generation)} border`}
+      className={`${getCardSize(
+        data?.generation
+      )} border-b-8 border-r-10 border-black text-white rounded-none transition-all duration-300 px-2 py-2 ${getGenerationColor(
+        data?.generation
+      )} border overflow-hidden`}
     >
       {/* Conditional Handles based on generation */}
       {isSubject ? (
@@ -214,7 +240,6 @@ const PigeonNode = ({ data }) => {
           )} */}
           {data.owner && (
             <div className="flex items-center gap-2  italic text-black">
-              {/* <UserOutlined className="w-3 h-3" /> */}
               <span className="truncate">{data.owner}</span>
               {data.breederVerified && (
                 <img
