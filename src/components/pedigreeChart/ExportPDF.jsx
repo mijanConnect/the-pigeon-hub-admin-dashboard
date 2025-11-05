@@ -356,6 +356,7 @@ export const exportPedigreeToPDF = async (
             );
           }
         }
+        
 
         // Draw any remaining wrapped lines beneath the first
         for (let i = 1; i < ownerLines.length; i++) {
