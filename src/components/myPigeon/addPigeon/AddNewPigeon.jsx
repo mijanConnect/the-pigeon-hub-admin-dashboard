@@ -21,7 +21,7 @@ import {
 import { getNames } from "country-list";
 import { FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   useAddPigeonMutation,
   useGetAllNameQuery,
@@ -55,7 +55,18 @@ const AddNewPigeon = ({ onSave }) => {
   const [raceResults, setRaceResults] = useState([]);
   const countries = getNames();
   const navigate = useNavigate();
+  const location = useLocation();
   const [viewPigeonId, setViewPigeonId] = useState(null);
+  // Helper to navigate back to origin (if provided via location.state.from) or fallback
+  const redirectToOrigin = (fallback = "/my-pigeon") => {
+    try {
+      const from = location && location.state && location.state.from;
+      if (from) navigate(from);
+      else navigate(fallback);
+    } catch (e) {
+      navigate(fallback);
+    }
+  };
   const { id } = useParams();
   const [showAddButton, setShowAddButton] = useState(true);
   const [showRaceResults, setShowRaceResults] = useState(false);
@@ -515,11 +526,11 @@ const AddNewPigeon = ({ onSave }) => {
       if (pigeonData?._id) {
         await updatePigeon({ id: pigeonData._id, formData, token }).unwrap();
         message.success("Pigeon updated successfully!");
-        navigate("/my-pigeon");
+        redirectToOrigin();
       } else {
         await addPigeon({ formData, token }).unwrap();
         message.success("Pigeon added successfully!");
-        navigate("/my-pigeon");
+        redirectToOrigin();
       }
 
       form.resetFields();
@@ -1375,7 +1386,7 @@ const AddNewPigeon = ({ onSave }) => {
                 <Form.Item
                   label="Gender"
                   name="gender"
-                  // rules={[{ required: true }]}
+                  rules={[{ required: true }]}
                   className="custom-form-item-ant-select"
                 >
                   <Select
@@ -2003,7 +2014,7 @@ const AddNewPigeon = ({ onSave }) => {
           Cancel
         </Button> */}
         <Button
-          onClick={() => navigate("/my-pigeon")} // Navigate on cancel
+          onClick={() => redirectToOrigin()} // Navigate back to origin (or fallback)
           disabled={isAdding || isUpdating}
           className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
         >
@@ -2021,7 +2032,7 @@ const AddNewPigeon = ({ onSave }) => {
         <Button
           key="save-another"
           onClick={handleSaveAndCreateAnother}
-          loading={isAdding}
+          loading={isAdding || isUpdating}
           className="bg-[#088395] border border-[#088395] hover:!border-[#088395] text-white hover:!text-[#088395]"
         >
           Save and Create Another Pigeon

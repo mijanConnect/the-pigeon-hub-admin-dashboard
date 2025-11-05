@@ -692,7 +692,11 @@ const PigeonManagement = () => {
             <Tooltip title="Edit Details">
               <FaEdit
                 style={{ color: "#ffff", fontSize: 16, cursor: "pointer" }}
-                onClick={() => showEditModal(record)}
+                onClick={() =>
+                  navigate(`/add-pigeon/${record._id}`, {
+                    state: { from: "/pigeon-management", record },
+                  })
+                }
               />
             </Tooltip>
             <Tooltip title="Delete">
