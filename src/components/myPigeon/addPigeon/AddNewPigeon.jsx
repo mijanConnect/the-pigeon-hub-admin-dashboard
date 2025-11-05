@@ -1386,11 +1386,11 @@ const AddNewPigeon = ({ onSave }) => {
                 <Form.Item
                   label="Gender"
                   name="gender"
-                  rules={[{ required: true }]}
+                  rules={[{ required: true, message: "Please select Gender" }]}
                   className="custom-form-item-ant-select"
                 >
                   <Select
-                    placeholder="Select Gender"
+                    placeholder="Please select Gender"
                     className="custom-select-ant-modal"
                   >
                     <Option value="Cock">Cock</Option>
