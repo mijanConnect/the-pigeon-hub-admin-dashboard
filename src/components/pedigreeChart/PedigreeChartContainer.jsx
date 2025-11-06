@@ -254,14 +254,17 @@ const PigeonNode = ({ data }) => {
           )}
         </div>
 
-        {data.description && (
-          <div className="">
-            <p className=" text-black">{data.description.slice(0, 600)}</p>
-          </div>
-        )}
         {data.colorName && (
           <div className="">
             <p className=" text-black"> {data.colorName}</p>
+          </div>
+        )}
+
+        {data.description && (
+          <div className="">
+            <p className=" text-black italic">
+              {data.description.slice(0, 600)}
+            </p>
           </div>
         )}
         {data.achievements && (
@@ -487,7 +490,7 @@ export default function PigeonPedigreeChart() {
 
       <div className="relative">
         <img
-          src={getImageUrl(data.profile)}
+          src={getImageUrl(data?.profile)}
           alt="The Pigeon Hub Logo"
           width={60}
           height={60}

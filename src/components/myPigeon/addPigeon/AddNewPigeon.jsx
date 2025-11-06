@@ -1412,7 +1412,7 @@ const AddNewPigeon = ({ onSave }) => {
                 </Form.Item>
 
                 <Form.Item
-                  label="Racing Rating"
+                  label="Racer Rating"
                   name="racingRating"
                   // rules={[{ required: true }]}
                   className="custom-form-item-ant-select"
