@@ -193,7 +193,7 @@ const mypigeonSlice = api.injectEndpoints({
     }),
     getFatherMother: builder.query({
       query: (searchTerm) => ({
-        url: `/pigeon/searchAll`,
+        url: `/pigeon/searchAllPigeon`,
         method: "GET",
         params: { searchTerm },
       }),

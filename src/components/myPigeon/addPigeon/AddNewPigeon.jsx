@@ -218,10 +218,50 @@ const AddNewPigeon = ({ onSave }) => {
 
   useEffect(() => {
     if (pigeonData) {
-      // Split color & pattern
-      const [color, pattern] = pigeonData.color?.includes("&")
-        ? pigeonData.color.split(" & ").map((v) => v.trim())
-        : [pigeonData.color, null];
+      // Split color & pattern robustly.
+      // Stored `pigeonData.color` may be like "Blue Check" or "Ash Red White Flight" etc.
+      // We try to match a known color key from colorPatternMap at the start of the stored string
+      const rawColor = pigeonData.color || "";
+      let color = null;
+      let pattern = null;
+
+      if (rawColor) {
+        const keys = Object.keys(colorPatternMap || {});
+        for (const key of keys) {
+          const formattedKey = formatColor(key);
+          // check both the raw key and formatted key (underscores -> spaces)
+          if (
+            rawColor === key ||
+            rawColor.startsWith(key + " ") ||
+            rawColor === formattedKey ||
+            rawColor.startsWith(formattedKey + " ")
+          ) {
+            color = key;
+            // derive pattern as the remainder after the color text
+            const sliceFrom = rawColor.startsWith(key)
+              ? key.length
+              : formattedKey.length;
+            pattern = rawColor.slice(sliceFrom).trim();
+            if (pattern === "") pattern = null;
+            break;
+          }
+        }
+
+        // If we found a color key but the pattern doesn't match known patterns, keep it as-is
+        if (color && pattern) {
+          const known = colorPatternMap[color] || [];
+          const match = known.find(
+            (p) => pattern === p || pattern.startsWith(p)
+          );
+          if (match) pattern = match;
+        }
+
+        // Fallback: if no color key matched, treat the whole string as color (no pattern)
+        if (!color) {
+          color = rawColor;
+          pattern = null;
+        }
+      }
 
       setSelected({ color, pattern });
       setShowResults(Boolean(pigeonData.results));
@@ -463,10 +503,15 @@ const AddNewPigeon = ({ onSave }) => {
     try {
       const values = await form.validateFields();
 
+      // Build color string using formatted color name (replace underscores with spaces)
+      const rawColor = values.colorPattern?.color;
+      const formattedColor = rawColor ? formatColor(rawColor) : rawColor;
       const combinedColor =
-        values.colorPattern?.color && values.colorPattern?.pattern
-          ? `${values.colorPattern.color} ${values.colorPattern.pattern}`
-          : values.colorPattern?.color || values.colorPattern?.pattern;
+        formattedColor && values.colorPattern?.pattern
+          ? `${formattedColor} ${values.colorPattern.pattern}`
+          : formattedColor || values.colorPattern?.pattern;
+      // Ensure we never send null for color (backend may call .trim())
+      const finalColor = combinedColor || "";
 
       const filteredRaceResults = raceResults
         .filter((r) => r.name || r.date || r.distance || r.total || r.place)
@@ -478,6 +523,11 @@ const AddNewPigeon = ({ onSave }) => {
           place: r.place || "",
         }));
 
+      const breederValue =
+        values.breeder && typeof values.breeder === "object"
+          ? values.breeder.loftName || values.breeder.breederName || ""
+          : values.breeder || "";
+
       const dataToSend = {
         ringNumber: values.ringNumber,
         name: values.name,
@@ -485,8 +535,8 @@ const AddNewPigeon = ({ onSave }) => {
         birthYear: values.birthYear,
         story: values.story || "",
         shortInfo: values.shortInfo || "",
-        breeder: values.breeder,
-        color: combinedColor,
+        breeder: breederValue,
+        color: finalColor,
         racingRating: values.racingRating,
         racherRating: values.racerRating,
         breederRating: values.breederRating,
@@ -585,10 +635,15 @@ const AddNewPigeon = ({ onSave }) => {
     try {
       const values = await form.validateFields();
 
+      // Build color string using formatted color name (replace underscores with spaces)
+      const rawColor2 = values.colorPattern?.color;
+      const formattedColor2 = rawColor2 ? formatColor(rawColor2) : rawColor2;
       const combinedColor =
-        values.colorPattern?.color && values.colorPattern?.pattern
-          ? `${values.colorPattern.color} ${values.colorPattern.pattern}`
-          : values.colorPattern?.color || values.colorPattern?.pattern;
+        formattedColor2 && values.colorPattern?.pattern
+          ? `${formattedColor2} ${values.colorPattern.pattern}`
+          : formattedColor2 || values.colorPattern?.pattern;
+      // Ensure we never send null for color (backend may call .trim())
+      const finalColor = combinedColor || "";
 
       const filteredRaceResults = raceResults
         .filter((r) => r.name || r.date || r.distance || r.total || r.place)
@@ -600,6 +655,11 @@ const AddNewPigeon = ({ onSave }) => {
           place: r.place || "",
         }));
 
+      const breederValue =
+        values.breeder && typeof values.breeder === "object"
+          ? values.breeder.loftName || values.breeder.breederName || ""
+          : values.breeder || "";
+
       const dataToSend = {
         ringNumber: values.ringNumber,
         name: values.name,
@@ -607,8 +667,8 @@ const AddNewPigeon = ({ onSave }) => {
         birthYear: values.birthYear,
         story: values.story || "",
         shortInfo: values.shortInfo || "",
-        breeder: values.breeder,
-        color: combinedColor,
+        breeder: breederValue,
+        color: finalColor,
         racingRating: values.racingRating,
         racherRating: values.racerRating,
         breederRating: values.breederRating,
@@ -2029,14 +2089,16 @@ const AddNewPigeon = ({ onSave }) => {
         >
           {pigeonData ? "Update Pigeon" : "Save Pigeon"}
         </Button>
-        <Button
-          key="save-another"
-          onClick={handleSaveAndCreateAnother}
-          loading={isAdding || isUpdating}
-          className="bg-[#088395] border border-[#088395] hover:!border-[#088395] text-white hover:!text-[#088395]"
-        >
-          Save and Create Another Pigeon
-        </Button>
+        {!pigeonData && (
+          <Button
+            key="save-another"
+            onClick={handleSaveAndCreateAnother}
+            loading={isAdding || isUpdating}
+            className="bg-[#088395] border border-[#088395] hover:!border-[#088395] text-white hover:!text-[#088395]"
+          >
+            Save and Create Another Pigeon
+          </Button>
+        )}
       </div>
     </div>
   );
