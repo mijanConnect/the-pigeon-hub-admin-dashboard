@@ -412,7 +412,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
             // color: color,
             color: parentPath.colorField || color,
             colorName: parentPath.color,
-            // description: parentPath.notes || parentPath.shortInfo,
+            description: parentPath.notes || parentPath.shortInfo,
             achievements: formatResults(parentPath.addresults),
             verified: getPigeonVerification(parentPath),
             breederVerified: getBreederStatus(parentPath.breeder),
