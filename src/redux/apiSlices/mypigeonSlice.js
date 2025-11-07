@@ -213,6 +213,17 @@ const mypigeonSlice = api.injectEndpoints({
       },
       providesTags: ["Pigeon"],
     }),
+
+    getAllRingCountry: builder.query({
+      query: () => ({
+        url: `/pigeon/check-duplicate`,
+        method: "GET",
+      }),
+      transformResponse: (response) => {
+        return response?.data || [];
+      },
+      providesTags: ["Pigeon"],
+    }),
   }),
 });
 
@@ -225,7 +236,8 @@ export const {
   useAddPigeonMutation,
   useUpdatePigeonMutation, // ✅
   useDeletePigeonMutation,
-  useGetBreederNamesQuery, // ✅ New hook for breeder names
+  useGetBreederNamesQuery, 
   useGetFatherMotherQuery,
   useGetAllNameQuery,
+  useGetAllRingCountryQuery,
 } = mypigeonSlice;

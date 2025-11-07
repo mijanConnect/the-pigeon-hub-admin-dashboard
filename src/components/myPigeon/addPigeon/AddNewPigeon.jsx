@@ -83,6 +83,10 @@ const AddNewPigeon = ({ onSave }) => {
 
   const { data: allNames = [] } = useGetAllNameQuery();
 
+  // Refs for duplicate check debounce and tracking
+  const duplicateCheckTimeout = useRef(null);
+  const abortControllerRef = useRef(null);
+
   console.log(allNames);
 
   const validatePigeonName = (inputName) => {
@@ -487,6 +491,87 @@ const AddNewPigeon = ({ onSave }) => {
   // NOTE: we sync breederDisplay via Form's onValuesChange below instead of subscribing.
 
   const [updatePigeon, { isLoading: isUpdating }] = useUpdatePigeonMutation();
+
+  // Check for duplicate pigeon (ringNumber + country + birthYear)
+  const checkDuplicate = async (ringNumber, country, birthYear) => {
+    try {
+      // Cancel any pending request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      // Create new abort controller for this request
+      abortControllerRef.current = new AbortController();
+
+      // const baseUrl = "http://10.10.7.41:5001/api/v1";
+      baseUrl: "https://ftp.thepigeonhub.com/api/v1";
+      const url = `${baseUrl}/pigeon/check-duplicate?ringNumber=${encodeURIComponent(
+        ringNumber
+      )}&country=${encodeURIComponent(country)}&birthYear=${encodeURIComponent(
+        birthYear
+      )}`;
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(url, {
+        signal: abortControllerRef.current.signal,
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      const data = await response.json();
+
+      console.log("Duplicate check response:", data);
+
+      // Check if duplicate exists - handle different response formats
+      let isDuplicate = false;
+      if (data?.data?.isDuplicate === true) {
+        // Backend returns {success: true, data: {isDuplicate: true, message: "..."}}
+        isDuplicate = true;
+      } else if (data?.data && Array.isArray(data.data)) {
+        isDuplicate = data.data.length > 0;
+      } else if (Array.isArray(data)) {
+        isDuplicate = data.length > 0;
+      } else if (data?.exists === true) {
+        isDuplicate = true;
+      }
+
+      console.log("Is duplicate:", isDuplicate);
+
+      // Set or clear the error
+      if (isDuplicate) {
+        form.setFields([
+          {
+            name: "ringNumber",
+            errors: [
+              "A pigeon with this Ring Number, Country and Birth Year combination already exists.",
+            ],
+          },
+        ]);
+      } else {
+        form.setFields([{ name: "ringNumber", errors: [] }]);
+      }
+    } catch (error) {
+      // Ignore abort errors
+      if (error.name !== "AbortError") {
+        console.error("Duplicate check error:", error);
+      }
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (duplicateCheckTimeout.current) {
+        clearTimeout(duplicateCheckTimeout.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   // Handle iconic status change to enable/disable iconic score
   const handleIconicChange = (value) => {
@@ -1006,6 +1091,34 @@ const AddNewPigeon = ({ onSave }) => {
               setBreederDisplay(match ? match.breederName : current || "");
             } else {
               setBreederDisplay("");
+            }
+          }
+
+          // Check for duplicate when ringNumber, country, or birthYear changes
+          const watchFields = ["ringNumber", "country", "birthYear"];
+          const hasChanged = Object.keys(changedValues).some((key) =>
+            watchFields.includes(key)
+          );
+
+          if (hasChanged) {
+            const ringNumber = allValues.ringNumber?.toString().trim() || "";
+            const country = allValues.country?.toString().trim() || "";
+            const birthYear = allValues.birthYear?.toString().trim() || "";
+
+            // Clear any existing error immediately when user types
+            form.setFields([{ name: "ringNumber", errors: [] }]);
+
+            // Clear existing timeout
+            if (duplicateCheckTimeout.current) {
+              clearTimeout(duplicateCheckTimeout.current);
+            }
+
+            // Only check if all three fields are filled
+            if (ringNumber && country && birthYear) {
+              // Debounce the API call
+              duplicateCheckTimeout.current = setTimeout(() => {
+                checkDuplicate(ringNumber, country, birthYear);
+              }, 500);
             }
           }
         }}

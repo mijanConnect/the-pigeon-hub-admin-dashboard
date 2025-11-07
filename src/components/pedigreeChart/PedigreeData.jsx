@@ -96,7 +96,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       position: "Subject",
       birthYear: subject.birthYear?.toString(),
       // color: "#FFFFE0",
-      color : subject.colorField || "#FFFFE0",
+      color: subject.colorField || "#FFFFE0",
       colorName: subject.color,
       description: subject.shortInfo,
       achievements: formatResults(subject.addresults),
@@ -219,7 +219,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
         position: "Grandfather (FP)",
         birthYear: subject.fatherRingId.fatherRingId.birthYear?.toString(),
         // color: "#fff",
-        color : subject.fatherRingId.fatherRingId.colorField || "#FFFFFF",
+        color: subject.fatherRingId.fatherRingId.colorField || "#FFFFFF",
         colorName: subject.fatherRingId.fatherRingId.color,
         description: subject.fatherRingId.fatherRingId.shortInfo,
         achievements: formatResults(
@@ -547,7 +547,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
             position: `GG-GF (${nodeId})`,
             birthYear: parentPath.fatherRingId.birthYear?.toString(),
             // color: fatherColor,
-            color : parentPath.fatherRingId.colorField || fatherColor,
+            color: parentPath.fatherRingId.colorField || fatherColor,
             // colorName: parentPath.fatherRingId.color,
             verified: getPigeonVerification(parentPath.fatherRingId),
             breederVerified: getBreederStatus(parentPath.fatherRingId.breeder),
@@ -591,7 +591,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
             position: `GG-GM (${nodeId})`,
             birthYear: parentPath.motherRingId.birthYear?.toString(),
             // color: motherColor,
-            color : parentPath.motherRingId.colorField || motherColor,
+            color: parentPath.motherRingId.colorField || motherColor,
             // colorName: parentPath.motherRingId.color,
             verified: getPigeonVerification(parentPath.motherRingId),
             breederVerified: getBreederStatus(parentPath.motherRingId.breeder),
@@ -626,7 +626,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       subject.fatherRingId?.fatherRingId?.fatherRingId,
       "father_3_1",
       { father: { x: 1140, y: -200 }, mother: { x: 1140, y: -70 } },
-      "Ancient",
+      "Ancient"
       // "#90EE90",
       // "#90EE90"
     );
@@ -634,7 +634,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       subject.fatherRingId?.fatherRingId?.motherRingId,
       "mother_3_1",
       { father: { x: 1140, y: 60 }, mother: { x: 1140, y: 190 } },
-      "Storm",
+      "Storm"
       // "#FFFFE0",
       // "#FFFFE0"
     );
@@ -666,7 +666,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       subject.motherRingId?.motherRingId?.fatherRingId,
       "father_3_4",
       { father: { x: 1140, y: 1370 }, mother: { x: 1140, y: 1500 } },
-      "Crimson",
+      "Crimson"
       // "#90EE90",
       // "#90EE90"
     );
@@ -674,7 +674,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       subject.motherRingId?.motherRingId?.motherRingId,
       "mother_3_4",
       { father: { x: 1140, y: 1630 }, mother: { x: 1140, y: 1760 } },
-      "Scarlet",
+      "Scarlet"
       // "#FFFFE0",
       // "#FFFFE0"
     );
