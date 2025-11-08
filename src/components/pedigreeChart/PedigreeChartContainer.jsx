@@ -10,7 +10,6 @@ import ReactFlow, {
 import { DownloadOutlined } from "@ant-design/icons";
 import { Button, Dropdown } from "antd";
 import "reactflow/dist/style.css";
-import logo from "../../../src/assets/image4.png";
 import Cock from "../../../src/assets/cock.png";
 import Hen from "../../../src/assets/hen.png";
 import Unspeficic from "../../../src/assets/unspeficic.png";
@@ -26,9 +25,9 @@ import * as XLSX from "xlsx";
 import { useParams } from "react-router-dom";
 import SpinnerCustom from "../../Pages/Dashboard/Spinner/SpinnerCustom";
 import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
+import { getImageUrl } from "../common/imageUrl";
 import { exportPedigreeToPDF } from "./ExportPDF";
 import { convertBackendToExistingFormat } from "./PedigreeData";
-import { getImageUrl } from "../common/imageUrl";
 // import { exportPedigreeToPDF } from "./exportPDF";
 
 const PigeonNode = ({ data }) => {
@@ -368,8 +367,6 @@ export default function PigeonPedigreeChart() {
         Owner: node.data.owner || "N/A",
         Country: node.data.country || "N/A",
         Color: node.data.colorName || "N/A",
-        Generation:
-          node.data.generation !== undefined ? node.data.generation : "N/A",
         Achievements: node.data.achievements || "N/A",
         Description: node.data.description || "N/A",
       }));
@@ -397,9 +394,42 @@ export default function PigeonPedigreeChart() {
       // Add worksheet to workbook
       XLSX.utils.book_append_sheet(wb, ws, "Pigeon Pedigree");
 
-      // Generate filename with current date
-      const currentDate = new Date().toISOString().split("T")[0];
-      const filename = `pigeon-pedigree-${currentDate}.xlsx`;
+      // Build filename from gen0 pigeon data: countryCode-ringNumber-birthYear-name
+      let filename = "pigeon-pedigree.xlsx";
+
+      const gen0Node = nodes.find((n) => n.data.generation === 0);
+      if (gen0Node && gen0Node.data) {
+        const pigeonData = gen0Node.data;
+
+        // Get country code (2-letter ISO code)
+        let countryCode = "";
+        if (pigeonData.country) {
+          const trimmed = pigeonData.country.trim();
+          if (trimmed.length === 2) {
+            countryCode = trimmed.toUpperCase();
+          } else {
+            const code = getCode(trimmed);
+            countryCode = code
+              ? code.toUpperCase()
+              : trimmed.substring(0, 2).toUpperCase();
+          }
+        }
+
+        const ringNumber = pigeonData.ringNumber || "";
+        const birthYear = pigeonData.birthYear || "";
+        const name = pigeonData.name
+          ? pigeonData.name.replace(/[^a-zA-Z0-9]/g, "-")
+          : "";
+
+        // Build filename parts
+        const parts = [countryCode, ringNumber, birthYear, name].filter(
+          Boolean
+        );
+
+        if (parts.length > 0) {
+          filename = `${parts.join("-")}.xlsx`;
+        }
+      }
 
       // Save file
       XLSX.writeFile(wb, filename);

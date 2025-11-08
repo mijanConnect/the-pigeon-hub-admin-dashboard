@@ -763,9 +763,41 @@ export const exportPedigreeToPDF = async (
     }
 
     // === SAVE PDF ===
-    const currentDate = new Date().toISOString().split("T")[0];
-    const genText = generations ? `${generations}gen-` : "";
-    const filename = `pigeon-pedigree-${genText}${currentDate}.pdf`;
+    // Build filename from gen0 pigeon data: countryCode-ringNumber-birthYear-name
+    let filename = "pigeon-pedigree.pdf";
+
+    const gen0Node = filteredNodes.find((n) => n.data.generation === 0);
+    if (gen0Node && gen0Node.data) {
+      const pigeonData = gen0Node.data;
+
+      // Get country code (2-letter ISO code)
+      let countryCode = "";
+      if (pigeonData.country) {
+        const trimmed = pigeonData.country.trim();
+        if (trimmed.length === 2) {
+          countryCode = trimmed.toUpperCase();
+        } else {
+          const code = getCode(trimmed);
+          countryCode = code
+            ? code.toUpperCase()
+            : trimmed.substring(0, 2).toUpperCase();
+        }
+      }
+
+      const ringNumber = pigeonData.ringNumber || "";
+      const birthYear = pigeonData.birthYear || "";
+      const name = pigeonData.name
+        ? pigeonData.name.replace(/[^a-zA-Z0-9]/g, "-")
+        : "";
+
+      // Build filename parts
+      const parts = [countryCode, ringNumber, birthYear, name].filter(Boolean);
+
+      if (parts.length > 0) {
+        filename = `${parts.join("-")}.pdf`;
+      }
+    }
+
     pdf.save(filename);
 
     return filename;
