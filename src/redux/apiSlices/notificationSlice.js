@@ -10,7 +10,7 @@ const notificationSlice = api.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (response) => response.data.notification || [],
-      providesTags: ["Notification"],
+      providesTags: ["Notification", "AddPigeon"],
     }),
 
     getNotifications: builder.query({
@@ -20,7 +20,7 @@ const notificationSlice = api.injectEndpoints({
         params: { page, limit: 20 },
       }),
       transformResponse: (response) => response.data,
-      providesTags: ["Notification"],
+      providesTags: ["Notification", "AddPigeon"],
     }),
 
     readAllNotifications: builder.mutation({
@@ -28,7 +28,7 @@ const notificationSlice = api.injectEndpoints({
         url: `/notification/admin`,
         method: "PATCH",
       }),
-      invalidatesTags: ["Notification"],
+      invalidatesTags: ["Notification", "AddPigeon"],
     }),
 
     getUnreadNotificationCount: builder.query({
@@ -37,7 +37,7 @@ const notificationSlice = api.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (response) => response.data.unreadCount || 0,
-      providesTags: ["Notification"],
+      providesTags: ["AddPigeon", "Notification"],
     }),
   }),
 });

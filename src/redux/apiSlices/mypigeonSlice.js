@@ -71,13 +71,7 @@ const mypigeonSlice = api.injectEndpoints({
         };
       },
 
-      providesTags: (result) =>
-        result?.pigeons
-          ? [
-              ...result.pigeons.map((p) => ({ type: "Pigeon", id: p._id })),
-              { type: "Pigeon", id: "LIST" },
-            ]
-          : [{ type: "Pigeon", id: "LIST" }],
+      providesTags: ["AddPigeon"],
     }),
 
     // ---------- GET SINGLE PIGEON ----------
@@ -118,11 +112,7 @@ const mypigeonSlice = api.injectEndpoints({
           // Remove Content-Type
         },
       }),
-      invalidatesTags: [
-        { type: "Pigeon", id: "LIST" },
-        { type: "RecentPigeons", id: "LIST" },
-        { type: "OverviewStats", id: "LIST" },
-      ],
+      invalidatesTags: ["AddPigeon"],
     }),
 
     // Update Pigeon
@@ -236,7 +226,7 @@ export const {
   useAddPigeonMutation,
   useUpdatePigeonMutation, // ✅
   useDeletePigeonMutation,
-  useGetBreederNamesQuery, 
+  useGetBreederNamesQuery,
   useGetFatherMotherQuery,
   useGetAllNameQuery,
   useGetAllRingCountryQuery,
