@@ -1,3 +1,4 @@
+// ===== API Slice File (notificationSlice.js) =====
 // src/redux/apiSlices/notificationSlice.js
 import { api } from "../api/baseApi";
 
@@ -16,7 +17,7 @@ const notificationSlice = api.injectEndpoints({
       query: (page = 1) => ({
         url: `/notification/admin`,
         method: "GET",
-        params: { page, limit: 10 }, // adjust limit if needed
+        params: { page, limit: 20 },
       }),
       transformResponse: (response) => response.data,
       providesTags: ["Notification"],
@@ -30,7 +31,6 @@ const notificationSlice = api.injectEndpoints({
       invalidatesTags: ["Notification"],
     }),
 
-    // ✅ NEW: Unread Count API
     getUnreadNotificationCount: builder.query({
       query: () => ({
         url: `/notification/unreadCount`,
@@ -46,5 +46,5 @@ export const {
   useGetRecentNotificationsQuery,
   useGetNotificationsQuery,
   useReadAllNotificationsMutation,
-  useGetUnreadNotificationCountQuery, // ✅ Export this
+  useGetUnreadNotificationCountQuery,
 } = notificationSlice;
