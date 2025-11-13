@@ -7,7 +7,7 @@ const allpigeonSlice = api.injectEndpoints({
     getAllPigeons: builder.query({
       query: ({
         page = 1,
-        limit = 10000,
+        limit = 10,
         search,
         searchTerm,
         country,
@@ -73,13 +73,7 @@ const allpigeonSlice = api.injectEndpoints({
           pagination: response?.data?.pagination || {},
         };
       },
-      providesTags: (result) =>
-        result?.pigeons
-          ? [
-              ...result.pigeons.map((p) => ({ type: "Pigeon", id: p._id })),
-              { type: "Pigeon", id: "LIST" },
-            ]
-          : [{ type: "Pigeon", id: "LIST" }],
+      providesTags: ["AddPigeon", "Pigeon"],
     }),
 
     // ---------- GET SINGLE PIGEON ----------
@@ -107,12 +101,11 @@ const allpigeonSlice = api.injectEndpoints({
           },
         };
       },
-      invalidatesTags: (result, error, { id }) => [
-        { type: "Pigeon", id },
-        { type: "Pigeon", id: "LIST" },
-        { type: "RecentPigeons", id: "LIST" },
-        { type: "OverviewStats", id: "LIST" },
-      ],
+      // Only invalidate the specific pigeon entry to avoid refetching the
+      // entire list (which causes the UI to briefly revert to stale values).
+      // The list can be refreshed manually when needed (or invalidated by
+      // other operations like delete) to keep UX snappy.
+      invalidatesTags: (result, error, { id }) => [{ type: "Pigeon", id }],
     }),
 
     // ---------- DELETE PIGEON ----------

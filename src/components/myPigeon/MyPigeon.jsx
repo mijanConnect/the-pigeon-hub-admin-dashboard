@@ -17,7 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import { IoMdDownload } from "react-icons/io";
 import { PiDnaBold } from "react-icons/pi";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import AllIcon from "../../assets/all.png";
 import {
@@ -43,13 +43,24 @@ const MyPigeon = () => {
   const printRef = useRef(null);
   const { id } = useParams();
 
-  const [tabKey, setTabKey] = useState("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const initialTab = searchParams.get("tab") || "all";
+  const initialPage = parseInt(searchParams.get("page")) || 1;
+  const initialPageSize = parseInt(searchParams.get("limit")) || 50;
+  const initialSearch = searchParams.get("search") || "";
+  const initialCountry = searchParams.get("country") || "all";
+  const initialGender = searchParams.get("gender") || "all";
+  const initialColor = searchParams.get("color") || "all";
+  const initialVerified = searchParams.get("status") || "all";
+
+  const [tabKey, setTabKey] = useState(initialTab);
   const [filters, setFilters] = useState({
-    search: "",
-    country: "all",
-    gender: "all",
-    color: "all",
-    status: "all",
+    search: initialSearch,
+    country: initialCountry,
+    gender: initialGender,
+    color: initialColor,
+    status: initialVerified,
   });
 
   // Client-side sorting state
@@ -61,8 +72,8 @@ const MyPigeon = () => {
     navigate(`/view-pigeon/${record._id}`);
   };
 
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(10000);
+  const [page, setPage] = useState(initialPage);
+  const [pageSize, setPageSize] = useState(initialPageSize);
   const countries = getNames();
 
   const showEditModal = (record) => {
@@ -99,6 +110,11 @@ const MyPigeon = () => {
   const total = data?.pagination?.total || 0;
 
   // Sync sorted pigeons when API data changes - always sync to show empty tabs correctly
+  // Keep tabKey in sync with URL search params (useful when navigating history)
+  useEffect(() => {
+    const p = searchParams.get("tab") || "all";
+    if (p !== tabKey) setTabKey(p);
+  }, [searchParams]);
   useEffect(() => {
     setSortedPigeons(apiPigeons);
   }, [data]); // Use data as dependency, not apiPigeons
@@ -106,6 +122,20 @@ const MyPigeon = () => {
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setPage(1);
+
+    // update URL params
+    const existing = Object.fromEntries(searchParams.entries());
+    const updated = { ...existing };
+    if (value === "all" || value === "") {
+      delete updated[key];
+    } else {
+      updated[key] = value;
+    }
+    updated.page = "1";
+    updated.limit = String(pageSize);
+    // keep current tab if present
+    if (tabKey && tabKey !== "all") updated.tab = tabKey;
+    setSearchParams(updated, { replace: true });
   };
 
   const [deletePigeon] = useDeletePigeonMutation();
@@ -113,7 +143,6 @@ const MyPigeon = () => {
   const handleDelete = (record) => {
     Swal.fire({
       title: "Delete Pigeon?",
-      text: `Are you sure you want to delete ${record.name}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#088395",
@@ -678,12 +707,22 @@ const MyPigeon = () => {
       <div className="bg-[#333D49] rounded-lg shadow-lg border border-[#B7BBA0] mb-2">
         <div className="pt-3 mb-6 px-4 rounded-t-lg bg-[#44505E]">
           <Tabs
-            defaultActiveKey="all"
+            activeKey={tabKey}
             tabBarGutter={50}
             className="custom-tabs text-[#B7BBA0]"
             onChange={(key) => {
               setTabKey(key);
               setPage(1); // reset pagination whenever tab changes
+              const existing = Object.fromEntries(searchParams.entries());
+              const updated = { ...existing };
+              if (key === "all") {
+                delete updated.tab;
+              } else {
+                updated.tab = key;
+              }
+              updated.page = "1";
+              updated.limit = String(pageSize);
+              setSearchParams(updated, { replace: true });
             }}
           >
             <TabPane
@@ -887,7 +926,18 @@ const MyPigeon = () => {
                   pageSize,
                   total,
                   showSizeChanger: false,
-                  onChange: (newPage) => setPage(newPage),
+                  onChange: (newPage, newPageSize) => {
+                    setPage(newPage);
+                    const existing = Object.fromEntries(searchParams.entries());
+                    setSearchParams(
+                      {
+                        ...existing,
+                        page: String(newPage),
+                        limit: String(pageSize),
+                      },
+                      { replace: true }
+                    );
+                  },
                 }}
                 onChange={handleTableChange}
                 components={{

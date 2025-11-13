@@ -669,6 +669,7 @@ select {
 }
 .ant-pagination {
   margin: 16px;
+  padding-right: 16px;
 }
 .ant-pagination-item-active {
   background: #ffffff !important; /* your brand color */
@@ -934,7 +935,7 @@ select {
 }
 
 /* Pagination removed */
-.ant-pagination-prev {
+/* .ant-pagination-prev {
   display: none !important;
 }
 
@@ -944,9 +945,9 @@ select {
 
 .ant-pagination-item {
   display: none !important;
-}
+} */
 
-.ant-upload-list-item::before{
+.ant-upload-list-item::before {
   display: none !important;
 }
 

@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import { IoMdDownload } from "react-icons/io";
 import { PiDnaBold } from "react-icons/pi";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
   useDeletePigeonMutation,
@@ -39,14 +39,25 @@ const PigeonManagement = () => {
   const navigate = useNavigate();
   const printRef = useRef(null);
   const { id } = useParams();
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(10000);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Initialize pagination and filters from URL search params so refresh preserves state
+  const initialPage = parseInt(searchParams.get("page")) || 1;
+  const initialPageSize = parseInt(searchParams.get("limit")) || 50;
+  const initialSearch = searchParams.get("search") || "";
+  const initialCountry = searchParams.get("country") || "all";
+  const initialGender = searchParams.get("gender") || "all";
+  const initialColor = searchParams.get("color") || "all";
+  const initialStatus = searchParams.get("status") || "all";
+
+  const [page, setPage] = useState(initialPage);
+  const [pageSize, setPageSize] = useState(initialPageSize);
   const [filters, setFilters] = useState({
-    search: "",
-    country: "all",
-    gender: "all",
-    color: "all",
-    status: "all",
+    search: initialSearch,
+    country: initialCountry,
+    gender: initialGender,
+    color: initialColor,
+    status: initialStatus,
   });
 
   // Modal states
@@ -111,7 +122,21 @@ const PigeonManagement = () => {
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+    // reset to first page on filter change
     setPage(1);
+
+    // update URL params
+    const existing = Object.fromEntries(searchParams.entries());
+    const updated = { ...existing };
+    // remove param if set to 'all' or empty to keep URL clean
+    if (value === "all" || value === "") {
+      delete updated[key];
+    } else {
+      updated[key] = value;
+    }
+    updated.page = "1";
+    updated.limit = String(pageSize);
+    setSearchParams(updated, { replace: true });
   };
 
   const handleView = (record) => {
@@ -412,8 +437,18 @@ const PigeonManagement = () => {
 
       const token = localStorage.getItem("token");
 
-      // Send minimal JSON for partial update (avoid FormData) so unrelated fields are not cleared
+      // Send minimal JSON for partial update (avoid FormData)
       await updatePigeon({ id, formData: dataToSend, token }).unwrap();
+
+      // Update local copies so the underlying row data matches the optimistic value
+      // before we clear the optimistic overlay. This prevents the select from
+      // briefly reverting to the old value when a list refetch occurs.
+      setOriginalPigeons((prev) =>
+        prev.map((p) => (p._id === id ? { ...p, verified: value } : p))
+      );
+      setSortedPigeons((prev) =>
+        prev.map((p) => (p._id === id ? { ...p, verified: value } : p))
+      );
 
       message.success("Verification updated successfully");
     } catch (err) {
@@ -453,6 +488,18 @@ const PigeonManagement = () => {
 
       // Call updatePigeon with a plain object; the API slice now sends JSON when body is not FormData
       await updatePigeon({ id, formData: dataToSend, token }).unwrap();
+
+      // Update local copies so UI shows the new score after optimistic change
+      setOriginalPigeons((prev) =>
+        prev.map((p) =>
+          p._id === id ? { ...p, iconicScore: numeric, iconic: numeric > 0 } : p
+        )
+      );
+      setSortedPigeons((prev) =>
+        prev.map((p) =>
+          p._id === id ? { ...p, iconicScore: numeric, iconic: numeric > 0 } : p
+        )
+      );
 
       message.success("Iconic score updated");
     } catch (err) {
@@ -1046,7 +1093,29 @@ const PigeonManagement = () => {
                   pageSize,
                   total,
                   showSizeChanger: false,
-                  onChange: (newPage) => setPage(newPage),
+                  // When page size is changed AntD calls onChange with (page, pageSize)
+                  onChange: (newPage, newPageSize) => {
+                    const existing = Object.fromEntries(searchParams.entries());
+                    // If pageSize changed, reset to page 1 to avoid out-of-range pages
+                    if (newPageSize && newPageSize !== pageSize) {
+                      setPageSize(newPageSize);
+                      setPage(1);
+                      setSearchParams(
+                        { ...existing, page: "1", limit: String(newPageSize) },
+                        { replace: true }
+                      );
+                    } else {
+                      setPage(newPage);
+                      setSearchParams(
+                        {
+                          ...existing,
+                          page: String(newPage),
+                          limit: String(pageSize),
+                        },
+                        { replace: true }
+                      );
+                    }
+                  },
                 }}
                 onChange={handleTableChange}
                 components={{

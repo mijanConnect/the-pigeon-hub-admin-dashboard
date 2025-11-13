@@ -140,12 +140,7 @@ const mypigeonSlice = api.injectEndpoints({
         url: `/pigeon/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: (result, error, id) => [
-        { type: "Pigeon", id },
-        { type: "Pigeon", id: "LIST" },
-        { type: "RecentPigeons", id: "LIST" },
-        { type: "OverviewStats", id: "LIST" },
-      ],
+      invalidatesTags: ["AddPigeon"],
     }),
 
     getBreederNames: builder.query({
