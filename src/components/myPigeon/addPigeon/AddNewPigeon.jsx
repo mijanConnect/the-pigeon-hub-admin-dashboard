@@ -127,10 +127,16 @@ const AddNewPigeon = ({ onSave }) => {
   // 🔎 Parents
   const [fatherSearch, setFatherSearch] = useState("");
   const [motherSearch, setMotherSearch] = useState("");
-  const { data: fatherOptions = [], isLoading: fatherLoading } =
+  const { data: fatherOptionsData = [], isLoading: fatherLoading } =
     useGetFatherMotherQuery(fatherSearch, { skip: !fatherSearch });
-  const { data: motherOptions = [], isLoading: motherLoading } =
+  const { data: motherOptionsData = [], isLoading: motherLoading } =
     useGetFatherMotherQuery(motherSearch, { skip: !motherSearch });
+
+  // Only show options when there's an active search
+  const fatherOptions = fatherSearch ? fatherOptionsData : [];
+  const motherOptions = motherSearch ? motherOptionsData : [];
+
+  console.log(motherOptions);
 
   // Filter parent options by gender client-side to ensure only appropriate pigeons show
   const fatherOptionsFiltered = (fatherOptions || []).filter((p) => {
@@ -1651,7 +1657,7 @@ const AddNewPigeon = ({ onSave }) => {
                   className="custom-form-item-ant-select"
                 >
                   <AutoComplete
-                    options={fatherOptionsFiltered.map((p) => ({
+                    options={fatherOptions.map((p) => ({
                       value: p.ringNumber,
                       label: `${p.ringNumber} (${p.name || "Unknown"})`,
                       data: p,
@@ -1732,7 +1738,7 @@ const AddNewPigeon = ({ onSave }) => {
                   className="custom-form-item-ant-select"
                 >
                   <AutoComplete
-                    options={motherOptionsFiltered.map((p) => ({
+                    options={motherOptions.map((p) => ({
                       value: p.ringNumber,
                       label: `${p.ringNumber} (${p.name || "Unknown"})`,
                       data: p,
