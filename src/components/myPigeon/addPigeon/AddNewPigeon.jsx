@@ -141,7 +141,6 @@ const AddNewPigeon = ({ onSave }) => {
   // Filter parent options by gender client-side to ensure only appropriate pigeons show
   const fatherOptionsFiltered = (fatherOptions || []).filter((p) => {
     const g = (p.gender || "").toString().toLowerCase();
-    console.log(p.verified);
     return g === "cock"; // only show cocks for father
   });
 
@@ -1657,7 +1656,7 @@ const AddNewPigeon = ({ onSave }) => {
                   className="custom-form-item-ant-select"
                 >
                   <AutoComplete
-                    options={fatherOptions.map((p) => ({
+                    options={fatherOptionsFiltered.map((p) => ({
                       value: p.ringNumber,
                       label: `${p.ringNumber} (${p.name || "Unknown"})`,
                       data: p,
@@ -1738,7 +1737,7 @@ const AddNewPigeon = ({ onSave }) => {
                   className="custom-form-item-ant-select"
                 >
                   <AutoComplete
-                    options={motherOptions.map((p) => ({
+                    options={motherOptionsFiltered.map((p) => ({
                       value: p.ringNumber,
                       label: `${p.ringNumber} (${p.name || "Unknown"})`,
                       data: p,
