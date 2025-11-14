@@ -71,7 +71,17 @@ const mypigeonSlice = api.injectEndpoints({
         };
       },
 
-      providesTags: ["AddPigeon"],
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.pigeons.map((p) => ({ type: "Pigeon", id: p._id })),
+              { type: "Pigeon", id: "LIST" },
+              { type: "AddPigeon", id: "LIST" },
+            ]
+          : [
+              { type: "Pigeon", id: "LIST" },
+              { type: "AddPigeon", id: "LIST" },
+            ],
     }),
 
     // ---------- GET SINGLE PIGEON ----------

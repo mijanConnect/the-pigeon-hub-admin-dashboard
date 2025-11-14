@@ -73,7 +73,17 @@ const allpigeonSlice = api.injectEndpoints({
           pagination: response?.data?.pagination || {},
         };
       },
-      providesTags: ["AddPigeon", "Pigeon"],
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.pigeons.map((p) => ({ type: "Pigeon", id: p._id })),
+              { type: "Pigeon", id: "LIST" },
+              { type: "AddPigeon", id: "LIST" },
+            ]
+          : [
+              { type: "Pigeon", id: "LIST" },
+              { type: "AddPigeon", id: "LIST" },
+            ],
     }),
 
     // ---------- GET SINGLE PIGEON ----------
@@ -105,7 +115,10 @@ const allpigeonSlice = api.injectEndpoints({
       // entire list (which causes the UI to briefly revert to stale values).
       // The list can be refreshed manually when needed (or invalidated by
       // other operations like delete) to keep UX snappy.
-      invalidatesTags: (result, error, { id }) => [{ type: "Pigeon", id }],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Pigeon", id },
+        { type: "AddPigeon", id },
+      ],
     }),
 
     // ---------- DELETE PIGEON ----------
