@@ -1275,7 +1275,7 @@ const AddNewPigeon = ({ onSave }) => {
                         // ignore
                       }
                     }}
-                    allowClear
+                    // allowClear
                     onClear={() => {
                       form.setFieldsValue({ breeder: undefined });
                       setBreederDisplay("");
@@ -1381,7 +1381,7 @@ const AddNewPigeon = ({ onSave }) => {
                     className="custom-select-ant-modal"
                     disabled={!isIconicEnabled}
                     showSearch // Enable search functionality
-                    allowClear // Enable the clear button (cross icon)
+                    // allowClear // Enable the clear button (cross icon)
                     optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)
                     filterOption={(input, option) =>
                       option?.children
@@ -1470,7 +1470,7 @@ const AddNewPigeon = ({ onSave }) => {
                     placeholder="Select Birth Year"
                     className="custom-select-ant-modal"
                     showSearch
-                    allowClear // Enables the clear button (cross icon)
+                    // allowClear // Enables the clear button (cross icon)
                     optionFilterProp="children"
                     filterOption={(input, option) =>
                       // Ensure option.children is treated as a string
@@ -1544,7 +1544,7 @@ const AddNewPigeon = ({ onSave }) => {
                     placeholder="Select Rating"
                     className="custom-select-ant-modal"
                     showSearch
-                    allowClear
+                    // allowClear
                     optionFilterProp="children"
                     filterOption={(input, option) =>
                       option?.children
@@ -1599,7 +1599,7 @@ const AddNewPigeon = ({ onSave }) => {
                     placeholder="Select Rating"
                     className="custom-select-ant-modal"
                     showSearch // Enable search functionality
-                    allowClear // Enable the clear button (cross icon)
+                    // allowClear // Enable the clear button (cross icon)
                     optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)
                     filterOption={(input, option) =>
                       option?.children
@@ -1701,7 +1701,7 @@ const AddNewPigeon = ({ onSave }) => {
                         // ignore
                       }
                     }}
-                    allowClear
+                    // allowClear
                     onClear={() => {
                       form.setFieldsValue({ fatherRingId: undefined });
                       setFatherDisplay("");
@@ -1782,7 +1782,7 @@ const AddNewPigeon = ({ onSave }) => {
                         // ignore
                       }
                     }}
-                    allowClear
+                    // allowClear
                     onClear={() => {
                       form.setFieldsValue({ motherRingId: undefined });
                       setMotherDisplay("");

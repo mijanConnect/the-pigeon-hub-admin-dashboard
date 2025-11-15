@@ -10,7 +10,9 @@ export const pigeonPedigreeApi = api.injectEndpoints({
         };
       },
 
-      providesTags: ["Profile"],
+      // Provide an item-level tag so invalidations can target specific pedigree entries
+      providesTags: (result, error, id) =>
+        result ? [{ type: "Pedigree", id }] : [{ type: "Pedigree", id }],
     }),
   }),
 });

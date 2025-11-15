@@ -29,6 +29,7 @@ export const api = createApi({
     "Pigeon",
     "Breeder",
     "AddPigeon",
+    "Pedigree",
   ],
   endpoints: () => ({}),
 });

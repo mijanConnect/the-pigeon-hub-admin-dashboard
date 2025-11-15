@@ -22,7 +22,7 @@ import { getCode } from "country-list";
 import * as XLSX from "xlsx";
 // import { convertBackendToExistingFormat } from "./PigeonData";
 // import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import SpinnerCustom from "../../Pages/Dashboard/Spinner/SpinnerCustom";
 import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
 import { getImageUrl } from "../common/imageUrl";
@@ -302,7 +302,16 @@ export default function PigeonPedigreeChart() {
   const { id } = useParams();
   // console.log("id", id);
 
-  const { data: pedigreeData, isLoading } = useGetPigeonPedigreeDataQuery(id);
+  const location = useLocation();
+  // If a caller navigated with `state.record` we can avoid an unnecessary
+  // refetch when the cache already contains data. Use `refetchOnMountOrArgChange: false`
+  // so RTK Query will return cached data (if present) and not trigger a fetch on every mount.
+  const { data: pedigreeData, isLoading } = useGetPigeonPedigreeDataQuery(id, {
+    // Ensure we refetch when navigating to this page so we always load
+    // the latest pedigree after edits. It's OK to refetch here because
+    // pedigree data can change when pigeon details change.
+    refetchOnMountOrArgChange: true,
+  });
   // console.log("pedigreeData", pedigreeData);
   const chartRef = useRef(null);
   const reactFlowInstanceRef = useRef(null);

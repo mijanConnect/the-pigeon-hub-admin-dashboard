@@ -139,6 +139,8 @@ const mypigeonSlice = api.injectEndpoints({
       invalidatesTags: (result, error, { id }) => [
         { type: "Pigeon", id },
         { type: "Pigeon", id: "LIST" },
+        { type: "Pedigree", id },
+        { type: "AddPigeon", id: "LIST" },
         { type: "RecentPigeons", id: "LIST" },
         { type: "OverviewStats", id: "LIST" },
       ],
