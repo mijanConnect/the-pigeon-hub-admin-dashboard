@@ -4,7 +4,7 @@ export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
     // baseUrl: "http://50.6.200.33:5001/api/v1",
-    baseUrl: "https://api.thepigeonhub.com/api/v1",
+    baseUrl: "https://ftp.thepigeonhub.com/api/v1",
 
     prepareHeaders: (headers, { endpoint }) => {
       // headers.set("ngrok-skip-browser-warning", "true");

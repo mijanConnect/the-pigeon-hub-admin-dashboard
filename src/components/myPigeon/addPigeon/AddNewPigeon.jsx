@@ -509,7 +509,7 @@ const AddNewPigeon = ({ onSave }) => {
       abortControllerRef.current = new AbortController();
 
       // const baseUrl = "http://10.10.7.41:5001/api/v1";
-      const baseUrl = "https://api.thepigeonhub.com/api/v1";
+      const baseUrl = "https://ftp.thepigeonhub.com/api/v1";
       const url = `${baseUrl}/pigeon/check-duplicate?ringNumber=${encodeURIComponent(
         ringNumber
       )}&country=${encodeURIComponent(country)}&birthYear=${encodeURIComponent(
