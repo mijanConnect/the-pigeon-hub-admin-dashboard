@@ -412,8 +412,13 @@ export const exportPedigreeToPDF = async (
         const maxDescLines = Math.floor(descriptionSpace / 3);
 
         if (maxDescLines > 0) {
+          // Replace multiple consecutive spaces with single space, but keep newlines
+          const normalizedDescription = String(data.description)
+            .replace(/[ \t]+/g, " ") // Replace multiple spaces/tabs with single space
+            .trim();
+
           currentY = addWrappedText(
-            String(data.description),
+            normalizedDescription,
             leftMargin,
             currentY,
             contentWidth,
@@ -435,8 +440,13 @@ export const exportPedigreeToPDF = async (
 
           const maxAchvLines = Math.floor(remainingSpace / 2.5);
           if (maxAchvLines > 0) {
+            // Replace multiple consecutive spaces with single space, but keep newlines
+            const normalizedAchievements = String(data.achievements)
+              .replace(/[ \t]+/g, " ") // Replace multiple spaces/tabs with single space
+              .trim();
+
             currentY = addWrappedText(
-              String(data.achievements),
+              normalizedAchievements,
               leftMargin,
               currentY,
               contentWidth,
