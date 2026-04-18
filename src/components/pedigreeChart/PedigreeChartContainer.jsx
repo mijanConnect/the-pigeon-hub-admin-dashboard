@@ -133,9 +133,9 @@ const PigeonNode = ({ data }) => {
     <div
       style={{ backgroundColor: data.color }}
       className={`${getCardSize(
-        data?.generation
+        data?.generation,
       )} border-b-8 border-r-10 border-black text-white rounded-none transition-all duration-300 px-2 py-2 ${getGenerationColor(
-        data?.generation
+        data?.generation,
       )} border overflow-hidden`}
     >
       {/* Conditional Handles based on generation */}
@@ -360,7 +360,7 @@ export default function PigeonPedigreeChart() {
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+    [setEdges],
   );
 
   // Excel Export Function
@@ -432,7 +432,7 @@ export default function PigeonPedigreeChart() {
 
         // Build filename parts
         const parts = [countryCode, ringNumber, birthYear, name].filter(
-          Boolean
+          Boolean,
         );
 
         if (parts.length > 0) {
@@ -468,7 +468,7 @@ export default function PigeonPedigreeChart() {
         alert("Error exporting the selected generations. Please try again.");
       }
     },
-    [nodes, edges, pedigreeData]
+    [nodes, edges, pedigreeData],
   );
 
   const defaultViewport = { x: 0, y: 0, zoom: 0.7 };

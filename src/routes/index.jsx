@@ -1,63 +1,30 @@
 import { createBrowserRouter } from "react-router-dom";
-import Auth from "../Layout/Auth/Auth";
 import Main from "../Layout/Main/Main";
 import Home from "../Pages/Dashboard/Home";
-import Users from "../Pages/Dashboard/Subsciber";
-import Admin from "../Pages/Dashboard/Admin";
-import Category from "../Pages/Dashboard/PushNotification";
-import Events from "../Pages/Dashboard/UpdatePassword";
-import Banner from "../Pages/Dashboard/Banner";
-import AboutUs from "../Pages/Dashboard/AboutUs";
-import PrivacyPolicy from "../Pages/Dashboard/PrivacyPolicy";
-import TermsAndConditions from "../Pages/Dashboard/TermsAndCondition";
-import ChangePassword from "../Pages/Auth/ChangePassword";
-import Login from "../Pages/Auth/Login";
-import ForgotPassword from "../Pages/Auth/ForgotPassword";
-import VerifyOtp from "../Pages/Auth/VerifyOtp";
-import ResetPassword from "../Pages/Auth/SetPassword";
-import NotFound from "../NotFound";
-import Notifications from "../Pages/Dashboard/Notifications";
-import SubCategory from "../Pages/Dashboard/SubCategory";
-import AdminProfile from "../Pages/Dashboard/AdminProfile/AdminProfile";
-import RetailerTable from "../Pages/Dashboard/Retailer";
-import WholesealerTable from "../Pages/Dashboard/Wholesealer";
-import SalesManagement from "../Pages/Dashboard/SalesManagement";
-import Retailer from "../Pages/Dashboard/Retailer";
-import SaleRepsManagement from "../Pages/Dashboard/SaleRepsManagement";
-import ViewSalesReps from "../components/SalesRepsManagement/detailsSalesReps/ViewSalesReps";
-import LoyaltyProgram from "../Pages/Dashboard/LoyaltyProgram";
-import SubscriptionTable from "../components/subscriber/SubscriberTable";
-import OrderManagementContainer from "../components/orderMangement/OrderManagementContainer";
-import CategoryManagement from "../components/category/CategoryManagement";
-import UserManagement from "../components/userMangement/UserManagement";
-import ProductManagement from "../components/productManagement/ProductsManagement";
-import FAQSection from "../components/faq/Faq";
-import SubscriptionPackagePage from "../Pages/Dashboard/Subscription";
-import PackagesPlans from "../Pages/Dashboard/Subscription";
-import SubCategoryManagement from "../Pages/Dashboard/SubCategory";
-import Contact from "../Pages/Dashboard/Contact";
-import ColorManagement from "../components/colorManage/ColorManagement";
-import SizeManagement from "../components/sizeManagement/SizeManagement";
-import ResetSuccess from "../Pages/Auth/ResetSuccess";
-import SetPassword from "../Pages/Auth/SetPassword";
-import CustomerManagement from "../components/customerManagement/customerManagement";
-import TierSystem from "../components/TierSystem/TierSystem";
-import PromotionManagement from "../components/promotionManagement/PromotionManagement";
-import SalesRepPortal from "../components/salesRepPortal/SalesRepPortal";
-import AuditLogs from "../components/auditLogs/AuditLogs";
-import LoginCredentials from "../components/loginCredentials/LoginCredentials";
-import ReportingAnalytics from "../components/reportingAnalytics/ReportingAnalytics";
-import PushNotifications from "../components/pushNotifications/PushNotifications";
-import { Navigate } from "react-router-dom";
 import MyPigeon from "../components/myPigeon/MyPigeon";
-import PigeonManagement from "../components/pigeonManagement/PigeonManagement";
-import VerifyBreeder from "../components/verifyBreeder/VerifyBreeder";
-import { Profiler } from "react";
-import ProtectedRoute from "./ProtectedRoute";
-import PigeonPedigreeChart from "../components/pedigreeChart/PedigreeChartContainer";
 import AddNewPigeon from "../components/myPigeon/addPigeon/AddNewPigeon";
 import ViewPigeon from "../components/myPigeon/addPigeon/ViewPigeon";
 import PigeonPdfExport2 from "../components/myPigeon/addPigeon/ExportPdf2";
+import PigeonManagement from "../components/pigeonManagement/PigeonManagement";
+import PigeonPedigreeChart from "../components/pedigreeChart/PedigreeChartContainer";
+import VerifyBreeder from "../components/verifyBreeder/VerifyBreeder";
+import LoginCredentials from "../components/loginCredentials/LoginCredentials";
+import PackagesPlans from "../components/subscriptionPackage/Subscription";
+import ReportingAnalytics from "../components/reportingAnalytics/ReportingAnalytics";
+import AdminProfile from "../Pages/Dashboard/AdminProfile/AdminProfile";
+import Notifications from "../Pages/Dashboard/Notifications";
+import Auth from "../Layout/Auth/Auth";
+import Login from "../Pages/Auth/Login";
+import ForgotPassword from "../Pages/Auth/ForgotPassword";
+import VerifyOtp from "../Pages/Auth/VerifyOtp";
+import ResetSuccess from "../Pages/Auth/ResetSuccess";
+import SetPassword from "../Pages/Auth/SetPassword";
+import NotFound from "../NotFound";
+import { Navigate } from "react-router-dom";
+import { Profiler } from "react";
+import ProtectedRoute from "./ProtectedRoute";
+import TermsAndCondition from "../Pages/Dashboard/TermsAndCondition";
+import ChangePassword from "../Pages/Dashboard/AdminProfile/ChangePassword";
 
 const router = createBrowserRouter([
   {
@@ -118,12 +85,8 @@ const router = createBrowserRouter([
         element: <ReportingAnalytics />,
       },
       {
-        path: "/settings",
-        element: <AdminProfile />,
-      },
-      {
         path: "/terms-and-conditions",
-        element: <TermsAndConditions />,
+        element: <TermsAndCondition />,
       },
       {
         path: "/change-password",

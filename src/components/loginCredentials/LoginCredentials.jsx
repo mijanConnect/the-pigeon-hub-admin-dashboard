@@ -311,12 +311,12 @@ const LoginCredentials = () => {
                         message.success(
                           `Status has been changed to ${
                             checked ? "Active" : "Inactive"
-                          }.`
+                          }.`,
                         );
                         refetchUsers();
                       } catch (err) {
                         message.error(
-                          err?.data?.message || "Failed to update status."
+                          err?.data?.message || "Failed to update status.",
                         );
                       }
                     }
@@ -568,7 +568,7 @@ const LoginCredentials = () => {
                         return digits >= 7 && digits <= 15
                           ? Promise.resolve()
                           : Promise.reject(
-                              new Error("Please enter a valid Phone Number")
+                              new Error("Please enter a valid Phone Number"),
                             );
                       },
                     },
@@ -750,7 +750,7 @@ const LoginCredentials = () => {
                       return digits >= 7 && digits <= 15
                         ? Promise.resolve()
                         : Promise.reject(
-                            new Error("Please enter a valid Phone Number")
+                            new Error("Please enter a valid Phone Number"),
                           );
                     },
                   },

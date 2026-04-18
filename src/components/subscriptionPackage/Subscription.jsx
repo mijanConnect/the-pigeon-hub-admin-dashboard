@@ -12,14 +12,14 @@ import {
 } from "antd";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import FeaturedInput from "../../components/common/PackageFeatureInput";
+import FeaturedInput from "./PackageFeatureInput";
 import {
   useAddPackageMutation,
   useDeletePackageMutation,
   useGetPackagesQuery,
   useUpdatePackageMutation,
 } from "../../redux/apiSlices/packageSlice";
-import SpinnerCustom from "../Dashboard/Spinner/SpinnerCustom";
+import SpinnerCustom from "../../Pages/Dashboard/Spinner/SpinnerCustom";
 
 const PackagesPlans = () => {
   // Local state (no hardcoded Freebie)
@@ -48,7 +48,7 @@ const PackagesPlans = () => {
       const updatedPkg = { ...pkg, status: pkg.active ? "Inactive" : "Active" };
       await updatePackage({ id: pkg.id, formData: updatedPkg });
       setPackages((prev) =>
-        prev.map((p) => (p.id === pkg.id ? { ...p, active: !p.active } : p))
+        prev.map((p) => (p.id === pkg.id ? { ...p, active: !p.active } : p)),
       );
       message.success("Package status updated");
     } catch (err) {
@@ -126,8 +126,8 @@ const PackagesPlans = () => {
         await updatePackage({ id: currentPackage.id, formData: formattedData });
         setPackages((prev) =>
           prev.map((pkg) =>
-            pkg.id === currentPackage.id ? { ...pkg, ...formattedData } : pkg
-          )
+            pkg.id === currentPackage.id ? { ...pkg, ...formattedData } : pkg,
+          ),
         );
         message.success("Package updated successfully");
       } else {

@@ -1,4 +1,3 @@
-// src/components/MonthlyStatsChart.jsx
 import React, { useState, useMemo } from "react";
 import {
   BarChart,
@@ -21,11 +20,8 @@ import { saveAs } from "file-saver";
 import { useGetAnalyticsQuery } from "../../redux/apiSlices/analysisSlice";
 import SpinnerCustom from "../../Pages/Dashboard/Spinner/SpinnerCustom";
 
-// hook from RTK Query slice
-
 const { Option } = Select;
 
-// Custom 3D Bar with watermark (unchanged)
 const Custom3DBarWithWatermark = ({ x, y, width, height, fill }) => {
   const depth = 10;
   return (
@@ -77,9 +73,9 @@ export default function MonthlyStatsChart() {
     () =>
       chartRows.filter(
         (d) =>
-          selectedMonthYear === "All Months" || d.date === selectedMonthYear
+          selectedMonthYear === "All Months" || d.date === selectedMonthYear,
       ),
-    [chartRows, selectedMonthYear]
+    [chartRows, selectedMonthYear],
   );
 
   const columns = [
@@ -105,11 +101,9 @@ export default function MonthlyStatsChart() {
     );
   if (error)
     return (
-      // <p className="text-red-500">Failed: {error?.data || error?.error}</p>
       <div className="text-center text-gray-500">
         <p>Oops! Something went wrong. Please try again later.</p>
       </div>
-      // <p>Failed to load pigeons.</p>
     );
 
   return (
@@ -299,19 +293,6 @@ export default function MonthlyStatsChart() {
           )}
         </ResponsiveContainer>
       </div>
-
-      {/* Ant Design Table (optional)
-      <div style={{ marginTop: "50px" }}>
-        <h1 className="text-[22px] font-bold mb-2">Data Table</h1>
-        <Table
-          bordered={false}
-          size="small"
-          rowClassName="custom-row"
-          columns={columns.filter((c) => selectedMetric === "all" || c.dataIndex === selectedMetric)}
-          dataSource={filteredData.map((r, i) => ({ ...r, key: i }))}
-          pagination={{ pageSize: 6 }}
-        />
-      </div> */}
     </div>
   );
 }

@@ -46,24 +46,16 @@ const authSlice = api.injectEndpoints({
       query: (data) => ({
         url: "/auth/resend-otp",
         method: "POST",
-        body: data, // { email: "user@example.com" }
+        body: data,
       }),
     }),
 
-    // Try different approaches for reset password
     resetPassword: builder.mutation({
       query: ({ newPassword, confirmPassword, token }) => {
-        // console.log("🔹 Reset password mutation - token received:", token);
-        // console.log("🔹 Request body:", { newPassword, confirmPassword });
-
-        // Try approach 1: Bearer token in Authorization header
         const headers = {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         };
-
-        // console.log("🔹 Headers being sent:", headers);
-
         return {
           url: "/auth/reset-password",
           method: "POST",

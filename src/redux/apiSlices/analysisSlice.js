@@ -1,7 +1,5 @@
-// src/store/analyticSlice.js
 import { api } from "../api/baseApi";
 
-// helper to map numeric month to readable label
 const monthNames = [
   "Jan",
   "Feb",
@@ -23,9 +21,6 @@ export const analyticSlice = api.injectEndpoints({
       query: () => ({ url: "/analytic", method: "GET" }),
       transformResponse: (response) => {
         const raw = response?.data || {};
-
-        // Flatten into unified array for the chart
-        // we’ll unify to { date, revenue, userActivity, pedigreeStats }
         const rowsMap = {};
 
         // revenue
@@ -54,7 +49,7 @@ export const analyticSlice = api.injectEndpoints({
 
         // convert map to sorted array
         const chartData = Object.values(rowsMap).sort(
-          (a, b) => new Date(a.date) - new Date(b.date)
+          (a, b) => new Date(a.date) - new Date(b.date),
         );
 
         return { chartData };

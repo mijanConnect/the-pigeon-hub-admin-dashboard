@@ -1,5 +1,4 @@
 // ===== API Slice File (notificationSlice.js) =====
-// src/redux/apiSlices/notificationSlice.js
 import { api } from "../api/baseApi";
 
 const notificationSlice = api.injectEndpoints({
