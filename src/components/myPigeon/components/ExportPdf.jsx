@@ -98,7 +98,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
         `Generated on: ${moment().format("DD MMM YYYY, hh:mm A")}`,
         pageWidth / 2,
         yPosition,
-        { align: "center" }
+        { align: "center" },
       );
       yPosition += 15;
 
@@ -129,7 +129,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
           leftColumnX - 1,
           contentStartY - 1,
           imageSize + 2,
-          imageSize + 2
+          imageSize + 2,
         );
         pdf.addImage(
           base64Image,
@@ -137,7 +137,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
           leftColumnX,
           contentStartY,
           imageSize,
-          imageSize
+          imageSize,
         );
       } else {
         // Placeholder if no image
@@ -151,7 +151,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
           contentStartY + imageSize / 2,
           {
             align: "center",
-          }
+          },
         );
         pdf.setTextColor(0, 0, 0);
       }
@@ -235,7 +235,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
         pdf.setFont("helvetica", "bold");
         const valueLines = pdf.splitTextToSize(
           item.value,
-          columnWidth - labelWidth - 2
+          columnWidth - labelWidth - 2,
         );
         pdf.text(valueLines[0], leftParentX + labelWidth, fatherY);
 
@@ -317,7 +317,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
         pdf.setFont("helvetica", "bold");
         const valueLines = pdf.splitTextToSize(
           item.value,
-          columnWidth - labelWidth - 2
+          columnWidth - labelWidth - 2,
         );
         pdf.text(valueLines[0], rightParentX + labelWidth, motherY);
 
@@ -426,7 +426,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
 
         const storyLines = pdf.splitTextToSize(
           pigeon.shortInfo,
-          pageWidth - 2 * margin
+          pageWidth - 2 * margin,
         );
 
         pdf.setFont("helvetica", "normal");
@@ -447,7 +447,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
 
         const notesLines = pdf.splitTextToSize(
           pigeon.notes,
-          pageWidth - 2 * margin
+          pageWidth - 2 * margin,
         );
 
         pdf.setFont("helvetica", "normal");
@@ -548,7 +548,7 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
           pdf.text(
             truncate(sibling.ringNumber, colWidths.ring),
             xPos + 1,
-            rowY
+            rowY,
           );
           xPos += colWidths.ring;
           pdf.text(truncate(sibling.birthYear, colWidths.year), xPos + 1, rowY);
@@ -556,25 +556,25 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
           pdf.text(
             truncate(sibling.breederRating, colWidths.breeder),
             xPos + 1,
-            rowY
+            rowY,
           );
           xPos += colWidths.breeder;
           pdf.text(
             truncate(sibling.racingRating, colWidths.racer),
             xPos + 1,
-            rowY
+            rowY,
           );
           xPos += colWidths.racer;
           pdf.text(
             truncate(sibling.fatherRingId?.name, colWidths.father),
             xPos + 1,
-            rowY
+            rowY,
           );
           xPos += colWidths.father;
           pdf.text(
             truncate(sibling.motherRingId?.name, colWidths.mother),
             xPos + 1,
-            rowY
+            rowY,
           );
           xPos += colWidths.mother;
           pdf.text(truncate(sibling.gender, colWidths.gender), xPos + 1, rowY);

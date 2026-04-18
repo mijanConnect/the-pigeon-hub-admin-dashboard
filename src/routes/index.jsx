@@ -2,9 +2,9 @@ import { createBrowserRouter } from "react-router-dom";
 import Main from "../Layout/Main/Main";
 import Home from "../Pages/Dashboard/Home";
 import MyPigeon from "../components/myPigeon/MyPigeon";
-import AddNewPigeon from "../components/myPigeon/addPigeon/AddNewPigeon";
-import ViewPigeon from "../components/myPigeon/addPigeon/ViewPigeon";
-import PigeonPdfExport2 from "../components/myPigeon/addPigeon/ExportPdf2";
+import AddNewPigeon from "../components/myPigeon/components/AddNewPigeon";
+import ViewPigeon from "../components/myPigeon/components/ViewPigeon";
+import ExportPdfSinglePigeon from "../components/myPigeon/components/ExportPdfSinglePigeon";
 import PigeonManagement from "../components/pigeonManagement/PigeonManagement";
 import PigeonPedigreeChart from "../components/pedigreeChart/PedigreeChartContainer";
 import VerifyBreeder from "../components/verifyBreeder/VerifyBreeder";
@@ -58,7 +58,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/export-pdf/:id",
-        element: <PigeonPdfExport2 />,
+        element: <ExportPdfSinglePigeon />,
       },
       {
         path: "/pigeon-management",

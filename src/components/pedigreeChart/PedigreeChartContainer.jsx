@@ -26,8 +26,8 @@ import { useLocation, useParams } from "react-router-dom";
 import SpinnerCustom from "../../Pages/Dashboard/Spinner/SpinnerCustom";
 import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
 import { getImageUrl } from "../common/imageUrl";
-import { exportPedigreeToPDF } from "./ExportPDF";
-import { convertBackendToExistingFormat } from "./PedigreeData";
+import { exportPedigreeToPDF } from "./components/ExportPDF";
+import { convertBackendToExistingFormat } from "./components/PedigreeData";
 // import { exportPedigreeToPDF } from "./exportPDF";
 
 const PigeonNode = ({ data }) => {

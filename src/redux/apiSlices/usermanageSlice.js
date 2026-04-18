@@ -22,7 +22,7 @@ const usermanageSlice = api.injectEndpoints({
         return {
           users: response.data.users.map((user) => ({
             _id: user._id,
-            id: user._id, // alias for AntD rowKey
+            id: user._id,
             name: user.name || user.email,
             email: user.email,
             role: user.customeRole || user.role,

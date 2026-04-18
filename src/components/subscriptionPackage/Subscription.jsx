@@ -12,7 +12,7 @@ import {
 } from "antd";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import FeaturedInput from "./PackageFeatureInput";
+import FeaturedInput from "./components/PackageFeatureInput";
 import {
   useAddPackageMutation,
   useDeletePackageMutation,
@@ -189,27 +189,6 @@ const PackagesPlans = () => {
 
   return (
     <div className="flex flex-col !justify-center !items-center mt-10 px-10 2xl:px-40">
-      {/* <div className="flex flex-col justify-center items-center mb-8">
-        <p className="bg-primary px-[12px] py-[2px] text-white rounded-3xl mb-2">
-          Pricing Plan
-        </p>
-        <h2 className="text-[28px] font-semibold text-secondary">
-          Subscription Prices
-        </h2>
-        <p className="text-[15px] text-center font-normal mb-[10px]">
-          Experience year-round comfort with our A-rated uPVC windows, designed
-          to keep your <br /> home warm in winter, cool in summer, and stylish
-          every day.
-        </p>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          className=" text-white px-5 h-auto rounded-lg shadow-lg hover:bg-[#012F60] transition-all flex items-center"
-          onClick={() => showModal()}
-        >
-          Add Package
-        </Button>
-      </div> */}
       <div className="">
         {packages.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
@@ -283,17 +262,6 @@ const PackagesPlans = () => {
                     }}
                   />
                 </div>
-
-                {/* <Button
-                  className={`w-full mt-12 border ${
-                    pkg.active
-                      ? "border-white bg-primary text-white hover:!bg-white hover:!text-primary py-5 !border-lg"
-                      : "border-primary bg-white text-primary hover:!bg-primary hover:!text-white !hover:border-white py-5 !border-lg"
-                  }`}
-                  onClick={() => togglePackageStatus(pkg)}
-                >
-                  {pkg.active ? "Turn Off" : "Turn On"}
-                </Button> */}
               </Card>
             ))}
           </div>
@@ -329,29 +297,6 @@ const PackagesPlans = () => {
             className="mb-0"
           >
             <Row gutter={[30, 20]}>
-              {/* <Col xs={24} sm={12} md={12}>
-                <Form.Item
-                  name="title"
-                  label="Package Title"
-                  rules={[{ required: true, message: "Title is required" }]}
-                  className="custom-form-item-ant"
-                >
-                  <Select
-                    placeholder="Select Package"
-                    className="custom-select-ant-modal"
-                  >
-                    <Select.Option value="Free Trial – 1 month​">
-                      Free Trial – 1 month​
-                    </Select.Option>
-                    <Select.Option value="Monthly Plan">
-                      Monthly Plan
-                    </Select.Option>
-                    <Select.Option value="Yearly Plan (Best Value)">
-                      Yearly Plan (Best Value)
-                    </Select.Option>
-                  </Select>
-                </Form.Item>
-              </Col> */}
               <Col xs={24} sm={12} md={12}>
                 <Form.Item
                   name="title"
@@ -381,25 +326,6 @@ const PackagesPlans = () => {
                   />
                 </Form.Item>
               </Col>
-
-              {/* <Col xs={24} sm={12} md={12}>
-                <Form.Item
-                  name="duration"
-                  label="Duration"
-                  rules={[{ required: true, message: "Duration is required" }]}
-                  className="custom-form-item-ant-select"
-                >
-                  <Select
-                    placeholder="Select duration"
-                    className="custom-select-ant-modal"
-                  >
-                    <Select.Option value="1 month">1 Month</Select.Option>
-                    <Select.Option value="3 months">3 Months</Select.Option>
-                    <Select.Option value="6 months">6 Months</Select.Option>
-                    <Select.Option value="1 year">1 Year</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Col> */}
 
               <Col xs={24}>
                 <Form.Item

@@ -21,7 +21,7 @@ import {
 } from "../../redux/apiSlices/breederSlice";
 import SyncHorizontalScroll from "../common/SyncHorizontalScroll";
 import "../myPigeon/myPigeon.responsive.css";
-import AddVerifyBreeder from "./AddVerifiedBreeder";
+import AddVerifyBreeder from "./components/AddVerifiedBreeder";
 
 const { Option } = Select;
 

@@ -596,7 +596,7 @@ const ViewPigeon = () => {
                         <p className="font-normal text-[14px]">Loft Name: </p>
                         <p className="font-semibold text-[14px]">
                           {safeValue(
-                            pigeonData.fatherRingId?.breeder?.loftName
+                            pigeonData.fatherRingId?.breeder?.loftName,
                           )}
                         </p>
                       </div>
@@ -612,12 +612,12 @@ const ViewPigeon = () => {
                           {/* {safeValue(pigeonData.fatherRingId?.results)} */}
                           <span className="font-normal text-[14px]">
                             {Array.isArray(
-                              pigeonData.fatherRingId?.addresults
+                              pigeonData.fatherRingId?.addresults,
                             ) && pigeonData.fatherRingId?.addresults.length > 0
                               ? pigeonData.fatherRingId?.addresults.map(
                                   (result, index) => (
                                     <div key={index}>{result}</div>
-                                  )
+                                  ),
                                 )
                               : "N/A"}
                           </span>
@@ -669,7 +669,7 @@ const ViewPigeon = () => {
                         <p className="font-normal text-[14px]">Loft Name: </p>
                         <p className="font-semibold text-[14px]">
                           {safeValue(
-                            pigeonData.motherRingId?.breeder?.loftName
+                            pigeonData.motherRingId?.breeder?.loftName,
                           )}
                         </p>
                       </div>
@@ -685,12 +685,12 @@ const ViewPigeon = () => {
                           {/* {safeValue(pigeonData.fatherRingId?.results)} */}
                           <span className="font-normal text-[14px]">
                             {Array.isArray(
-                              pigeonData.motherRingId?.addresults
+                              pigeonData.motherRingId?.addresults,
                             ) && pigeonData.motherRingId?.addresults.length > 0
                               ? pigeonData.motherRingId?.addresults.map(
                                   (result, index) => (
                                     <div key={index}>{result}</div>
-                                  )
+                                  ),
                                 )
                               : "N/A"}
                           </span>
@@ -890,7 +890,7 @@ const ViewPigeon = () => {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         navigate(
-                                          `/pigeon-management/${record._id}`
+                                          `/pigeon-management/${record._id}`,
                                         );
                                       }}
                                       style={{

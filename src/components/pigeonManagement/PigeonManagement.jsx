@@ -81,8 +81,8 @@ const PigeonManagement = () => {
       filters.status === "verified"
         ? true
         : filters.status === "notverified"
-        ? false
-        : undefined,
+          ? false
+          : undefined,
   });
 
   const { data: editingPigeonData } = useGetSinglePigeonQuery(editingPigeonId, {
@@ -228,7 +228,7 @@ const PigeonManagement = () => {
         }
         return await downloadUrl(
           getImageUrl(record.pedigreePhoto),
-          `${record.ringNumber || record._id}-pedigree.jpg`
+          `${record.ringNumber || record._id}-pedigree.jpg`,
         );
       case "ownership":
         if (!record.ownershipPhoto) {
@@ -236,7 +236,7 @@ const PigeonManagement = () => {
         }
         return await downloadUrl(
           getImageUrl(record.ownershipPhoto),
-          `${record.ringNumber || record._id}-ownership.jpg`
+          `${record.ringNumber || record._id}-ownership.jpg`,
         );
       case "dna":
         if (!record.DNAPhoto) {
@@ -244,7 +244,7 @@ const PigeonManagement = () => {
         }
         return await downloadUrl(
           getImageUrl(record.DNAPhoto),
-          `${record.ringNumber || record._id}-dna.jpg`
+          `${record.ringNumber || record._id}-dna.jpg`,
         );
       case "photo":
         if (!record.pigeonPhoto) {
@@ -252,7 +252,7 @@ const PigeonManagement = () => {
         }
         return await downloadUrl(
           getImageUrl(record.pigeonPhoto),
-          `${record.ringNumber || record._id}-photo.jpg`
+          `${record.ringNumber || record._id}-photo.jpg`,
         );
       case "details": {
         console.log("[MyPigeon] download details requested for", record?._id);
@@ -444,10 +444,10 @@ const PigeonManagement = () => {
       // before we clear the optimistic overlay. This prevents the select from
       // briefly reverting to the old value when a list refetch occurs.
       setOriginalPigeons((prev) =>
-        prev.map((p) => (p._id === id ? { ...p, verified: value } : p))
+        prev.map((p) => (p._id === id ? { ...p, verified: value } : p)),
       );
       setSortedPigeons((prev) =>
-        prev.map((p) => (p._id === id ? { ...p, verified: value } : p))
+        prev.map((p) => (p._id === id ? { ...p, verified: value } : p)),
       );
 
       message.success("Verification updated successfully");
@@ -492,13 +492,17 @@ const PigeonManagement = () => {
       // Update local copies so UI shows the new score after optimistic change
       setOriginalPigeons((prev) =>
         prev.map((p) =>
-          p._id === id ? { ...p, iconicScore: numeric, iconic: numeric > 0 } : p
-        )
+          p._id === id
+            ? { ...p, iconicScore: numeric, iconic: numeric > 0 }
+            : p,
+        ),
       );
       setSortedPigeons((prev) =>
         prev.map((p) =>
-          p._id === id ? { ...p, iconicScore: numeric, iconic: numeric > 0 } : p
-        )
+          p._id === id
+            ? { ...p, iconicScore: numeric, iconic: numeric > 0 }
+            : p,
+        ),
       );
 
       message.success("Iconic score updated");
@@ -890,14 +894,14 @@ const PigeonManagement = () => {
             doc.text(
               `Generated on ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`,
               14,
-              doc.lastAutoTable.finalY + 10
+              doc.lastAutoTable.finalY + 10,
             );
 
             doc.save(`pigeon-data-${date.toISOString().split("T")[0]}.pdf`);
           } catch (error) {
             console.error("Error generating PDF:", error);
             alert(
-              "Error generating PDF. Please make sure jspdf and jspdf-autotable are installed."
+              "Error generating PDF. Please make sure jspdf and jspdf-autotable are installed.",
             );
           }
         });
@@ -942,7 +946,7 @@ const PigeonManagement = () => {
                 Gender: pigeon.gender || "-",
                 Color: pigeon.color || "-",
                 Location: pigeon.location || "-",
-              }))
+              })),
             );
 
             // Create workbook
@@ -955,7 +959,7 @@ const PigeonManagement = () => {
           } catch (error) {
             console.error("Error generating Excel:", error);
             alert(
-              "Error generating Excel file. Please make sure xlsx is installed."
+              "Error generating Excel file. Please make sure xlsx is installed.",
             );
           }
         })
@@ -1102,7 +1106,7 @@ const PigeonManagement = () => {
                       setPage(1);
                       setSearchParams(
                         { ...existing, page: "1", limit: String(newPageSize) },
-                        { replace: true }
+                        { replace: true },
                       );
                     } else {
                       setPage(newPage);
@@ -1112,7 +1116,7 @@ const PigeonManagement = () => {
                           page: String(newPage),
                           limit: String(pageSize),
                         },
-                        { replace: true }
+                        { replace: true },
                       );
                     }
                   },
