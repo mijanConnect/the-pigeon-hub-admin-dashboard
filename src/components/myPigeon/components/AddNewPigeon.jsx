@@ -19,7 +19,11 @@ import {
   message,
 } from "antd";
 import { getNames } from "country-list";
-import { FileText } from "lucide-react";
+import { FileText, Circle, ArrowRight, Layers } from "lucide-react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import BulletList from "@tiptap/extension-bullet-list";
+import ListItem from "@tiptap/extension-list-item";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -46,6 +50,16 @@ const colorPatternMap = {
 
 // Format color keys for display (replace underscores with spaces)
 const formatColor = (c) => (typeof c === "string" ? c.replace(/_/g, " ") : c);
+
+// Tiptap editor extensions
+const tiptapExtensions = [
+  StarterKit.configure({
+    bulletList: false,
+    listItem: false,
+  }),
+  BulletList,
+  ListItem,
+];
 
 const AddNewPigeon = ({ onSave }) => {
   const [form] = Form.useForm();
@@ -80,12 +94,57 @@ const AddNewPigeon = ({ onSave }) => {
   const [motherDisplay, setMotherDisplay] = useState("");
   const [fatherSelected, setFatherSelected] = useState(null);
   const [motherSelected, setMotherSelected] = useState(null);
+  const [listStyle1, setListStyle1] = useState("none");
+  const [listStyle2, setListStyle2] = useState("none");
 
   const { data: allNames = [] } = useGetAllNameQuery();
 
   // Refs for duplicate check debounce and tracking
   const duplicateCheckTimeout = useRef(null);
   const abortControllerRef = useRef(null);
+  const editorChangeTimeout1 = useRef(null);
+  const editorChangeTimeout2 = useRef(null);
+  const editor1Ref = useRef(null);
+  const editor2Ref = useRef(null);
+
+  // Tiptap editors for Story Line and Pigeon Results
+  const editor1 = useEditor({
+    extensions: tiptapExtensions,
+    content: value2,
+    onUpdate: ({ editor }) => {
+      if (editorChangeTimeout1.current)
+        clearTimeout(editorChangeTimeout1.current);
+      editorChangeTimeout1.current = setTimeout(() => {
+        const html = editor.getHTML();
+        setValue2(html);
+        form.setFieldsValue({ shortInfo: html });
+      }, 200);
+    },
+    onBlur: ({ editor }) => {
+      const html = editor.getHTML();
+      setValue2(html);
+      form.setFieldsValue({ shortInfo: html });
+    },
+  });
+
+  const editor2 = useEditor({
+    extensions: tiptapExtensions,
+    content: value,
+    onUpdate: ({ editor }) => {
+      if (editorChangeTimeout2.current)
+        clearTimeout(editorChangeTimeout2.current);
+      editorChangeTimeout2.current = setTimeout(() => {
+        const html = editor.getHTML();
+        setValue(html);
+        form.setFieldsValue({ addresults: html });
+      }, 200);
+    },
+    onBlur: ({ editor }) => {
+      const html = editor.getHTML();
+      setValue(html);
+      form.setFieldsValue({ addresults: html });
+    },
+  });
 
   // console.log(allNames);
 
@@ -107,9 +166,7 @@ const AddNewPigeon = ({ onSave }) => {
     setValue(v);
     try {
       form.setFieldsValue({ addresults: v });
-    } catch (e) {
-      /* ignore if form not ready */
-    }
+    } catch (e) {}
   };
 
   const handleChangePlace2 = (e) => {
@@ -302,18 +359,28 @@ const AddNewPigeon = ({ onSave }) => {
           const joined = pigeonData.addresults.join("\n");
           form.setFieldsValue({ addresults: joined });
           setValue(joined);
+          // Update editor2 content
+          if (editor2) {
+            editor2.commands.setContent(joined);
+          }
         } else if (typeof pigeonData.addresults === "string") {
           form.setFieldsValue({ addresults: pigeonData.addresults });
           setValue(pigeonData.addresults);
+          // Update editor2 content
+          if (editor2) {
+            editor2.commands.setContent(pigeonData.addresults);
+          }
         }
       } catch (e) {
         // ignore
       }
 
-      // Set local controlled textarea state for shortInfo so the custom
-      // placeholder and controlled Input.TextArea show the value when
-      // editing. We also already set the form field above.
-      setValue2(pigeonData?.shortInfo || "");
+      const shortInfoContent = pigeonData?.shortInfo || "";
+      setValue2(shortInfoContent);
+      // Update editor1 content
+      if (editor1) {
+        editor1.commands.setContent(shortInfoContent);
+      }
 
       // show father ring in the input (keep typed value if user entered)
       if (pigeonData.fatherRingId) {
@@ -367,7 +434,7 @@ const AddNewPigeon = ({ onSave }) => {
       setSelected({ color: null, pattern: null });
       setShowResults(false);
       setRaceResults([]);
-      setIsIconicEnabled(false); // Reset iconic state for new pigeon
+      setIsIconicEnabled(false);
       setPhotos({
         pigeonPhoto: null,
         eyePhoto: null,
@@ -382,16 +449,12 @@ const AddNewPigeon = ({ onSave }) => {
         pedigreePhoto: [],
         DNAPhoto: [],
       });
-      // reset breederDisplay for new form
       setBreederDisplay("");
-      // reset addresults textarea value
       setValue("");
-      // reset shortInfo controlled textarea value
       setValue2("");
     }
-  }, [pigeonData, id, form]);
+  }, [pigeonData, id, form, editor1, editor2]);
 
-  // Update scroll controls when fileLists change or on resize
   useEffect(() => {
     const el = photosRowRef.current;
     if (!el) return;
@@ -446,18 +509,14 @@ const AddNewPigeon = ({ onSave }) => {
             b.breederName === current,
         );
         if (match) {
-          // prefer loftName for display but fall back to breederName
           const display = match.loftName || match.breederName || "";
           setBreederDisplay(display);
           form.setFieldsValue({ breeder: display });
         }
       }
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
   }, [breederNames]);
 
-  // Resolve fatherRingId to display value when fatherOptions change (editing scenario)
   useEffect(() => {
     try {
       const current = form.getFieldValue("fatherRingId");
@@ -470,12 +529,9 @@ const AddNewPigeon = ({ onSave }) => {
           setFatherSelected(match);
         }
       }
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
   }, [motherOptions]);
 
-  // Resolve motherRingId to display value when motherOptions change (editing scenario)
   useEffect(() => {
     try {
       const current = form.getFieldValue("motherRingId");
@@ -488,28 +544,19 @@ const AddNewPigeon = ({ onSave }) => {
           setMotherSelected(match);
         }
       }
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
   }, [fatherOptions]);
-
-  // NOTE: we sync breederDisplay via Form's onValuesChange below instead of subscribing.
 
   const [updatePigeon, { isLoading: isUpdating }] = useUpdatePigeonMutation();
 
-  // Check for duplicate pigeon (ringNumber + country + birthYear)
   const checkDuplicate = async (ringNumber, country, birthYear) => {
     try {
-      // Cancel any pending request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-
-      // Create new abort controller for this request
       abortControllerRef.current = new AbortController();
 
-      // const baseUrl = "http://10.10.7.41:5001/api/v1";
-      const baseUrl = "https://ftp.thepigeonhub.com/api/v1";
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
       const url = `${baseUrl}/pigeon/check-duplicate?ringNumber=${encodeURIComponent(
         ringNumber,
       )}&country=${encodeURIComponent(country)}&birthYear=${encodeURIComponent(
@@ -528,12 +575,10 @@ const AddNewPigeon = ({ onSave }) => {
 
       const data = await response.json();
 
-      console.log("Duplicate check response:", data);
+      // console.log("Duplicate check response:", data);
 
-      // Check if duplicate exists - handle different response formats
       let isDuplicate = false;
       if (data?.data?.isDuplicate === true) {
-        // Backend returns {success: true, data: {isDuplicate: true, message: "..."}}
         isDuplicate = true;
       } else if (data?.data && Array.isArray(data.data)) {
         isDuplicate = data.data.length > 0;
@@ -543,7 +588,7 @@ const AddNewPigeon = ({ onSave }) => {
         isDuplicate = true;
       }
 
-      console.log("Is duplicate:", isDuplicate);
+      // console.log("Is duplicate:", isDuplicate);
 
       // Set or clear the error
       if (isDuplicate) {
@@ -559,31 +604,39 @@ const AddNewPigeon = ({ onSave }) => {
         form.setFields([{ name: "ringNumber", errors: [] }]);
       }
     } catch (error) {
-      // Ignore abort errors
       if (error.name !== "AbortError") {
         console.error("Duplicate check error:", error);
       }
     }
   };
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (duplicateCheckTimeout.current) {
         clearTimeout(duplicateCheckTimeout.current);
       }
+      if (editorChangeTimeout1.current) {
+        clearTimeout(editorChangeTimeout1.current);
+      }
+      if (editorChangeTimeout2.current) {
+        clearTimeout(editorChangeTimeout2.current);
+      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+      // Clean up Tiptap editors
+      if (editor1) {
+        editor1.destroy();
+      }
+      if (editor2) {
+        editor2.destroy();
+      }
     };
-  }, []);
+  }, [editor1, editor2]);
 
-  // Handle iconic status change to enable/disable iconic score
   const handleIconicChange = (value) => {
     const enabled = value === "yes";
     setIsIconicEnabled(enabled);
-
-    // Clear iconic score if iconic is disabled
     if (!enabled) {
       form.setFieldsValue({ iconicScore: undefined });
     }
@@ -592,15 +645,12 @@ const AddNewPigeon = ({ onSave }) => {
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-
-      // Build color string using formatted color name (replace underscores with spaces)
       const rawColor = values.colorPattern?.color;
       const formattedColor = rawColor ? formatColor(rawColor) : rawColor;
       const combinedColor =
         formattedColor && values.colorPattern?.pattern
           ? `${formattedColor} ${values.colorPattern.pattern}`
           : formattedColor || values.colorPattern?.pattern;
-      // Ensure we never send null for color (backend may call .trim())
       const finalColor = combinedColor || "";
 
       const filteredRaceResults = raceResults
@@ -653,7 +703,6 @@ const AddNewPigeon = ({ onSave }) => {
       const formData = new FormData();
       formData.append("data", JSON.stringify(dataToSend));
 
-      // Append files
       if (photos.pigeonPhoto)
         formData.append("pigeonPhoto", photos.pigeonPhoto);
       if (photos.eyePhoto) formData.append("eyePhoto", photos.eyePhoto);
@@ -691,9 +740,7 @@ const AddNewPigeon = ({ onSave }) => {
         pedigreePhoto: [],
         DNAPhoto: [],
       });
-      //   onCancel();
     } catch (err) {
-      // If validation failed, scroll to the first invalid field and let AntD show field errors.
       if (
         err &&
         err.errorFields &&
@@ -705,15 +752,10 @@ const AddNewPigeon = ({ onSave }) => {
         if (namePath) {
           try {
             form.scrollToField(namePath);
-          } catch (e) {
-            // ignore scroll errors
-          }
+          } catch (e) {}
         }
-        // don't log the full validation object to console; field errors are visible on the form
         return;
       }
-
-      // Non-validation error: log and show message
       console.error(err);
       message.error(
         err?.data?.message || err.message || "Something went wrong",
@@ -785,7 +827,6 @@ const AddNewPigeon = ({ onSave }) => {
       const formData = new FormData();
       formData.append("data", JSON.stringify(dataToSend));
 
-      // Append files
       if (photos.pigeonPhoto)
         formData.append("pigeonPhoto", photos.pigeonPhoto);
       if (photos.eyePhoto) formData.append("eyePhoto", photos.eyePhoto);
@@ -795,13 +836,11 @@ const AddNewPigeon = ({ onSave }) => {
         formData.append("pedigreePhoto", photos.pedigreePhoto);
       if (photos.DNAPhoto) formData.append("DNAPhoto", photos.DNAPhoto);
 
-      // Always add a new pigeon (do not call update)
       await addPigeon({ formData, token }).unwrap();
       message.success(
         "Pigeon added successfully! You can add another one now.",
       );
 
-      // Reset form & local state to blank for next entry
       form.resetFields();
       setSelected({ color: null, pattern: null });
       setShowResults(false);
@@ -823,19 +862,12 @@ const AddNewPigeon = ({ onSave }) => {
       setBreederDisplay("");
       setValue("");
       setValue2("");
-      // Scroll to top so the form is visible for the next entry
       if (typeof window !== "undefined" && window.scrollTo) {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
-      // clear editing context if any
       try {
-        // if URL had an id param, don't navigate; just clear local editing state
-        // (we don't mutate route here)
-      } catch (e) {
-        // ignore
-      }
+      } catch (e) {}
     } catch (err) {
-      // If validation failed, scroll to the first invalid field and let AntD show field errors.
       if (
         err &&
         err.errorFields &&
@@ -847,14 +879,10 @@ const AddNewPigeon = ({ onSave }) => {
         if (namePath) {
           try {
             form.scrollToField(namePath);
-          } catch (e) {
-            // ignore scroll errors
-          }
+          } catch (e) {}
         }
         return;
       }
-
-      // Non-validation error: log and show message
       console.error(err);
       message.error(
         err?.data?.message || err.message || "Something went wrong",
@@ -895,9 +923,6 @@ const AddNewPigeon = ({ onSave }) => {
     multiple: false,
     fileList: fileLists[key],
     showUploadList: { showPreviewIcon: true, showRemoveIcon: true },
-    // Custom renderer for upload list items so we can show a proper PDF
-    // icon (inline SVG) instead of a black/empty thumbnail when the item
-    // is a PDF. The actions object gives us preview/remove handlers.
     itemRender: (originNode, file, fileListRender, actions) => {
       try {
         const isPdfFile =
@@ -909,7 +934,6 @@ const AddNewPigeon = ({ onSave }) => {
 
         if (!isPdfFile) return originNode;
 
-        // Use Ant's preview/remove actions
         const { preview, remove } = actions || {};
 
         return (
@@ -937,13 +961,8 @@ const AddNewPigeon = ({ onSave }) => {
                   justifyContent: "center",
                 }}
               >
-                {/* Inline SVG file icon (red accent) to avoid relying on img rendering */}
                 <FileText size={70} color="#E33E3E" />
               </span>
-
-              {/* Overlay actions (preview/remove) positioned top-right.
-                  Use Ant Design's actions markup (ul > li) so the styling and
-                  hover behavior match image thumbnails. */}
               <ul
                 className="ant-upload-list-item-actions"
                 style={{ position: "absolute", right: 6, top: 6 }}
@@ -964,9 +983,7 @@ const AddNewPigeon = ({ onSave }) => {
                         if (src) window.open(src, "_blank");
                       }
                     }}
-                  >
-                    {/* <span className="ant-upload-list-item-action-btn"><EyeOutlined /></span> */}
-                  </li>
+                  ></li>
                 )}
 
                 {remove && (
@@ -987,12 +1004,10 @@ const AddNewPigeon = ({ onSave }) => {
           </div>
         );
       } catch (e) {
-        // if anything goes wrong, fall back to Ant origin node
         return originNode;
       }
     },
     onPreview: async (file) => {
-      // Open file in a new tab. Works for images and PDFs.
       let src = file.url || file.thumbUrl;
       if (!src && file.originFileObj) {
         src = URL.createObjectURL(file.originFileObj);
@@ -1004,7 +1019,6 @@ const AddNewPigeon = ({ onSave }) => {
       }
     },
     beforeUpload: (file) => {
-      // Validate file type
       const imageTypes = [
         "image/jpeg",
         "image/png",
@@ -1012,19 +1026,17 @@ const AddNewPigeon = ({ onSave }) => {
         "image/heic",
         "image/heif",
       ];
-      // Allow PDFs for pedigree and DNA uploads
       const allowPdf = key === "pedigreePhoto" || key === "DNAPhoto";
       const allowedTypes = allowPdf
         ? [...imageTypes, "application/pdf"]
         : imageTypes;
-      const maxBytes = 10 * 1024 * 1024; // 10 MB
+      const maxBytes = 10 * 1024 * 1024;
 
       if (!allowedTypes.includes(file.type)) {
         const msg = allowPdf
           ? "Only JPEG, JPG, PNG, HEIC/HEIF or PDF files are allowed."
           : "Only JPEG, JPG, PNG or HEIC/HEIF files are allowed.";
         message.error(msg);
-        // Prevent adding to upload list
         return Upload.LIST_IGNORE;
       }
 
@@ -1032,12 +1044,7 @@ const AddNewPigeon = ({ onSave }) => {
         message.error("File must be less than 10MB.");
         return Upload.LIST_IGNORE;
       }
-
-      // Valid file — create preview and set into controlled state
       setPhotos((p) => ({ ...p, [key]: file }));
-      // For images we can use an object URL for preview. For PDFs we create
-      // a small SVG data URL so the Upload UI shows an icon-like thumbnail and
-      // the remove/preview overlays still work the same as for images.
       const isPdf =
         file.type === "application/pdf" ||
         String(file.name || "")
@@ -1059,8 +1066,6 @@ const AddNewPigeon = ({ onSave }) => {
           },
         ],
       }));
-
-      // Return false to prevent automatic upload (we handle uploads manually)
       return false;
     },
     onRemove: () => {
@@ -1070,9 +1075,7 @@ const AddNewPigeon = ({ onSave }) => {
         if (existing && existing.url && existing.url.startsWith("blob:")) {
           try {
             URL.revokeObjectURL(existing.url);
-          } catch (e) {
-            // ignore
-          }
+          } catch (e) {}
         }
         return { ...fl, [key]: [] };
       });
@@ -1082,6 +1085,156 @@ const AddNewPigeon = ({ onSave }) => {
 
   return (
     <div>
+      <style>{`
+        /* Tiptap Editor Styling */
+        .tiptap-editor-wrapper {
+          border: 1px solid #071952 !important;
+          border-radius: 6px !important;
+          background: #fafafa !important;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+          overflow: hidden !important;
+          display: block !important;
+        }
+
+        .tiptap-toolbar {
+          display: flex !important;
+          gap: 8px !important;
+          align-items: center !important;
+          flex-wrap: wrap !important;
+          padding: 8px !important;
+          background: #f5f5f5 !important;
+          border-bottom: 1px solid #e0e0e0 !important;
+        }
+
+        .tiptap-toolbar button {
+          padding: 6px 8px !important;
+          border: 1px solid #ccc !important;
+          border-radius: 4px !important;
+          background: #fff !important;
+          color: #333 !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+          font-size: 14px !important;
+        }
+
+        .tiptap-toolbar button:hover {
+          background: #f0f0f0 !important;
+        }
+
+        .tiptap-toolbar button.active,
+        .tiptap-toolbar button[class*="bg-primary"] {
+          background: #0890e8 !important;
+          color: white !important;
+          border-color: #0890e8 !important;
+        }
+
+        /* Tiptap Editor Content */
+        .ProseMirror {
+          outline: none !important;
+          word-wrap: break-word !important;
+          white-space: pre-wrap !important;
+        }
+
+        .ProseMirror ul,
+        .ProseMirror ol {
+          margin-left: 20px !important;
+          padding-left: 0 !important;
+        }
+
+        .ProseMirror ul li {
+          list-style-type: disc !important;
+          margin: 4px 0 !important;
+        }
+
+        .ProseMirror ol li {
+          list-style-type: decimal !important;
+          margin: 4px 0 !important;
+        }
+
+        .ProseMirror p {
+          margin: 0 !important;
+        }
+
+        .ProseMirror strong {
+          font-weight: bold !important;
+        }
+
+        .ProseMirror em {
+          font-style: italic !important;
+        }
+
+        /* List Styles */
+        /* Default bullet list */
+        .ProseMirror ul {
+          list-style-type: disc !important;
+          margin-left: 20px !important;
+          padding-left: 0 !important;
+        }
+
+        /* Circle Bullets */
+        .ProseMirror ul.list-circle {
+          list-style-type: circle !important;
+          margin-left: 20px !important;
+          padding-left: 0 !important;
+        }
+
+        .ProseMirror ul.list-circle li {
+          list-style-type: circle !important;
+          margin: 4px 0 !important;
+        }
+
+        /* Arrow Bullets */
+        .ProseMirror ul.list-arrow {
+          list-style-type: none !important;
+          margin-left: 0 !important;
+          padding-left: 0 !important;
+        }
+
+        .ProseMirror ul.list-arrow li {
+          list-style-type: none !important;
+          margin-left: 0 !important;
+          padding-left: 24px !important;
+          margin-bottom: 4px !important;
+          position: relative;
+        }
+
+        .ProseMirror ul.list-arrow li::before {
+          content: "→ " !important;
+          margin-right: 8px !important;
+          color: #0890e8 !important;
+          font-weight: bold !important;
+          position: absolute !important;
+          left: 0 !important;
+        }
+
+        /* Stripe List */
+        .ProseMirror ul.list-stripe {
+          list-style-type: none !important;
+          margin-left: 0 !important;
+          padding-left: 0 !important;
+        }
+
+        .ProseMirror ul.list-stripe li {
+          list-style-type: none !important;
+          padding: 8px 12px !important;
+          margin: 4px 0 !important;
+          border-radius: 4px !important;
+        }
+
+        .ProseMirror ul.list-stripe li:nth-child(odd) {
+          background-color: #f0f7ff !important;
+        }
+
+        .ProseMirror ul.list-stripe li:nth-child(even) {
+          background-color: #e8f4ff !important;
+        }
+
+        /* Default bullet list - for lists without specific class */
+        .ProseMirror ul li {
+          margin: 4px 0 !important;
+          list-style-type: disc !important;
+        }
+      `}</style>
       <Form
         form={form}
         layout="vertical"
@@ -1099,7 +1252,6 @@ const AddNewPigeon = ({ onSave }) => {
             }
           }
 
-          // Check for duplicate when ringNumber, country, or birthYear changes
           const watchFields = ["ringNumber", "country", "birthYear"];
           const hasChanged = Object.keys(changedValues).some((key) =>
             watchFields.includes(key),
@@ -1110,17 +1262,12 @@ const AddNewPigeon = ({ onSave }) => {
             const country = allValues.country?.toString().trim() || "";
             const birthYear = allValues.birthYear?.toString().trim() || "";
 
-            // Clear any existing error immediately when user types
             form.setFields([{ name: "ringNumber", errors: [] }]);
 
-            // Clear existing timeout
             if (duplicateCheckTimeout.current) {
               clearTimeout(duplicateCheckTimeout.current);
             }
-
-            // Only check if all three fields are filled
             if (ringNumber && country && birthYear) {
-              // Debounce the API call
               duplicateCheckTimeout.current = setTimeout(() => {
                 checkDuplicate(ringNumber, country, birthYear);
               }, 500);
@@ -1144,7 +1291,6 @@ const AddNewPigeon = ({ onSave }) => {
                   <Input
                     placeholder="Enter Ring Number"
                     className="custom-input-ant-modal"
-                    // required
                   />
                 </Form.Item>
 
@@ -1164,7 +1310,7 @@ const AddNewPigeon = ({ onSave }) => {
                         ?.toLowerCase()
                         .includes(input.toLowerCase())
                     }
-                    allowClear // Adds the clear (cross) button
+                    allowClear
                   >
                     {countries.map((country, index) => (
                       <Option key={index} value={country}>
@@ -1174,51 +1320,397 @@ const AddNewPigeon = ({ onSave }) => {
                   </Select>
                 </Form.Item>
 
-                {/* Short Information of the Pigeon */}
                 <Form.Item
                   label="Story Line"
                   name="shortInfo"
                   className="custom-form-item-ant"
                 >
-                  <div style={{ position: "relative" }}>
-                    {/* Custom placeholder simulation */}
-                    {!value2 && (
-                      <div
+                  <div
+                    className="tiptap-editor-wrapper border rounded p-2"
+                    style={{ border: "1px solid #071952", borderRadius: "6px" }}
+                    ref={editor1Ref}
+                  >
+                    <div
+                      className="tiptap-toolbar mb-2 flex gap-1 flex-wrap p-2 bg-gray-100 rounded"
+                      style={{ borderBottom: "1px solid #071952" }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editor1?.chain().focus().toggleBold().run()
+                        }
+                        className={
+                          editor1?.isActive("bold")
+                            ? "bg-primary text-white"
+                            : "bg-white text-gray-700"
+                        }
                         style={{
-                          position: "absolute",
-                          top: "8px",
-                          left: "10px",
-                          color: "#999",
-                          pointerEvents: "none",
-                          fontSize: "13px",
-                          lineHeight: "19px",
+                          width: "32px",
+                          height: "32px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                          cursor: "pointer",
+                          padding: "0",
+                          fontWeight: "bold",
                         }}
                       >
-                        For example:
-                        <br />
-                        Son of Burj Khalifa
-                        <br />
-                        Winner of the Dubai OLR
-                        <br />
-                        5 times 1st price winner
-                        <br />
-                        Bought for USD 50,000
-                      </div>
-                    )}
+                        B
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editor1?.chain().focus().toggleItalic().run()
+                        }
+                        className={
+                          editor1?.isActive("italic")
+                            ? "bg-primary text-white"
+                            : "bg-white text-gray-700"
+                        }
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                          cursor: "pointer",
+                          padding: "0",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        I
+                      </button>
+                      <div
+                        style={{
+                          width: "1px",
+                          height: "24px",
+                          backgroundColor: "#ccc",
+                          margin: "0 4px",
+                        }}
+                      />
+                      <Select
+                        value={listStyle1}
+                        onChange={(val) => {
+                          setListStyle1(val);
 
-                    {/* Actual TextArea */}
-                    <Input.TextArea
-                      placeholder=""
-                      className="custom-input-ant-modal custom-textarea-pigeon"
-                      style={{ paddingTop: "40px" }} // Adjust padding to prevent overlapping text
-                      value={value2}
-                      onChange={handleChangePlace2} // Track the input value
+                          if (val === "none") {
+                            // Turn off bullet list
+                            if (editor1?.isActive("bulletList")) {
+                              editor1?.chain().focus().toggleBulletList().run();
+                            }
+                          } else {
+                            // Turn on bullet list if not already active
+                            if (!editor1?.isActive("bulletList")) {
+                              editor1?.chain().focus().toggleBulletList().run();
+                            }
+
+                            // Apply the list style with forced DOM updates
+                            const applyStyle = () => {
+                              if (editor1Ref.current) {
+                                const proseMirror =
+                                  editor1Ref.current.querySelector(
+                                    ".ProseMirror",
+                                  );
+                                if (proseMirror) {
+                                  const listElements =
+                                    proseMirror.querySelectorAll("ul");
+                                  listElements.forEach((listElement) => {
+                                    // Remove all list style classes
+                                    listElement.classList.remove(
+                                      "list-circle",
+                                      "list-arrow",
+                                      "list-stripe",
+                                      "list-none",
+                                    );
+                                    // Add the new class
+                                    listElement.classList.add(`list-${val}`);
+
+                                    // Apply inline styles as backup
+                                    if (val === "circle") {
+                                      listElement.style.listStyleType =
+                                        "circle";
+                                      listElement.style.marginLeft = "20px";
+                                      listElement.style.paddingLeft = "0";
+                                    } else if (val === "arrow") {
+                                      listElement.style.listStyleType = "none";
+                                      listElement.style.marginLeft = "0";
+                                      listElement.style.paddingLeft = "0";
+                                      // Apply to list items
+                                      const listItems =
+                                        listElement.querySelectorAll("li");
+                                      listItems.forEach((li) => {
+                                        li.style.listStyleType = "none";
+                                        li.style.marginLeft = "0";
+                                        li.style.paddingLeft = "24px";
+                                        li.style.marginBottom = "4px";
+                                        li.style.position = "relative";
+                                      });
+                                    } else if (val === "stripe") {
+                                      listElement.style.listStyleType = "none";
+                                      listElement.style.marginLeft = "0";
+                                      listElement.style.paddingLeft = "0";
+                                      // Apply to list items
+                                      const listItems =
+                                        listElement.querySelectorAll("li");
+                                      listItems.forEach((li, index) => {
+                                        li.style.listStyleType = "none";
+                                        li.style.padding = "8px 12px";
+                                        li.style.margin = "4px 0";
+                                        li.style.borderRadius = "4px";
+                                        li.style.backgroundColor =
+                                          index % 2 === 0
+                                            ? "#f0f7ff"
+                                            : "#e8f4ff";
+                                      });
+                                    }
+
+                                    // Force reflow to ensure styles are applied
+                                    void listElement.offsetHeight;
+                                  });
+                                }
+                              }
+                            };
+
+                            setTimeout(applyStyle, 50);
+                            setTimeout(applyStyle, 150);
+                            setTimeout(applyStyle, 300);
+                          }
+                        }}
+                        style={{ width: "150px", height: "32px" }}
+                        className="text-sm"
+                        optionLabelProp="label"
+                        label={
+                          listStyle1 === "circle" ? (
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <Circle size={16} /> Bullets
+                            </span>
+                          ) : listStyle1 === "arrow" ? (
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <ArrowRight size={16} /> Bullets
+                            </span>
+                          ) : listStyle1 === "stripe" ? (
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <Layers size={16} /> Bullets
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              • Bullets
+                            </span>
+                          )
+                        }
+                        optionLabelProp="label"
+                      >
+                        <Option
+                          value="none"
+                          label={
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              • Bullets
+                            </span>
+                          }
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            • Bullets
+                          </span>
+                        </Option>
+                        <Option
+                          value="circle"
+                          label={
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <Circle size={16} style={{ color: "#0890e8" }} />{" "}
+                              Circle bullets
+                            </span>
+                          }
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            <Circle size={16} style={{ color: "#0890e8" }} />{" "}
+                            Circle bullets
+                          </span>
+                        </Option>
+                        <Option
+                          value="arrow"
+                          label={
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <ArrowRight
+                                size={16}
+                                style={{ color: "#0890e8" }}
+                              />{" "}
+                              Arrow bullets
+                            </span>
+                          }
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            <ArrowRight
+                              size={16}
+                              style={{ color: "#0890e8" }}
+                            />{" "}
+                            Arrow bullets
+                          </span>
+                        </Option>
+                        <Option
+                          value="stripe"
+                          label={
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  height: "16px",
+                                  gap: "2px",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: "2px",
+                                    height: "3px",
+                                    backgroundColor: "#0890e8",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    width: "2px",
+                                    height: "3px",
+                                    backgroundColor: "#0890e8",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    width: "2px",
+                                    height: "3px",
+                                    backgroundColor: "#0890e8",
+                                  }}
+                                />
+                              </span>
+                              Stripe list
+                            </span>
+                          }
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                height: "16px",
+                                gap: "2px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: "2px",
+                                  height: "3px",
+                                  backgroundColor: "#0890e8",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  width: "2px",
+                                  height: "3px",
+                                  backgroundColor: "#0890e8",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  width: "2px",
+                                  height: "3px",
+                                  backgroundColor: "#0890e8",
+                                }}
+                              />
+                            </span>
+                            Stripe list
+                          </span>
+                        </Option>
+                      </Select>
+                    </div>
+                    <EditorContent
+                      editor={editor1}
+                      style={{
+                        minHeight: "200px",
+                        padding: "12px",
+                        border: "1px solid #ccc",
+                        borderRadius: "4px",
+                        backgroundColor: "#fff",
+                      }}
                     />
                   </div>
-                  {/* <Input.TextArea
-                    placeholder="Enter short information about the pigeon"
-                    className="custom-input-ant-modal custom-textarea-pigeon"
-                  /> */}
                 </Form.Item>
 
                 <Form.Item
@@ -1271,11 +1763,8 @@ const AddNewPigeon = ({ onSave }) => {
                         const current = form.getFieldValue("breeder");
                         if (current && typeof current === "string")
                           setBreederDisplay(current);
-                      } catch (e) {
-                        // ignore
-                      }
+                      } catch (e) {}
                     }}
-                    // allowClear
                     onClear={() => {
                       form.setFieldsValue({ breeder: undefined });
                       setBreederDisplay("");
@@ -1304,7 +1793,15 @@ const AddNewPigeon = ({ onSave }) => {
                           ? `${formatColor(selected.color)} ${selected.pattern}`
                           : "Select Color & Pattern"}
                       </span>
-                      <DownOutlined className="text-primary" />
+                      <DownOutlined
+                        className="text-primary"
+                        style={{
+                          fontSize: "14px",
+                          lineHeight: "1",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      />
                     </Button>
                   </Dropdown>
                 </Form.Item>
@@ -1327,25 +1824,6 @@ const AddNewPigeon = ({ onSave }) => {
                     <Option value="Deceased">Deceased</Option>
                   </Select>
                 </Form.Item>
-
-                {/* <Form.Item
-                  label="Racer Rating"
-                  name="racerRating"
-                  // rules={[{ required: true }]}
-                  className="custom-form-item-ant-select"
-                >
-                  <Select
-                    placeholder="Select Racer Rating"
-                    className="custom-select-ant-modal"
-                  >
-                    <Option value="Outstanding">Outstanding</Option>
-                    <Option value="Excellent">Excellent</Option>
-                    <Option value="Very Good">Very Good</Option>
-                    <Option value="Good">Good</Option>
-                    <Option value="Aboveaverage">Above Average</Option>
-                  </Select>
-                </Form.Item> */}
-
                 <Form.Item
                   label="Iconic"
                   name="iconic"
@@ -1380,9 +1858,9 @@ const AddNewPigeon = ({ onSave }) => {
                     }
                     className="custom-select-ant-modal"
                     disabled={!isIconicEnabled}
-                    showSearch // Enable search functionality
+                    showSearch
                     // allowClear // Enable the clear button (cross icon)
-                    optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)
+                    optionFilterProp="children"
                     filterOption={(input, option) =>
                       option?.children
                         ?.toString()
@@ -1400,19 +1878,6 @@ const AddNewPigeon = ({ onSave }) => {
               </div>
 
               <div className="right flex w-full justify-start flex-col gap-4">
-                {/* <Form.Item
-                  label="Name"
-                  name="name"
-                  rules={[{ required: true }]}
-                  className="custom-form-item-ant"
-                >
-                  <Input
-                    placeholder="Enter Name"
-                    className="custom-input-ant-modal"
-                    // required
-                  />
-                </Form.Item> */}
-
                 <Form.Item
                   label="Name"
                   name="name"
@@ -1420,12 +1885,7 @@ const AddNewPigeon = ({ onSave }) => {
                     { required: true, message: "Please enter a name" },
                     {
                       validator: (_, value) => {
-                        // If we're editing an existing pigeon (id present),
-                        // skip duplicate name validation so editing other fields
-                        // doesn't fail due to the existing name.
                         if (id) return Promise.resolve();
-
-                        // If there is no input, skip duplicate check
                         if (!value || value.trim() === "") {
                           return Promise.resolve();
                         }
@@ -1473,19 +1933,16 @@ const AddNewPigeon = ({ onSave }) => {
                     // allowClear // Enables the clear button (cross icon)
                     optionFilterProp="children"
                     filterOption={(input, option) =>
-                      // Ensure option.children is treated as a string
                       String(option?.children)
                         .toLowerCase()
                         .includes(input.toLowerCase())
                     }
-                    onChange={(value) => {
-                      // You can handle clearing value here if necessary
-                    }}
+                    onChange={(value) => {}}
                   >
                     {/* Creating options from 1927 to the current year */}
                     {Array.from(
-                      { length: currentYear + 2 - 1927 + 1 }, // Same logic for generating the range
-                      (_, index) => currentYear + 2 - index, // Reverse the order by subtracting index
+                      { length: currentYear + 2 - 1927 + 1 },
+                      (_, index) => currentYear + 2 - index,
                     ).map((v) => (
                       <Option key={v} value={v}>
                         {v}
@@ -1499,37 +1956,390 @@ const AddNewPigeon = ({ onSave }) => {
                   name="addresults"
                   className="custom-form-item-ant"
                 >
-                  <div style={{ position: "relative" }}>
-                    {/* Custom placeholder simulation */}
-                    {!value && (
-                      <div
+                  <div
+                    className="tiptap-editor-wrapper border rounded p-2"
+                    style={{ border: "1px solid #071952", borderRadius: "6px" }}
+                    ref={editor2Ref}
+                  >
+                    <div
+                      className="tiptap-toolbar mb-2 flex gap-1 flex-wrap p-2 bg-gray-100 rounded"
+                      style={{ borderBottom: "1px solid #071952" }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editor2?.chain().focus().toggleBold().run()
+                        }
+                        className={
+                          editor2?.isActive("bold")
+                            ? "bg-primary text-white"
+                            : "bg-white text-gray-700"
+                        }
                         style={{
-                          position: "absolute",
-                          top: "8px",
-                          left: "10px",
-                          color: "#999",
-                          pointerEvents: "none",
-                          fontSize: "13px",
-                          lineHeight: "19px",
+                          width: "32px",
+                          height: "32px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                          cursor: "pointer",
+                          padding: "0",
+                          fontWeight: "bold",
                         }}
                       >
-                        For example:
-                        <br />
-                        1st/828p Quiévrain 108km
-                        <br />
-                        4th/3265p Melun 287km
-                        <br />
-                        6th/3418p HotSpot 6 Dubai OLR
-                      </div>
-                    )}
+                        B
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editor2?.chain().focus().toggleItalic().run()
+                        }
+                        className={
+                          editor2?.isActive("italic")
+                            ? "bg-primary text-white"
+                            : "bg-white text-gray-700"
+                        }
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                          cursor: "pointer",
+                          padding: "0",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        I
+                      </button>
+                      <div
+                        style={{
+                          width: "1px",
+                          height: "24px",
+                          backgroundColor: "#ccc",
+                          margin: "0 4px",
+                        }}
+                      />
+                      <Select
+                        value={listStyle2}
+                        onChange={(val) => {
+                          setListStyle2(val);
 
-                    {/* Actual TextArea */}
-                    <Input.TextArea
-                      placeholder=""
-                      className="custom-input-ant-modal custom-textarea-pigeon2"
-                      style={{ paddingTop: "40px" }} // Adjust padding to prevent overlapping text
-                      value={value}
-                      onChange={handleChangePlace} // Track the input value
+                          if (val === "none") {
+                            // Turn off bullet list
+                            if (editor2?.isActive("bulletList")) {
+                              editor2?.chain().focus().toggleBulletList().run();
+                            }
+                          } else {
+                            // Turn on bullet list if not already active
+                            if (!editor2?.isActive("bulletList")) {
+                              editor2?.chain().focus().toggleBulletList().run();
+                            }
+
+                            // Apply the list style with forced DOM updates
+                            const applyStyle = () => {
+                              if (editor2Ref.current) {
+                                const proseMirror =
+                                  editor2Ref.current.querySelector(
+                                    ".ProseMirror",
+                                  );
+                                if (proseMirror) {
+                                  const listElements =
+                                    proseMirror.querySelectorAll("ul");
+                                  listElements.forEach((listElement) => {
+                                    // Remove all list style classes
+                                    listElement.classList.remove(
+                                      "list-circle",
+                                      "list-arrow",
+                                      "list-stripe",
+                                      "list-none",
+                                    );
+                                    // Add the new class
+                                    listElement.classList.add(`list-${val}`);
+
+                                    // Apply inline styles as backup
+                                    if (val === "circle") {
+                                      listElement.style.listStyleType =
+                                        "circle";
+                                      listElement.style.marginLeft = "20px";
+                                      listElement.style.paddingLeft = "0";
+                                    } else if (val === "arrow") {
+                                      listElement.style.listStyleType = "none";
+                                      listElement.style.marginLeft = "0";
+                                      listElement.style.paddingLeft = "0";
+                                      // Apply to list items
+                                      const listItems =
+                                        listElement.querySelectorAll("li");
+                                      listItems.forEach((li) => {
+                                        li.style.listStyleType = "none";
+                                        li.style.marginLeft = "0";
+                                        li.style.paddingLeft = "24px";
+                                        li.style.marginBottom = "4px";
+                                        li.style.position = "relative";
+                                      });
+                                    } else if (val === "stripe") {
+                                      listElement.style.listStyleType = "none";
+                                      listElement.style.marginLeft = "0";
+                                      listElement.style.paddingLeft = "0";
+                                      // Apply to list items
+                                      const listItems =
+                                        listElement.querySelectorAll("li");
+                                      listItems.forEach((li, index) => {
+                                        li.style.listStyleType = "none";
+                                        li.style.padding = "8px 12px";
+                                        li.style.margin = "4px 0";
+                                        li.style.borderRadius = "4px";
+                                        li.style.backgroundColor =
+                                          index % 2 === 0
+                                            ? "#f0f7ff"
+                                            : "#e8f4ff";
+                                      });
+                                    }
+
+                                    // Force reflow to ensure styles are applied
+                                    void listElement.offsetHeight;
+                                  });
+                                }
+                              }
+                            };
+
+                            setTimeout(applyStyle, 50);
+                            setTimeout(applyStyle, 150);
+                            setTimeout(applyStyle, 300);
+                          }
+                        }}
+                        style={{ width: "150px", height: "32px" }}
+                        className="text-sm"
+                        optionLabelProp="label"
+                        label={
+                          listStyle2 === "circle" ? (
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <Circle size={16} /> Bullets
+                            </span>
+                          ) : listStyle2 === "arrow" ? (
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <ArrowRight size={16} /> Bullets
+                            </span>
+                          ) : listStyle2 === "stripe" ? (
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <Layers size={16} /> Bullets
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              • Bullets
+                            </span>
+                          )
+                        }
+                        optionLabelProp="label"
+                      >
+                        <Option
+                          value="none"
+                          label={
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              • Bullets
+                            </span>
+                          }
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            • Bullets
+                          </span>
+                        </Option>
+                        <Option
+                          value="circle"
+                          label={
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <Circle size={16} style={{ color: "#0890e8" }} />{" "}
+                              Circle bullets
+                            </span>
+                          }
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            <Circle size={16} style={{ color: "#0890e8" }} />{" "}
+                            Circle bullets
+                          </span>
+                        </Option>
+                        <Option
+                          value="arrow"
+                          label={
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <ArrowRight
+                                size={16}
+                                style={{ color: "#0890e8" }}
+                              />{" "}
+                              Arrow bullets
+                            </span>
+                          }
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            <ArrowRight
+                              size={16}
+                              style={{ color: "#0890e8" }}
+                            />{" "}
+                            Arrow bullets
+                          </span>
+                        </Option>
+                        <Option
+                          value="stripe"
+                          label={
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  height: "16px",
+                                  gap: "2px",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: "2px",
+                                    height: "3px",
+                                    backgroundColor: "#0890e8",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    width: "2px",
+                                    height: "3px",
+                                    backgroundColor: "#0890e8",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    width: "2px",
+                                    height: "3px",
+                                    backgroundColor: "#0890e8",
+                                  }}
+                                />
+                              </span>
+                              Stripe list
+                            </span>
+                          }
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                height: "16px",
+                                gap: "2px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: "2px",
+                                  height: "3px",
+                                  backgroundColor: "#0890e8",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  width: "2px",
+                                  height: "3px",
+                                  backgroundColor: "#0890e8",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  width: "2px",
+                                  height: "3px",
+                                  backgroundColor: "#0890e8",
+                                }}
+                              />
+                            </span>
+                            Stripe list
+                          </span>
+                        </Option>
+                      </Select>
+                    </div>
+                    <EditorContent
+                      editor={editor2}
+                      style={{
+                        minHeight: "200px",
+                        padding: "12px",
+                        border: "1px solid #ccc",
+                        borderRadius: "4px",
+                        backgroundColor: "#fff",
+                      }}
                     />
                   </div>
                 </Form.Item>
@@ -1598,9 +2408,9 @@ const AddNewPigeon = ({ onSave }) => {
                   <Select
                     placeholder="Select Rating"
                     className="custom-select-ant-modal"
-                    showSearch // Enable search functionality
-                    // allowClear // Enable the clear button (cross icon)
-                    optionFilterProp="children" // Ensures search is done based on the option's children (i.e., the value)
+                    showSearch
+                    // allowClear
+                    optionFilterProp="children"
                     filterOption={(input, option) =>
                       option?.children
                         ?.toString()
@@ -1669,14 +2479,11 @@ const AddNewPigeon = ({ onSave }) => {
                       const q = String(inputValue).toLowerCase();
                       const ring = String(option.value || "").toLowerCase();
                       const label = String(option.label || "").toLowerCase();
-                      // match ring number or name
                       return ring.includes(q) || label.includes(q);
                     }}
                     onSelect={(value, option) => {
-                      // when selecting suggestion, store selected ring number and selected pigeon data
                       form.setFieldsValue({ fatherRingId: value });
                       setFatherDisplay(value);
-                      // option may include the original data under option.data
                       setFatherSelected(
                         option?.data ||
                           fatherOptions.find(
@@ -1686,10 +2493,8 @@ const AddNewPigeon = ({ onSave }) => {
                       );
                     }}
                     onChange={(val) => {
-                      // keep typed value in field and form
                       form.setFieldsValue({ fatherRingId: val });
                       setFatherDisplay(val);
-                      // clear selected when user types a custom value
                       setFatherSelected(null);
                     }}
                     onBlur={() => {
@@ -1810,77 +2615,6 @@ const AddNewPigeon = ({ onSave }) => {
                   </div>
                 )}
               </div>
-
-              {/* Mother */}
-              {/* <div className="w-full">
-                <Form.Item
-                  label="Mother Ring Number"
-                  name="motherRingId"
-                  className="custom-form-item-ant-select"
-                >
-                  <AutoComplete
-                    options={motherOptionsFiltered.map((p) => ({
-                      value: p.ringNumber,
-                      label: `${p.ringNumber} (${p.name || "Unknown"})`,
-                      data: p,
-                    }))}
-                    placeholder="Search by Mother Ring No. or Name"
-                    className="custom-select-ant-modal"
-                    onSearch={setMotherSearch}
-                    value={motherDisplay}
-                    filterOption={(inputValue, option) => {
-                      const q = String(inputValue).toLowerCase();
-                      const ring = String(option.value || "").toLowerCase();
-                      const label = String(option.label || "").toLowerCase();
-                      return ring.includes(q) || label.includes(q);
-                    }}
-                    onSelect={(value, option) => {
-                      form.setFieldsValue({ motherRingId: value });
-                      setMotherDisplay(value);
-                      setMotherSelected(
-                        option?.data ||
-                          motherOptions.find(
-                            (p) => String(p.ringNumber) === String(value)
-                          ) ||
-                          null
-                      );
-                    }}
-                    onChange={(val) => {
-                      form.setFieldsValue({ motherRingId: val });
-                      setMotherDisplay(val);
-                      setMotherSelected(null);
-                    }}
-                    onBlur={() => {
-                      try {
-                        const current = form.getFieldValue("motherRingId");
-                        if (current && typeof current === "string")
-                          setMotherDisplay(current);
-                      } catch (e) {
-                        // ignore
-                      }
-                    }}
-                    allowClear
-                    onClear={() => {
-                      form.setFieldsValue({ motherRingId: undefined });
-                      setMotherDisplay("");
-                      setMotherSelected(null);
-                    }}
-                  />
-                </Form.Item>
-                <p className="text-gray-400 font-normal text-[12px] pt-1">
-                  Enter a part of the ring or part of the name to search for the
-                  Corresponding Pigeon
-                </p>
-                {motherSelected && (
-                  <div className="mt-2 p-2 bg-gray-50 border rounded text-sm">
-                    <strong>Selected Pigeon:</strong>
-                    <div>
-                      {motherSelected.ringNumber} —{" "}
-                      {motherSelected.name || "Unknown"}
-                    </div>
-                  </div>
-                )}
-              </div> */}
             </div>
           </div>
 
@@ -2026,159 +2760,6 @@ const AddNewPigeon = ({ onSave }) => {
                 </div>
               </div>
             </div>
-
-            {/* ===== PIGEON RESULTS ===== */}
-            {/* <div>
-              <Form.Item
-                label="Pigeon Results"
-                name="addresults"
-                className="custom-form-item-ant"
-              >
-                <div style={{ position: "relative" }}>
-                  {!value && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "8px",
-                        left: "10px",
-                        color: "#999",
-                        pointerEvents: "none",
-                        fontSize: "13px",
-                        lineHeight: "19px",
-                      }}
-                    >
-                      For example:
-                      <br />
-                      1st/828p Quiévrain 108km
-                      <br />
-                      4th/3265p Melun 287km
-                      <br />
-                      6th/3418p HotSpot 6 Dubai OLR
-                    </div>
-                  )}
-                  <Input.TextArea
-                    placeholder=""
-                    className="custom-input-ant-modal custom-textarea-pigeon2"
-                    style={{ paddingTop: "40px" }} // Adjust padding to prevent overlapping text
-                    value={value}
-                    onChange={handleChangePlace} // Track the input value
-                  />
-                </div>
-              </Form.Item>
-            </div> */}
-            {/* <div className=" flex flex-col min-h-[300px]">
-              <div className="mb-4 flex items-center gap-2">
-                <Switch
-                  checked={showRaceResults}
-                  onChange={(checked) => setShowRaceResults(checked)}
-                  size="small"
-                />
-                <span className="text-[16px] font-semibold">Pigeon Result</span>
-              </div>
-
-              {showRaceResults && (
-                <div className=" gap-4">
-                  {raceResults.map((race, index) => (
-                    <div key={index}>
-                      <div className="mb-2 flex justify-between items-center">
-                        <strong>Race Result #{index + 1}</strong>
-                        <Button
-                          type="text"
-                          danger
-                          onClick={() => removeRaceResult(index)}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-
-                      <div className="flex flex-col mb-4 p-4 border rounded-lg">
-                        <div className="flex justify-between gap-4">
-                          <div className="left w-full">
-                            <Form.Item label="Race Name">
-                              <Input
-                                placeholder="Race Name"
-                                value={race.name}
-                                onChange={(e) =>
-                                  handleRaceChange(
-                                    index,
-                                    "name",
-                                    e.target.value
-                                  )
-                                }
-                                className="custom-input-ant-modal"
-                              />
-                            </Form.Item>
-                            <Form.Item label="Date">
-                              <Input
-                                placeholder="Date"
-                                type="date"
-                                value={race.date}
-                                onChange={(e) =>
-                                  handleRaceChange(
-                                    index,
-                                    "date",
-                                    e.target.value
-                                  )
-                                }
-                                className="custom-input-ant-modal"
-                              />
-                            </Form.Item>
-                          </div>
-                          <div className="right w-full">
-                            <Form.Item label="Distance">
-                              <Input
-                                placeholder="Distance"
-                                value={race.distance}
-                                onChange={(e) =>
-                                  handleRaceChange(
-                                    index,
-                                    "distance",
-                                    e.target.value
-                                  )
-                                }
-                                className="custom-input-ant-modal"
-                              />
-                            </Form.Item>
-                            <Form.Item label="Total Birds">
-                              <Input
-                                placeholder="Total Birds"
-                                type="number"
-                                value={race.total}
-                                onChange={(e) =>
-                                  handleRaceChange(
-                                    index,
-                                    "total",
-                                    e.target.value
-                                  )
-                                }
-                                className="custom-input-ant-modal"
-                              />
-                            </Form.Item>
-                          </div>
-                        </div>
-                        <Form.Item label="Place / Position">
-                          <Input
-                            placeholder="Place/Position"
-                            value={race.place}
-                            onChange={(e) =>
-                              handleRaceChange(index, "place", e.target.value)
-                            }
-                            className="custom-input-ant-modal"
-                          />
-                        </Form.Item>
-                      </div>
-                    </div>
-                  ))}
-                  <Button
-                    type="dashed"
-                    onClick={addRaceResult}
-                    style={{ width: "100%" }}
-                  >
-                    + Add Race Results
-                  </Button>
-                </div>
-              )}
-            </div> */}
           </div>
         </div>
       </Form>

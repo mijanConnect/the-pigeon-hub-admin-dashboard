@@ -28,6 +28,12 @@ const safeValue = (value) => {
   return String(value);
 };
 
+// Helper to check if string contains HTML
+const isHTML = (str) => {
+  if (!str || typeof str !== "string") return false;
+  return /<[^>]*>/.test(str);
+};
+
 // Lightweight image slider component (no external CSS required)
 const ImageSlider = ({
   photos = [],
@@ -418,6 +424,115 @@ const ViewPigeon = () => {
 
   return (
     <div className="p-4">
+      <style>{`
+        /* HTML Content Styling */
+        .html-content {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* Default bullet list */
+        .html-content ul {
+          list-style-type: disc !important;
+          margin-left: 20px !important;
+          padding-left: 0 !important;
+        }
+
+        .html-content ul li {
+          margin: 4px 0 !important;
+          list-style-type: disc !important;
+        }
+
+        /* Circle Bullets */
+        .html-content ul.list-circle,
+        .html-content ul[class*="list-circle"] {
+          list-style-type: circle !important;
+          margin-left: 20px !important;
+          padding-left: 0 !important;
+        }
+
+        .html-content ul.list-circle li,
+        .html-content ul[class*="list-circle"] li {
+          list-style-type: circle !important;
+          margin: 4px 0 !important;
+        }
+
+        /* Arrow Bullets */
+        .html-content ul.list-arrow,
+        .html-content ul[class*="list-arrow"] {
+          list-style-type: none !important;
+          margin-left: 0 !important;
+          padding-left: 0 !important;
+        }
+
+        .html-content ul.list-arrow li,
+        .html-content ul[class*="list-arrow"] li {
+          list-style-type: none !important;
+          margin-left: 0 !important;
+          padding-left: 24px !important;
+          margin-bottom: 4px !important;
+          position: relative;
+        }
+
+        .html-content ul.list-arrow li::before,
+        .html-content ul[class*="list-arrow"] li::before {
+          content: "→ " !important;
+          margin-right: 8px !important;
+          color: #0890e8 !important;
+          font-weight: bold !important;
+          position: absolute !important;
+          left: 0 !important;
+          display: inline-block !important;
+        }
+
+        /* Stripe List */
+        .html-content ul.list-stripe,
+        .html-content ul[class*="list-stripe"] {
+          list-style-type: none !important;
+          margin-left: 0 !important;
+          padding-left: 0 !important;
+        }
+
+        .html-content ul.list-stripe li,
+        .html-content ul[class*="list-stripe"] li {
+          list-style-type: none !important;
+          padding: 8px 12px !important;
+          margin: 4px 0 !important;
+          border-radius: 4px !important;
+        }
+
+        .html-content ul.list-stripe li:nth-child(odd),
+        .html-content ul[class*="list-stripe"] li:nth-child(odd) {
+          background-color: #f0f7ff !important;
+        }
+
+        .html-content ul.list-stripe li:nth-child(even),
+        .html-content ul[class*="list-stripe"] li:nth-child(even) {
+          background-color: #e8f4ff !important;
+        }
+
+        .html-content ol {
+          margin-left: 20px !important;
+          padding-left: 0 !important;
+        }
+
+        .html-content ol li {
+          margin: 4px 0 !important;
+        }
+
+        .html-content strong,
+        .html-content b {
+          font-weight: 600 !important;
+        }
+
+        .html-content em,
+        .html-content i {
+          font-style: italic !important;
+        }
+
+        .html-content p {
+          margin: 8px 0 !important;
+        }
+      `}</style>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-semibold">Pigeon Details</h2>
         <div className="flex items-center gap-2">
@@ -800,13 +915,18 @@ const ViewPigeon = () => {
                   <div className="flex gap-1 mt-6 border p-4 rounded-lg">
                     <p className="font-semibold text-[14px]">
                       Your Story:{" "}
-                      <span className="font-normal text-[14px] whitespace-pre-line break-words">
-                        {pigeonData.shortInfo ? (
-                          <>{pigeonData.shortInfo}</>
-                        ) : (
-                          "N/A"
-                        )}
-                      </span>
+                      {isHTML(pigeonData.shortInfo) ? (
+                        <div
+                          className="font-normal text-[14px] html-content"
+                          dangerouslySetInnerHTML={{
+                            __html: pigeonData.shortInfo,
+                          }}
+                        />
+                      ) : (
+                        <span className="font-normal text-[14px] whitespace-pre-line break-words">
+                          {pigeonData.shortInfo || "N/A"}
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -823,14 +943,26 @@ const ViewPigeon = () => {
               <div className="flex gap-1 mt-6 border p-4 rounded-lg">
                 <p className="font-semibold text-[14px]">
                   Race Results:{" "}
-                  <span className="font-normal text-[14px]">
-                    {Array.isArray(pigeonData.addresults) &&
-                    pigeonData.addresults.length > 0
-                      ? pigeonData.addresults.map((result, index) => (
+                  {Array.isArray(pigeonData.addresults) &&
+                  pigeonData.addresults.length > 0 ? (
+                    pigeonData.addresults.some((result) => isHTML(result)) ? (
+                      <div className="font-normal text-[14px] html-content">
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: pigeonData.addresults.join("<br/>"),
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <span className="font-normal text-[14px]">
+                        {pigeonData.addresults.map((result, index) => (
                           <div key={index}>{result}</div>
-                        ))
-                      : "N/A"}
-                  </span>
+                        ))}
+                      </span>
+                    )
+                  ) : (
+                    "N/A"
+                  )}
                 </p>
               </div>
 

@@ -33,7 +33,7 @@ const ExportPdfSinglePigeon = () => {
     if (path.startsWith("http://") || path.startsWith("https://")) {
       return path;
     } else {
-      const baseUrl = "https://ftp.thepigeonhub.com";
+      const baseUrl = import.meta.env.VITE_ASSET_BASE_URL;
       return `${baseUrl}/${path}`;
     }
   };

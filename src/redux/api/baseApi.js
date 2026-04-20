@@ -3,8 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
-    // baseUrl: "http://50.6.200.33:5001/api/v1",
-    baseUrl: "https://ftp.thepigeonhub.com/api/v1",
+    baseUrl: import.meta.env.VITE_API_BASE_URL,
 
     prepareHeaders: (headers, { endpoint }) => {
       if (!headers.has("Authorization")) {
