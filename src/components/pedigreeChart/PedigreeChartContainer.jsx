@@ -28,6 +28,7 @@ import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedig
 import { getImageUrl } from "../common/imageUrl";
 import { exportPedigreeToPDF } from "./components/ExportPDF";
 import { convertBackendToExistingFormat } from "./components/PedigreeData";
+import RichTextDisplay from "../common/share/RichTextDisplay";
 // import { exportPedigreeToPDF } from "./exportPDF";
 
 const PigeonNode = ({ data }) => {
@@ -262,7 +263,10 @@ const PigeonNode = ({ data }) => {
         {data.description && (
           <div className="">
             <p className=" text-black italic">
-              {data.description.slice(0, 600)}
+              <RichTextDisplay
+                html={data.description}
+                className="text-black italic"
+              />
             </p>
           </div>
         )}
@@ -280,7 +284,10 @@ const PigeonNode = ({ data }) => {
               className="text-black whitespace-pre-line break-words max-w-[250px] overflow-hidden"
               style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
             >
-              {data.achievements}
+             <RichTextDisplay
+                html={data.achievements}
+                className="text-black italic"
+              />
             </p>
           </div>
         )}

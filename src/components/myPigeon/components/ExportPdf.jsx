@@ -4,6 +4,8 @@ import moment from "moment";
 // import { Button } from "@/components/ui/button";
 import { Button } from "antd";
 import { Download } from "lucide-react";
+import { renderRichTextToPdf } from "../../common/share/richTextPdf";
+// import { renderRichTextToPdf } from "../../common/share/richTextPdf";
 
 const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
   // Use your existing getImageUrl function
@@ -218,10 +220,6 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
           label: "Loft Name",
           value: String(pigeon?.fatherRingId?.breeder?.loftName || "N/A"),
         },
-        {
-          label: "Story",
-          value: String(pigeon?.fatherRingId?.shortInfo || "N/A"),
-        },
       ];
 
       pdf.setFontSize(8);
@@ -240,6 +238,30 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
 
         fatherY += 7;
       });
+
+      // Father Story (rich text)
+      const fatherStoryHtml = pigeon?.fatherRingId?.shortInfo;
+      if (fatherStoryHtml) {
+        fatherY += 1;
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        pdf.text("Story:", leftParentX, fatherY);
+        fatherY += 4.5;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7);
+        fatherY = renderRichTextToPdf({
+          pdf,
+          html: fatherStoryHtml,
+          x: leftParentX,
+          y: fatherY,
+          maxWidth: columnWidth - 2,
+          lineHeight: 3.4,
+          blockSpacing: 1.2,
+          itemSpacing: 0.7,
+          listIndent: 2.2,
+        });
+      }
 
       // Father Results Section
       // if (
@@ -300,10 +322,6 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
           label: "Loft Name",
           value: String(pigeon?.motherRingId?.breeder?.loftName || "N/A"),
         },
-        {
-          label: "Story",
-          value: String(pigeon?.motherRingId?.shortInfo || "N/A"),
-        },
       ];
 
       pdf.setFontSize(8);
@@ -326,12 +344,40 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
       // Helper function to clean result text
       const cleanResult = (text) => text.replace(/^\d+[\.\)]\s*/, "").trim();
 
+      const normalizeResultsHtml = (value) => {
+        if (!value) return "";
+        if (Array.isArray(value)) return renderRichTextToPdf(value.map(cleanResult));
+        if (typeof value === "string") return value;
+        return "";
+      };
+
+      // Mother Story (rich text)
+      const motherStoryHtml = pigeon?.motherRingId?.shortInfo;
+      if (motherStoryHtml) {
+        motherY += 1;
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        pdf.text("Story:", rightParentX, motherY);
+        motherY += 4.5;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7);
+        motherY = renderRichTextToPdf({
+          pdf,
+          html: motherStoryHtml,
+          x: rightParentX,
+          y: motherY,
+          maxWidth: columnWidth - 2,
+          lineHeight: 3.4,
+          blockSpacing: 1.2,
+          itemSpacing: 0.7,
+          listIndent: 2.2,
+        });
+      }
+
       // Mother Results Section
-      if (
-        pigeon?.motherRingId?.addresults &&
-        Array.isArray(pigeon.motherRingId.addresults) &&
-        pigeon.motherRingId.addresults.length > 0
-      ) {
+      const motherResultsHtml = renderRichTextToPdf(pigeon?.motherRingId?.addresults);
+      if (motherResultsHtml) {
         motherY += 3;
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(8);
@@ -340,22 +386,22 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
 
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(7);
-        pigeon.motherRingId.addresults.forEach((result) => {
-          const cleanText = cleanResult(result);
-          const resultLines = pdf.splitTextToSize(cleanText, columnWidth - 2);
-          resultLines.forEach((line) => {
-            pdf.text(line, rightParentX, motherY);
-            motherY += 4;
-          });
+        motherY = renderRichTextToPdf({
+          pdf,
+          html: motherResultsHtml,
+          x: rightParentX,
+          y: motherY,
+          maxWidth: columnWidth - 2,
+          lineHeight: 3.6,
+          blockSpacing: 1.2,
+          itemSpacing: 0.7,
+          listIndent: 2.2,
         });
       }
 
       // Father Results Section
-      if (
-        pigeon?.fatherRingId?.addresults &&
-        Array.isArray(pigeon.fatherRingId.addresults) &&
-        pigeon.fatherRingId.addresults.length > 0
-      ) {
+      const fatherResultsHtml = normalizeResultsHtml(pigeon?.fatherRingId?.addresults);
+      if (fatherResultsHtml) {
         fatherY += 3;
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(8);
@@ -364,13 +410,16 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
 
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(7);
-        pigeon.fatherRingId.addresults.forEach((result) => {
-          const cleanText = cleanResult(result);
-          const resultLines = pdf.splitTextToSize(cleanText, columnWidth - 2);
-          resultLines.forEach((line) => {
-            pdf.text(line, leftParentX, fatherY);
-            fatherY += 4;
-          });
+        fatherY = renderRichTextToPdf({
+          pdf,
+          html: fatherResultsHtml,
+          x: leftParentX,
+          y: fatherY,
+          maxWidth: columnWidth - 2,
+          lineHeight: 3.6,
+          blockSpacing: 1.2,
+          itemSpacing: 0.7,
+          listIndent: 2.2,
         });
       }
 
@@ -423,16 +472,17 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
         pdf.text("Your Story:", margin, yPosition);
         yPosition += 6;
 
-        const storyLines = pdf.splitTextToSize(
-          pigeon.shortInfo,
-          pageWidth - 2 * margin,
-        );
-
         pdf.setFont("helvetica", "normal");
-        storyLines.forEach((line) => {
-          checkPageBreak(5);
-          pdf.text(line, margin, yPosition);
-          yPosition += 5;
+        yPosition = renderRichTextToPdf({
+          pdf,
+          html: pigeon.shortInfo,
+          x: margin,
+          y: yPosition,
+          maxWidth: pageWidth - 2 * margin,
+          lineHeight: 4.6,
+          blockSpacing: 2.0,
+          itemSpacing: 1.0,
+          listIndent: 2.8,
         });
 
         yPosition += 5;
@@ -594,12 +644,26 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
         addSectionHeader("Race Results", yPosition);
         yPosition += 10;
 
-        pigeon.addresults.forEach((result, index) => {
-          checkPageBreak(6);
-          pdf.setFontSize(9);
-          pdf.setFont("helvetica", "normal");
-          pdf.text(`${index + 1}. ${result}`, margin + 2, yPosition);
-          yPosition += 6;
+        pdf.setFontSize(9);
+        pdf.setFont("helvetica", "normal");
+
+        const anyHtml = pigeon.addresults.some(
+          (r) => typeof r === "string" && /<[a-z][\s\S]*>/i.test(r),
+        );
+        const resultsHtml = anyHtml
+          ? pigeon.addresults.join("")
+          : addresultsArrayToHtml(pigeon.addresults);
+
+        yPosition = renderRichTextToPdf({
+          pdf,
+          html: resultsHtml,
+          x: margin + 2,
+          y: yPosition,
+          maxWidth: pageWidth - 2 * margin - 2,
+          lineHeight: 4.2,
+          blockSpacing: 1.8,
+          itemSpacing: 0.9,
+          listIndent: 3.0,
         });
       }
 
