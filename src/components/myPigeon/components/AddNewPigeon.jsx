@@ -24,6 +24,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import BulletList from "@tiptap/extension-bullet-list";
 import ListItem from "@tiptap/extension-list-item";
+import Placeholder from "@tiptap/extension-placeholder";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -109,7 +110,13 @@ const AddNewPigeon = ({ onSave }) => {
 
   // Tiptap editors for Story Line and Pigeon Results
   const editor1 = useEditor({
-    extensions: tiptapExtensions,
+    extensions: [
+      ...tiptapExtensions,
+      Placeholder.configure({
+        placeholder:
+          "For example:\nSon of Burj Khalifa\nWinner of the Dubai OLR\n5 times 1st price winner\nBought for USD 50,000",
+      }),
+    ],
     content: value2,
     onUpdate: ({ editor }) => {
       if (editorChangeTimeout1.current)
@@ -128,7 +135,13 @@ const AddNewPigeon = ({ onSave }) => {
   });
 
   const editor2 = useEditor({
-    extensions: tiptapExtensions,
+    extensions: [
+      ...tiptapExtensions,
+      Placeholder.configure({
+        placeholder:
+          "For example:\n1st/828p Quiévrain 108km\n4th/3265p Melun 287km\n6th/3418p HotSpot 6 Dubai OLR",
+      }),
+    ],
     content: value,
     onUpdate: ({ editor }) => {
       if (editorChangeTimeout2.current)
@@ -1234,6 +1247,16 @@ const AddNewPigeon = ({ onSave }) => {
           margin: 4px 0 !important;
           list-style-type: disc !important;
         }
+
+        /* Placeholder styling */
+        .ProseMirror p.is-editor-empty:first-child::before {
+          content: attr(data-placeholder);
+          float: left;
+          color: #adb5bd;
+          pointer-events: none;
+          height: 0;
+          white-space: pre-line;
+        }
       `}</style>
       <Form
         form={form}
@@ -1526,7 +1549,6 @@ const AddNewPigeon = ({ onSave }) => {
                             </span>
                           )
                         }
-                        optionLabelProp="label"
                       >
                         <Option
                           value="none"
@@ -2157,7 +2179,6 @@ const AddNewPigeon = ({ onSave }) => {
                             </span>
                           )
                         }
-                        optionLabelProp="label"
                       >
                         <Option
                           value="none"
