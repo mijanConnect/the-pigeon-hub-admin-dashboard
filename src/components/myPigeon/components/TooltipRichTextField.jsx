@@ -4,6 +4,7 @@ import { Bold, ChevronDown, Italic, List } from "lucide-react";
 import BulletList from "@tiptap/extension-bullet-list";
 import ListItem from "@tiptap/extension-list-item";
 import Placeholder from "@tiptap/extension-placeholder";
+
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
@@ -160,7 +161,9 @@ export default function TooltipRichTextField({
       key: "disc",
       label: (
         <div className="flex items-center">
-          <span className="mr-2 text-teal-600">●</span>
+          <span className="mr-2" style={{ color: "#000" }}>
+            ●
+          </span>
           Circle bullets
         </div>
       ),
@@ -170,7 +173,9 @@ export default function TooltipRichTextField({
       key: "arrow",
       label: (
         <div className="flex items-center">
-          <span className="mr-2 text-teal-600">→</span>
+          <span className="mr-2" style={{ color: "#000" }}>
+            →
+          </span>
           Arrow bullets
         </div>
       ),
@@ -180,9 +185,15 @@ export default function TooltipRichTextField({
       key: "stripe",
       label: (
         <div className="flex items-center">
-          <span className="mr-2 inline-block w-3 border-l-2 border-teal-500 pl-1">
-            &nbsp;
-          </span>
+          <span
+            className="mr-2"
+            style={{
+              display: "inline-block",
+              width: "10px",
+              height: "14px",
+              borderLeft: "2px solid #000",
+            }}
+          />
           Stripe list
         </div>
       ),
@@ -224,8 +235,8 @@ export default function TooltipRichTextField({
           position: absolute;
           left: 0;
           top: 0;
-          color: #0d9488;
-          font-weight: 700;
+          color: #000;
+          font-weight: 600;
         }
 
         .tiptap-editor ul.rich-ul-stripe {
@@ -235,9 +246,10 @@ export default function TooltipRichTextField({
         }
 
         .tiptap-editor ul.rich-ul-stripe > li {
-          padding: 8px 12px;
+          border-left: 2px solid #000;
+          padding-left: 8px;
           margin: 4px 0;
-          border-radius: 6px;
+          border-radius: 0;
         }
 
         /* Stripe list: no background requested */
