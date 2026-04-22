@@ -1,6 +1,7 @@
 import { getCode } from "country-list";
 import jsPDF from "jspdf";
 import { useCallback } from "react";
+import { renderRichTextToPdf } from "../../common/share/richTextPdf";
 
 // Helper function to load image as base64
 const loadImageAsBase64 = async (url, isCircular = false) => {
@@ -400,30 +401,27 @@ export const exportPedigreeToPDF = async (
       // === DESCRIPTION ===
       if (hasDescription && availableSpace > 10) {
         pdf.setFontSize(7);
-        pdf.setFont("helvetica", "italic");
+        pdf.setFont("helvetica", "normal");
         pdf.setTextColor(0, 0, 0);
 
         // If no achievements, use more space for description
         const descriptionSpace = hasAchievements
           ? availableSpace * 0.5
           : availableSpace - 5;
-        const maxDescLines = Math.floor(descriptionSpace / 3);
 
-        if (maxDescLines > 0) {
-          // Replace multiple consecutive spaces with single space, but keep newlines
-          const normalizedDescription = String(data.description)
-            .replace(/[ \t]+/g, " ") // Replace multiple spaces/tabs with single space
-            .trim();
-
-          currentY = addWrappedText(
-            normalizedDescription,
-            leftMargin,
-            currentY,
-            contentWidth,
-            3,
-            maxDescLines
-          );
-          currentY += 0;
+        if (descriptionSpace > 0) {
+          currentY = renderRichTextToPdf({
+            pdf,
+            html: data.description,
+            x: leftMargin,
+            y: currentY,
+            maxWidth: contentWidth,
+            lineHeight: 3,
+            // tighter spacing to fit inside cards
+            blockSpacing: 1.2,
+            itemSpacing: 0.7,
+            listIndent: 2.2,
+          });
         }
       }
 
@@ -436,22 +434,17 @@ export const exportPedigreeToPDF = async (
           pdf.setFont("helvetica", "normal");
           pdf.setTextColor(0, 0, 0);
 
-          const maxAchvLines = Math.floor(remainingSpace / 2.5);
-          if (maxAchvLines > 0) {
-            // Replace multiple consecutive spaces with single space, but keep newlines
-            const normalizedAchievements = String(data.achievements)
-              .replace(/[ \t]+/g, " ") // Replace multiple spaces/tabs with single space
-              .trim();
-
-            currentY = addWrappedText(
-              normalizedAchievements,
-              leftMargin,
-              currentY,
-              contentWidth,
-              2.5,
-              maxAchvLines
-            );
-          }
+          currentY = renderRichTextToPdf({
+            pdf,
+            html: data.achievements,
+            x: leftMargin,
+            y: currentY,
+            maxWidth: contentWidth,
+            lineHeight: 2.6,
+            blockSpacing: 1.0,
+            itemSpacing: 0.6,
+            listIndent: 2.2,
+          });
         }
       }
     };

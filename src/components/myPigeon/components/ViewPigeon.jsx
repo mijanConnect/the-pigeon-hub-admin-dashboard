@@ -17,6 +17,7 @@ import {
 } from "../../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../../common/imageUrl";
 import PigeonPdfExport from "./ExportPdf";
+import RichTextDisplay from "../../common/share/RichTextDisplay";
 
 const safeValue = (value) => {
   if (value === null || value === undefined || value === "" || value === "-")
@@ -715,26 +716,18 @@ const ViewPigeon = () => {
                           )}
                         </p>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="">
                         <p className="font-normal text-[14px]">Story: </p>
-                        <p className="font-semibold text-[14px]">
-                          {safeValue(pigeonData.fatherRingId?.shortInfo)}
+                        <p className=" text-[14px]">
+                         <RichTextDisplay html={pigeonData?.fatherRingId?.shortInfo} />
                         </p>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="">
                         <p className="font-normal text-[14px]">Results: </p>
-                        <p className="font-semibold text-[14px]">
+                        <p className=" text-[14px]">
                           {/* {safeValue(pigeonData.fatherRingId?.results)} */}
                           <span className="font-normal text-[14px]">
-                            {Array.isArray(
-                              pigeonData.fatherRingId?.addresults,
-                            ) && pigeonData.fatherRingId?.addresults.length > 0
-                              ? pigeonData.fatherRingId?.addresults.map(
-                                  (result, index) => (
-                                    <div key={index}>{result}</div>
-                                  ),
-                                )
-                              : "N/A"}
+                           <RichTextDisplay html={pigeonData?.fatherRingId?.addresults} />
                           </span>
                         </p>
                       </div>
@@ -788,26 +781,18 @@ const ViewPigeon = () => {
                           )}
                         </p>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="">
                         <p className="font-normal text-[14px]">Story: </p>
-                        <p className="font-semibold text-[14px]">
-                          {safeValue(pigeonData.motherRingId?.shortInfo)}
+                        <p className=" text-[14px]">
+                         <RichTextDisplay html={pigeonData.motherRingId?.shortInfo} />
                         </p>
                       </div>
-                      <div className="flex gap-1">
+                      <div className=" ">
                         <p className="font-normal text-[14px]">Results: </p>
-                        <p className="font-semibold text-[14px]">
+                        <p className=" text-[14px]">
                           {/* {safeValue(pigeonData.fatherRingId?.results)} */}
                           <span className="font-normal text-[14px]">
-                            {Array.isArray(
-                              pigeonData.motherRingId?.addresults,
-                            ) && pigeonData.motherRingId?.addresults.length > 0
-                              ? pigeonData.motherRingId?.addresults.map(
-                                  (result, index) => (
-                                    <div key={index}>{result}</div>
-                                  ),
-                                )
-                              : "N/A"}
+                           <RichTextDisplay html={pigeonData.motherRingId?.addresults} />
                           </span>
                         </p>
                       </div>
@@ -913,15 +898,10 @@ const ViewPigeon = () => {
                     </p>
                   </div>
                   <div className="flex gap-1 mt-6 border p-4 rounded-lg">
-                    <p className="font-semibold text-[14px]">
+                    <p className=" text-[14px]">
                       Your Story:{" "}
                       {isHTML(pigeonData.shortInfo) ? (
-                        <div
-                          className="font-normal text-[14px] html-content"
-                          dangerouslySetInnerHTML={{
-                            __html: pigeonData.shortInfo,
-                          }}
-                        />
+                      <RichTextDisplay html={pigeonData.shortInfo} />
                       ) : (
                         <span className="font-normal text-[14px] whitespace-pre-line break-words">
                           {pigeonData.shortInfo || "N/A"}
@@ -941,18 +921,12 @@ const ViewPigeon = () => {
                 </p>
               </div> */}
               <div className="flex gap-1 mt-6 border p-4 rounded-lg">
-                <p className="font-semibold text-[14px]">
+                <p className=" text-[14px]">
                   Race Results:{" "}
-                  {Array.isArray(pigeonData.addresults) &&
-                  pigeonData.addresults.length > 0 ? (
-                    pigeonData.addresults.some((result) => isHTML(result)) ? (
-                      <div className="font-normal text-[14px] html-content">
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: pigeonData.addresults.join("<br/>"),
-                          }}
-                        />
-                      </div>
+                      {Array.isArray(pigeonData.addresults) &&
+                      pigeonData.addresults.length > 0 ? (
+                        pigeonData.addresults.some((result) => isHTML(result)) ? (
+                         <RichTextDisplay html={pigeonData.addresults.join("<br/>")} />
                     ) : (
                       <span className="font-normal text-[14px]">
                         {pigeonData.addresults.map((result, index) => (

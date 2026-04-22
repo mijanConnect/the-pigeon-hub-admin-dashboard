@@ -19,12 +19,7 @@ import {
   message,
 } from "antd";
 import { getNames } from "country-list";
-import { FileText, Circle, ArrowRight, Layers } from "lucide-react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import BulletList from "@tiptap/extension-bullet-list";
-import ListItem from "@tiptap/extension-list-item";
-import Placeholder from "@tiptap/extension-placeholder";
+import { FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -36,6 +31,7 @@ import {
   useUpdatePigeonMutation,
 } from "../../../redux/apiSlices/mypigeonSlice";
 import { getImageUrl } from "../../common/imageUrl";
+import TooltipRichTextField from "./TooltipRichTextField";
 
 const { Option } = Select;
 
@@ -51,16 +47,6 @@ const colorPatternMap = {
 
 // Format color keys for display (replace underscores with spaces)
 const formatColor = (c) => (typeof c === "string" ? c.replace(/_/g, " ") : c);
-
-// Tiptap editor extensions
-const tiptapExtensions = [
-  StarterKit.configure({
-    bulletList: false,
-    listItem: false,
-  }),
-  BulletList,
-  ListItem,
-];
 
 const AddNewPigeon = ({ onSave }) => {
   const [form] = Form.useForm();
@@ -95,69 +81,12 @@ const AddNewPigeon = ({ onSave }) => {
   const [motherDisplay, setMotherDisplay] = useState("");
   const [fatherSelected, setFatherSelected] = useState(null);
   const [motherSelected, setMotherSelected] = useState(null);
-  const [listStyle1, setListStyle1] = useState("none");
-  const [listStyle2, setListStyle2] = useState("none");
 
   const { data: allNames = [] } = useGetAllNameQuery();
 
   // Refs for duplicate check debounce and tracking
   const duplicateCheckTimeout = useRef(null);
   const abortControllerRef = useRef(null);
-  const editorChangeTimeout1 = useRef(null);
-  const editorChangeTimeout2 = useRef(null);
-  const editor1Ref = useRef(null);
-  const editor2Ref = useRef(null);
-
-  // Tiptap editors for Story Line and Pigeon Results
-  const editor1 = useEditor({
-    extensions: [
-      ...tiptapExtensions,
-      Placeholder.configure({
-        placeholder:
-          "For example:\nSon of Burj Khalifa\nWinner of the Dubai OLR\n5 times 1st price winner\nBought for USD 50,000",
-      }),
-    ],
-    content: value2,
-    onUpdate: ({ editor }) => {
-      if (editorChangeTimeout1.current)
-        clearTimeout(editorChangeTimeout1.current);
-      editorChangeTimeout1.current = setTimeout(() => {
-        const html = editor.getHTML();
-        setValue2(html);
-        form.setFieldsValue({ shortInfo: html });
-      }, 200);
-    },
-    onBlur: ({ editor }) => {
-      const html = editor.getHTML();
-      setValue2(html);
-      form.setFieldsValue({ shortInfo: html });
-    },
-  });
-
-  const editor2 = useEditor({
-    extensions: [
-      ...tiptapExtensions,
-      Placeholder.configure({
-        placeholder:
-          "For example:\n1st/828p Quiévrain 108km\n4th/3265p Melun 287km\n6th/3418p HotSpot 6 Dubai OLR",
-      }),
-    ],
-    content: value,
-    onUpdate: ({ editor }) => {
-      if (editorChangeTimeout2.current)
-        clearTimeout(editorChangeTimeout2.current);
-      editorChangeTimeout2.current = setTimeout(() => {
-        const html = editor.getHTML();
-        setValue(html);
-        form.setFieldsValue({ addresults: html });
-      }, 200);
-    },
-    onBlur: ({ editor }) => {
-      const html = editor.getHTML();
-      setValue(html);
-      form.setFieldsValue({ addresults: html });
-    },
-  });
 
   // console.log(allNames);
 
@@ -172,24 +101,6 @@ const AddNewPigeon = ({ onSave }) => {
     );
 
     return isDuplicate;
-  };
-
-  const handleChangePlace = (e) => {
-    const v = e.target.value;
-    setValue(v);
-    try {
-      form.setFieldsValue({ addresults: v });
-    } catch (e) {}
-  };
-
-  const handleChangePlace2 = (e) => {
-    const v = e.target.value;
-    setValue2(v);
-    try {
-      form.setFieldsValue({ shortInfo: v });
-    } catch (e) {
-      /* ignore if form not ready */
-    }
   };
 
   // console.log("id", id);
@@ -372,17 +283,9 @@ const AddNewPigeon = ({ onSave }) => {
           const joined = pigeonData.addresults.join("\n");
           form.setFieldsValue({ addresults: joined });
           setValue(joined);
-          // Update editor2 content
-          if (editor2) {
-            editor2.commands.setContent(joined);
-          }
         } else if (typeof pigeonData.addresults === "string") {
           form.setFieldsValue({ addresults: pigeonData.addresults });
           setValue(pigeonData.addresults);
-          // Update editor2 content
-          if (editor2) {
-            editor2.commands.setContent(pigeonData.addresults);
-          }
         }
       } catch (e) {
         // ignore
@@ -390,10 +293,6 @@ const AddNewPigeon = ({ onSave }) => {
 
       const shortInfoContent = pigeonData?.shortInfo || "";
       setValue2(shortInfoContent);
-      // Update editor1 content
-      if (editor1) {
-        editor1.commands.setContent(shortInfoContent);
-      }
 
       // show father ring in the input (keep typed value if user entered)
       if (pigeonData.fatherRingId) {
@@ -466,7 +365,7 @@ const AddNewPigeon = ({ onSave }) => {
       setValue("");
       setValue2("");
     }
-  }, [pigeonData, id, form, editor1, editor2]);
+  }, [pigeonData, id, form]);
 
   useEffect(() => {
     const el = photosRowRef.current;
@@ -628,24 +527,11 @@ const AddNewPigeon = ({ onSave }) => {
       if (duplicateCheckTimeout.current) {
         clearTimeout(duplicateCheckTimeout.current);
       }
-      if (editorChangeTimeout1.current) {
-        clearTimeout(editorChangeTimeout1.current);
-      }
-      if (editorChangeTimeout2.current) {
-        clearTimeout(editorChangeTimeout2.current);
-      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      // Clean up Tiptap editors
-      if (editor1) {
-        editor1.destroy();
-      }
-      if (editor2) {
-        editor2.destroy();
-      }
     };
-  }, [editor1, editor2]);
+  }, []);
 
   const handleIconicChange = (value) => {
     const enabled = value === "yes";
@@ -1098,166 +984,6 @@ const AddNewPigeon = ({ onSave }) => {
 
   return (
     <div>
-      <style>{`
-        /* Tiptap Editor Styling */
-        .tiptap-editor-wrapper {
-          border: 1px solid #071952 !important;
-          border-radius: 6px !important;
-          background: #fafafa !important;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
-          overflow: hidden !important;
-          display: block !important;
-        }
-
-        .tiptap-toolbar {
-          display: flex !important;
-          gap: 8px !important;
-          align-items: center !important;
-          flex-wrap: wrap !important;
-          padding: 8px !important;
-          background: #f5f5f5 !important;
-          border-bottom: 1px solid #e0e0e0 !important;
-        }
-
-        .tiptap-toolbar button {
-          padding: 6px 8px !important;
-          border: 1px solid #ccc !important;
-          border-radius: 4px !important;
-          background: #fff !important;
-          color: #333 !important;
-          cursor: pointer !important;
-          transition: all 0.2s ease !important;
-          font-size: 14px !important;
-        }
-
-        .tiptap-toolbar button:hover {
-          background: #f0f0f0 !important;
-        }
-
-        .tiptap-toolbar button.active,
-        .tiptap-toolbar button[class*="bg-primary"] {
-          background: #0890e8 !important;
-          color: white !important;
-          border-color: #0890e8 !important;
-        }
-
-        /* Tiptap Editor Content */
-        .ProseMirror {
-          outline: none !important;
-          word-wrap: break-word !important;
-          white-space: pre-wrap !important;
-        }
-
-        .ProseMirror ul,
-        .ProseMirror ol {
-          margin-left: 20px !important;
-          padding-left: 0 !important;
-        }
-
-        .ProseMirror ul li {
-          list-style-type: disc !important;
-          margin: 4px 0 !important;
-        }
-
-        .ProseMirror ol li {
-          list-style-type: decimal !important;
-          margin: 4px 0 !important;
-        }
-
-        .ProseMirror p {
-          margin: 0 !important;
-        }
-
-        .ProseMirror strong {
-          font-weight: bold !important;
-        }
-
-        .ProseMirror em {
-          font-style: italic !important;
-        }
-
-        /* List Styles */
-        /* Default bullet list */
-        .ProseMirror ul {
-          list-style-type: disc !important;
-          margin-left: 20px !important;
-          padding-left: 0 !important;
-        }
-
-        /* Circle Bullets */
-        .ProseMirror ul.list-circle {
-          list-style-type: circle !important;
-          margin-left: 20px !important;
-          padding-left: 0 !important;
-        }
-
-        .ProseMirror ul.list-circle li {
-          list-style-type: circle !important;
-          margin: 4px 0 !important;
-        }
-
-        /* Arrow Bullets */
-        .ProseMirror ul.list-arrow {
-          list-style-type: none !important;
-          margin-left: 0 !important;
-          padding-left: 0 !important;
-        }
-
-        .ProseMirror ul.list-arrow li {
-          list-style-type: none !important;
-          margin-left: 0 !important;
-          padding-left: 24px !important;
-          margin-bottom: 4px !important;
-          position: relative;
-        }
-
-        .ProseMirror ul.list-arrow li::before {
-          content: "→ " !important;
-          margin-right: 8px !important;
-          color: #0890e8 !important;
-          font-weight: bold !important;
-          position: absolute !important;
-          left: 0 !important;
-        }
-
-        /* Stripe List */
-        .ProseMirror ul.list-stripe {
-          list-style-type: none !important;
-          margin-left: 0 !important;
-          padding-left: 0 !important;
-        }
-
-        .ProseMirror ul.list-stripe li {
-          list-style-type: none !important;
-          padding: 8px 12px !important;
-          margin: 4px 0 !important;
-          border-radius: 4px !important;
-        }
-
-        .ProseMirror ul.list-stripe li:nth-child(odd) {
-          background-color: #f0f7ff !important;
-        }
-
-        .ProseMirror ul.list-stripe li:nth-child(even) {
-          background-color: #e8f4ff !important;
-        }
-
-        /* Default bullet list - for lists without specific class */
-        .ProseMirror ul li {
-          margin: 4px 0 !important;
-          list-style-type: disc !important;
-        }
-
-        /* Placeholder styling */
-        .ProseMirror p.is-editor-empty:first-child::before {
-          content: attr(data-placeholder);
-          float: left;
-          color: #adb5bd;
-          pointer-events: none;
-          height: 0;
-          white-space: pre-line;
-        }
-      `}</style>
       <Form
         form={form}
         layout="vertical"
@@ -1348,391 +1074,19 @@ const AddNewPigeon = ({ onSave }) => {
                   name="shortInfo"
                   className="custom-form-item-ant"
                 >
-                  <div
-                    className="tiptap-editor-wrapper border rounded p-2"
-                    style={{ border: "1px solid #071952", borderRadius: "6px" }}
-                    ref={editor1Ref}
-                  >
-                    <div
-                      className="tiptap-toolbar mb-2 flex gap-1 flex-wrap p-2 bg-gray-100 rounded"
-                      style={{ borderBottom: "1px solid #071952" }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() =>
-                          editor1?.chain().focus().toggleBold().run()
-                        }
-                        className={
-                          editor1?.isActive("bold")
-                            ? "bg-primary text-white"
-                            : "bg-white text-gray-700"
-                        }
-                        style={{
-                          width: "32px",
-                          height: "32px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          borderRadius: "4px",
-                          border: "1px solid #ccc",
-                          cursor: "pointer",
-                          padding: "0",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        B
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          editor1?.chain().focus().toggleItalic().run()
-                        }
-                        className={
-                          editor1?.isActive("italic")
-                            ? "bg-primary text-white"
-                            : "bg-white text-gray-700"
-                        }
-                        style={{
-                          width: "32px",
-                          height: "32px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          borderRadius: "4px",
-                          border: "1px solid #ccc",
-                          cursor: "pointer",
-                          padding: "0",
-                          fontStyle: "italic",
-                        }}
-                      >
-                        I
-                      </button>
-                      <div
-                        style={{
-                          width: "1px",
-                          height: "24px",
-                          backgroundColor: "#ccc",
-                          margin: "0 4px",
-                        }}
-                      />
-                      <Select
-                        value={listStyle1}
-                        onChange={(val) => {
-                          setListStyle1(val);
-
-                          if (val === "none") {
-                            // Turn off bullet list
-                            if (editor1?.isActive("bulletList")) {
-                              editor1?.chain().focus().toggleBulletList().run();
-                            }
-                          } else {
-                            // Turn on bullet list if not already active
-                            if (!editor1?.isActive("bulletList")) {
-                              editor1?.chain().focus().toggleBulletList().run();
-                            }
-
-                            // Apply the list style with forced DOM updates
-                            const applyStyle = () => {
-                              if (editor1Ref.current) {
-                                const proseMirror =
-                                  editor1Ref.current.querySelector(
-                                    ".ProseMirror",
-                                  );
-                                if (proseMirror) {
-                                  const listElements =
-                                    proseMirror.querySelectorAll("ul");
-                                  listElements.forEach((listElement) => {
-                                    // Remove all list style classes
-                                    listElement.classList.remove(
-                                      "list-circle",
-                                      "list-arrow",
-                                      "list-stripe",
-                                      "list-none",
-                                    );
-                                    // Add the new class
-                                    listElement.classList.add(`list-${val}`);
-
-                                    // Apply inline styles as backup
-                                    if (val === "circle") {
-                                      listElement.style.listStyleType =
-                                        "circle";
-                                      listElement.style.marginLeft = "20px";
-                                      listElement.style.paddingLeft = "0";
-                                    } else if (val === "arrow") {
-                                      listElement.style.listStyleType = "none";
-                                      listElement.style.marginLeft = "0";
-                                      listElement.style.paddingLeft = "0";
-                                      // Apply to list items
-                                      const listItems =
-                                        listElement.querySelectorAll("li");
-                                      listItems.forEach((li) => {
-                                        li.style.listStyleType = "none";
-                                        li.style.marginLeft = "0";
-                                        li.style.paddingLeft = "24px";
-                                        li.style.marginBottom = "4px";
-                                        li.style.position = "relative";
-                                      });
-                                    } else if (val === "stripe") {
-                                      listElement.style.listStyleType = "none";
-                                      listElement.style.marginLeft = "0";
-                                      listElement.style.paddingLeft = "0";
-                                      // Apply to list items
-                                      const listItems =
-                                        listElement.querySelectorAll("li");
-                                      listItems.forEach((li, index) => {
-                                        li.style.listStyleType = "none";
-                                        li.style.padding = "8px 12px";
-                                        li.style.margin = "4px 0";
-                                        li.style.borderRadius = "4px";
-                                        li.style.backgroundColor =
-                                          index % 2 === 0
-                                            ? "#f0f7ff"
-                                            : "#e8f4ff";
-                                      });
-                                    }
-
-                                    // Force reflow to ensure styles are applied
-                                    void listElement.offsetHeight;
-                                  });
-                                }
-                              }
-                            };
-
-                            setTimeout(applyStyle, 50);
-                            setTimeout(applyStyle, 150);
-                            setTimeout(applyStyle, 300);
-                          }
-                        }}
-                        style={{ width: "150px", height: "32px" }}
-                        className="text-sm"
-                        optionLabelProp="label"
-                        label={
-                          listStyle1 === "circle" ? (
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <Circle size={16} /> Bullets
-                            </span>
-                          ) : listStyle1 === "arrow" ? (
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <ArrowRight size={16} /> Bullets
-                            </span>
-                          ) : listStyle1 === "stripe" ? (
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <Layers size={16} /> Bullets
-                            </span>
-                          ) : (
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              • Bullets
-                            </span>
-                          )
-                        }
-                      >
-                        <Option
-                          value="none"
-                          label={
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              • Bullets
-                            </span>
-                          }
-                        >
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                            }}
-                          >
-                            • Bullets
-                          </span>
-                        </Option>
-                        <Option
-                          value="circle"
-                          label={
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <Circle size={16} style={{ color: "#0890e8" }} />{" "}
-                              Circle bullets
-                            </span>
-                          }
-                        >
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                            }}
-                          >
-                            <Circle size={16} style={{ color: "#0890e8" }} />{" "}
-                            Circle bullets
-                          </span>
-                        </Option>
-                        <Option
-                          value="arrow"
-                          label={
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <ArrowRight
-                                size={16}
-                                style={{ color: "#0890e8" }}
-                              />{" "}
-                              Arrow bullets
-                            </span>
-                          }
-                        >
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                            }}
-                          >
-                            <ArrowRight
-                              size={16}
-                              style={{ color: "#0890e8" }}
-                            />{" "}
-                            Arrow bullets
-                          </span>
-                        </Option>
-                        <Option
-                          value="stripe"
-                          label={
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  height: "16px",
-                                  gap: "2px",
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    width: "2px",
-                                    height: "3px",
-                                    backgroundColor: "#0890e8",
-                                  }}
-                                />
-                                <div
-                                  style={{
-                                    width: "2px",
-                                    height: "3px",
-                                    backgroundColor: "#0890e8",
-                                  }}
-                                />
-                                <div
-                                  style={{
-                                    width: "2px",
-                                    height: "3px",
-                                    backgroundColor: "#0890e8",
-                                  }}
-                                />
-                              </span>
-                              Stripe list
-                            </span>
-                          }
-                        >
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                            }}
-                          >
-                            <span
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                height: "16px",
-                                gap: "2px",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  width: "2px",
-                                  height: "3px",
-                                  backgroundColor: "#0890e8",
-                                }}
-                              />
-                              <div
-                                style={{
-                                  width: "2px",
-                                  height: "3px",
-                                  backgroundColor: "#0890e8",
-                                }}
-                              />
-                              <div
-                                style={{
-                                  width: "2px",
-                                  height: "3px",
-                                  backgroundColor: "#0890e8",
-                                }}
-                              />
-                            </span>
-                            Stripe list
-                          </span>
-                        </Option>
-                      </Select>
-                    </div>
-                    <EditorContent
-                      editor={editor1}
-                      style={{
-                        minHeight: "200px",
-                        padding: "12px",
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                        backgroundColor: "#fff",
-                      }}
-                    />
-                  </div>
+                  <TooltipRichTextField
+                    value={value2}
+                    placeholder={`For example:
+Son of Burj Khalifa
+Winner of the Dubai OLR
+5 times 1st price winner
+Bought for USD 50,000`}
+                    minHeightClass="min-h-[150px]"
+                    onChange={(html) => {
+                      setValue2(html);
+                      form.setFieldsValue({ shortInfo: html });
+                    }}
+                  />
                 </Form.Item>
 
                 <Form.Item
@@ -1978,391 +1332,19 @@ const AddNewPigeon = ({ onSave }) => {
                   name="addresults"
                   className="custom-form-item-ant"
                 >
-                  <div
-                    className="tiptap-editor-wrapper border rounded p-2"
-                    style={{ border: "1px solid #071952", borderRadius: "6px" }}
-                    ref={editor2Ref}
-                  >
-                    <div
-                      className="tiptap-toolbar mb-2 flex gap-1 flex-wrap p-2 bg-gray-100 rounded"
-                      style={{ borderBottom: "1px solid #071952" }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() =>
-                          editor2?.chain().focus().toggleBold().run()
-                        }
-                        className={
-                          editor2?.isActive("bold")
-                            ? "bg-primary text-white"
-                            : "bg-white text-gray-700"
-                        }
-                        style={{
-                          width: "32px",
-                          height: "32px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          borderRadius: "4px",
-                          border: "1px solid #ccc",
-                          cursor: "pointer",
-                          padding: "0",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        B
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          editor2?.chain().focus().toggleItalic().run()
-                        }
-                        className={
-                          editor2?.isActive("italic")
-                            ? "bg-primary text-white"
-                            : "bg-white text-gray-700"
-                        }
-                        style={{
-                          width: "32px",
-                          height: "32px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          borderRadius: "4px",
-                          border: "1px solid #ccc",
-                          cursor: "pointer",
-                          padding: "0",
-                          fontStyle: "italic",
-                        }}
-                      >
-                        I
-                      </button>
-                      <div
-                        style={{
-                          width: "1px",
-                          height: "24px",
-                          backgroundColor: "#ccc",
-                          margin: "0 4px",
-                        }}
-                      />
-                      <Select
-                        value={listStyle2}
-                        onChange={(val) => {
-                          setListStyle2(val);
-
-                          if (val === "none") {
-                            // Turn off bullet list
-                            if (editor2?.isActive("bulletList")) {
-                              editor2?.chain().focus().toggleBulletList().run();
-                            }
-                          } else {
-                            // Turn on bullet list if not already active
-                            if (!editor2?.isActive("bulletList")) {
-                              editor2?.chain().focus().toggleBulletList().run();
-                            }
-
-                            // Apply the list style with forced DOM updates
-                            const applyStyle = () => {
-                              if (editor2Ref.current) {
-                                const proseMirror =
-                                  editor2Ref.current.querySelector(
-                                    ".ProseMirror",
-                                  );
-                                if (proseMirror) {
-                                  const listElements =
-                                    proseMirror.querySelectorAll("ul");
-                                  listElements.forEach((listElement) => {
-                                    // Remove all list style classes
-                                    listElement.classList.remove(
-                                      "list-circle",
-                                      "list-arrow",
-                                      "list-stripe",
-                                      "list-none",
-                                    );
-                                    // Add the new class
-                                    listElement.classList.add(`list-${val}`);
-
-                                    // Apply inline styles as backup
-                                    if (val === "circle") {
-                                      listElement.style.listStyleType =
-                                        "circle";
-                                      listElement.style.marginLeft = "20px";
-                                      listElement.style.paddingLeft = "0";
-                                    } else if (val === "arrow") {
-                                      listElement.style.listStyleType = "none";
-                                      listElement.style.marginLeft = "0";
-                                      listElement.style.paddingLeft = "0";
-                                      // Apply to list items
-                                      const listItems =
-                                        listElement.querySelectorAll("li");
-                                      listItems.forEach((li) => {
-                                        li.style.listStyleType = "none";
-                                        li.style.marginLeft = "0";
-                                        li.style.paddingLeft = "24px";
-                                        li.style.marginBottom = "4px";
-                                        li.style.position = "relative";
-                                      });
-                                    } else if (val === "stripe") {
-                                      listElement.style.listStyleType = "none";
-                                      listElement.style.marginLeft = "0";
-                                      listElement.style.paddingLeft = "0";
-                                      // Apply to list items
-                                      const listItems =
-                                        listElement.querySelectorAll("li");
-                                      listItems.forEach((li, index) => {
-                                        li.style.listStyleType = "none";
-                                        li.style.padding = "8px 12px";
-                                        li.style.margin = "4px 0";
-                                        li.style.borderRadius = "4px";
-                                        li.style.backgroundColor =
-                                          index % 2 === 0
-                                            ? "#f0f7ff"
-                                            : "#e8f4ff";
-                                      });
-                                    }
-
-                                    // Force reflow to ensure styles are applied
-                                    void listElement.offsetHeight;
-                                  });
-                                }
-                              }
-                            };
-
-                            setTimeout(applyStyle, 50);
-                            setTimeout(applyStyle, 150);
-                            setTimeout(applyStyle, 300);
-                          }
-                        }}
-                        style={{ width: "150px", height: "32px" }}
-                        className="text-sm"
-                        optionLabelProp="label"
-                        label={
-                          listStyle2 === "circle" ? (
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <Circle size={16} /> Bullets
-                            </span>
-                          ) : listStyle2 === "arrow" ? (
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <ArrowRight size={16} /> Bullets
-                            </span>
-                          ) : listStyle2 === "stripe" ? (
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <Layers size={16} /> Bullets
-                            </span>
-                          ) : (
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              • Bullets
-                            </span>
-                          )
-                        }
-                      >
-                        <Option
-                          value="none"
-                          label={
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              • Bullets
-                            </span>
-                          }
-                        >
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                            }}
-                          >
-                            • Bullets
-                          </span>
-                        </Option>
-                        <Option
-                          value="circle"
-                          label={
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <Circle size={16} style={{ color: "#0890e8" }} />{" "}
-                              Circle bullets
-                            </span>
-                          }
-                        >
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                            }}
-                          >
-                            <Circle size={16} style={{ color: "#0890e8" }} />{" "}
-                            Circle bullets
-                          </span>
-                        </Option>
-                        <Option
-                          value="arrow"
-                          label={
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <ArrowRight
-                                size={16}
-                                style={{ color: "#0890e8" }}
-                              />{" "}
-                              Arrow bullets
-                            </span>
-                          }
-                        >
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                            }}
-                          >
-                            <ArrowRight
-                              size={16}
-                              style={{ color: "#0890e8" }}
-                            />{" "}
-                            Arrow bullets
-                          </span>
-                        </Option>
-                        <Option
-                          value="stripe"
-                          label={
-                            <span
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  height: "16px",
-                                  gap: "2px",
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    width: "2px",
-                                    height: "3px",
-                                    backgroundColor: "#0890e8",
-                                  }}
-                                />
-                                <div
-                                  style={{
-                                    width: "2px",
-                                    height: "3px",
-                                    backgroundColor: "#0890e8",
-                                  }}
-                                />
-                                <div
-                                  style={{
-                                    width: "2px",
-                                    height: "3px",
-                                    backgroundColor: "#0890e8",
-                                  }}
-                                />
-                              </span>
-                              Stripe list
-                            </span>
-                          }
-                        >
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                            }}
-                          >
-                            <span
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                height: "16px",
-                                gap: "2px",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  width: "2px",
-                                  height: "3px",
-                                  backgroundColor: "#0890e8",
-                                }}
-                              />
-                              <div
-                                style={{
-                                  width: "2px",
-                                  height: "3px",
-                                  backgroundColor: "#0890e8",
-                                }}
-                              />
-                              <div
-                                style={{
-                                  width: "2px",
-                                  height: "3px",
-                                  backgroundColor: "#0890e8",
-                                }}
-                              />
-                            </span>
-                            Stripe list
-                          </span>
-                        </Option>
-                      </Select>
-                    </div>
-                    <EditorContent
-                      editor={editor2}
-                      style={{
-                        minHeight: "200px",
-                        padding: "12px",
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                        backgroundColor: "#fff",
-                      }}
-                    />
-                  </div>
+                  <TooltipRichTextField
+                    value={value}
+                    placeholder={`For example:
+Son of Burj Khalifa
+Winner of the Dubai OLR
+5 times 1st price winner
+Bought for USD 50,000`}
+                    minHeightClass="min-h-[150px]"
+                    onChange={(html) => {
+                      setValue(html);
+                      form.setFieldsValue({ addresults: html });
+                    }}
+                  />
                 </Form.Item>
 
                 <Form.Item
