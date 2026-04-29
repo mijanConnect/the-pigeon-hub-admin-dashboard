@@ -29,6 +29,7 @@ import { getImageUrl } from "../common/imageUrl";
 import { exportPedigreeToPDF } from "./components/ExportPDF";
 import { convertBackendToExistingFormat } from "./components/PedigreeData";
 import RichTextDisplay from "../common/share/RichTextDisplay";
+import exportPedigreeToJPG from "./components/jpgExport";
 // import { exportPedigreeToPDF } from "./exportPDF";
 
 const PigeonNode = ({ data }) => {
@@ -478,6 +479,23 @@ export default function PigeonPedigreeChart() {
     [nodes, edges, pedigreeData],
   );
 
+  const exportToJPGWithGenerations = useCallback(
+    async (genCount) => {
+      try {
+        await exportPedigreeToJPG(
+          nodes,
+          edges,
+          pedigreeData,
+          data,
+          genCount
+        );
+      } catch (error) {
+        alert("Error exporting the selected generations. Please try again.");
+      }
+    },
+    [nodes, edges, pedigreeData, data]
+  );
+
   const defaultViewport = { x: 0, y: 0, zoom: 0.7 };
 
   if (isLoading) return <SpinnerCustom />;
@@ -529,6 +547,31 @@ export default function PigeonPedigreeChart() {
               icon={<DownloadOutlined />}
             >
               Export to PDF
+            </Button>
+          </Dropdown>
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: "4gen",
+                  label: "Export to PDF (4Gen)",
+                  onClick: async () => exportToJPGWithGenerations(4),
+                },
+                {
+                  key: "5gen",
+                  label: "Export to PDF (5Gen)",
+                  onClick: async () => exportToJPGWithGenerations(5),
+                },
+              ],
+            }}
+            placement="bottomRight"
+          >
+            <Button
+              data-export-pdf
+              className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 lg:px-4 xl:px-7 font-semibold text-[16px]"
+              icon={<DownloadOutlined />}
+            >
+              Export to JPG
             </Button>
           </Dropdown>
         </div>

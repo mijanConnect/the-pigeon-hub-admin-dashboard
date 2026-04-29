@@ -1,11 +1,215 @@
+// import { baseUrlApi } from "@/redux/baseUrl/baseUrlApi";
 import { getCode } from "country-list";
-import jsPDF from "jspdf";
-import { useCallback } from "react";
 import { renderRichTextToPdf } from "../../common/share/richTextPdf";
+// import { renderRichTextToPdf } from "@/lib/richTextPdf";
 
-// Helper function to load image as base64
+// ---------------------------------------------------------------------------
+// Canvas-based adapter that mimics the subset of jsPDF API used by
+// `pdfExport.js` / `richTextPdf.js`. All coordinates are in millimetres (mm)
+// just like jsPDF so we can reuse the EXACT SAME drawing logic used for PDF.
+// ---------------------------------------------------------------------------
+const createCanvasPdf = ({
+  pageWidthMm = 210, // A4 portrait width
+  pageHeightMm = 297, // A4 portrait height
+  pxPerMm = 10, // ~254 DPI – plenty of resolution for a JPG
+  background = "#FFFFFF",
+} = {}) => {
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(pageWidthMm * pxPerMm);
+  canvas.height = Math.round(pageHeightMm * pxPerMm);
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const state = {
+    fillColor: "#000000",
+    drawColor: "#000000",
+    textColor: "#000000",
+    lineWidthMm: 0.2,
+    fontSizePt: 10,
+    fontStyle: "normal",
+    fontFamily: "helvetica",
+  };
+
+  const toPx = (mm) => mm * pxPerMm;
+  const fontSizePx = () => state.fontSizePt * (25.4 / 72) * pxPerMm;
+
+  const applyFont = () => {
+    let style = "";
+    if (state.fontStyle === "bold") style = "bold ";
+    else if (state.fontStyle === "italic") style = "italic ";
+    else if (state.fontStyle === "bolditalic") style = "italic bold ";
+    const family =
+      state.fontFamily === "helvetica"
+        ? "Helvetica, Arial, sans-serif"
+        : state.fontFamily;
+    ctx.font = `${style}${fontSizePx()}px ${family}`;
+    ctx.textBaseline = "alphabetic";
+    ctx.textAlign = "left";
+  };
+  applyFont();
+
+  const rgbToCss = (r, g, b) => `rgb(${r}, ${g}, ${b})`;
+
+  // Pending image draw operations – images are decoded/drawn during flush()
+  // because decoding an HTMLImageElement is async.
+  const pendingImages = [];
+
+  const pdf = {
+    __canvas: canvas,
+    __ctx: ctx,
+
+    internal: {
+      scaleFactor: 1,
+      pageSize: {
+        getWidth: () => pageWidthMm,
+        getHeight: () => pageHeightMm,
+      },
+    },
+
+    setDrawColor: (r, g, b) => {
+      state.drawColor = rgbToCss(r, g, b);
+    },
+    setFillColor: (r, g, b) => {
+      state.fillColor = rgbToCss(r, g, b);
+    },
+    setTextColor: (r, g, b) => {
+      state.textColor = rgbToCss(r, g, b);
+    },
+    setLineWidth: (w) => {
+      state.lineWidthMm = w;
+    },
+    setFont: (family, style = "normal") => {
+      state.fontFamily = family || "helvetica";
+      state.fontStyle = style || "normal";
+      applyFont();
+    },
+    setFontSize: (size) => {
+      state.fontSizePt = size;
+      applyFont();
+    },
+
+    // We normalise `getStringUnitWidth` so that the formula used by
+    // `richTextPdf.js` – (unitWidth * fontSize / scaleFactor) – collapses
+    // to the real mm-width of the string: since getFontSize / scaleFactor
+    // are both 1 in this adapter, getStringUnitWidth itself returns mm-width.
+    getFontSize: () => 1,
+    getStringUnitWidth: (str) =>
+      ctx.measureText(String(str)).width / pxPerMm,
+    getTextWidth: (str) =>
+      ctx.measureText(String(str)).width / pxPerMm,
+
+    splitTextToSize: (text, maxWidthMm) => {
+      const maxWidthPx = maxWidthMm * pxPerMm;
+      const str = String(text == null ? "" : text);
+      const paragraphs = str.split(/\r?\n/);
+      const result = [];
+      paragraphs.forEach((p) => {
+        if (!p) {
+          result.push("");
+          return;
+        }
+        const words = p.split(/\s+/).filter(Boolean);
+        if (words.length === 0) {
+          result.push("");
+          return;
+        }
+        let line = "";
+        words.forEach((word) => {
+          const trial = line ? line + " " + word : word;
+          if (ctx.measureText(trial).width <= maxWidthPx || !line) {
+            line = trial;
+          } else {
+            result.push(line);
+            line = word;
+          }
+        });
+        if (line) result.push(line);
+      });
+      return result;
+    },
+
+    text: (str, xMm, yMm) => {
+      ctx.fillStyle = state.textColor;
+      ctx.fillText(String(str), toPx(xMm), toPx(yMm));
+    },
+
+    rect: (xMm, yMm, wMm, hMm, style) => {
+      const x = toPx(xMm);
+      const y = toPx(yMm);
+      const w = toPx(wMm);
+      const h = toPx(hMm);
+      if (style === "F" || style === "FD" || style === "DF") {
+        ctx.fillStyle = state.fillColor;
+        ctx.fillRect(x, y, w, h);
+      }
+      if (style === "S" || style === "FD" || style === "DF" || !style) {
+        if (style !== "F") {
+          ctx.strokeStyle = state.drawColor;
+          ctx.lineWidth = toPx(state.lineWidthMm);
+          ctx.strokeRect(x, y, w, h);
+        }
+      }
+    },
+
+    line: (x1Mm, y1Mm, x2Mm, y2Mm) => {
+      ctx.strokeStyle = state.drawColor;
+      ctx.lineWidth = Math.max(1, toPx(state.lineWidthMm));
+      ctx.lineCap = "butt";
+      ctx.beginPath();
+      ctx.moveTo(toPx(x1Mm), toPx(y1Mm));
+      ctx.lineTo(toPx(x2Mm), toPx(y2Mm));
+      ctx.stroke();
+    },
+
+    addImage: (imgData, _format, xMm, yMm, wMm, hMm) => {
+      if (!imgData) return;
+      pendingImages.push({
+        dataUrl: imgData,
+        x: toPx(xMm),
+        y: toPx(yMm),
+        w: toPx(wMm),
+        h: toPx(hMm),
+      });
+    },
+
+    // Resolves all queued image operations in insertion order, then triggers
+    // a JPG download.
+    save: async (filename) => {
+      for (const p of pendingImages) {
+        await new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => {
+            try {
+              ctx.drawImage(img, p.x, p.y, p.w, p.h);
+            } catch (err) {
+              console.error("drawImage failed", err);
+            }
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.src = p.dataUrl;
+        });
+      }
+
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = filename || "pigeon-pedigree.jpg";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+  };
+
+  return pdf;
+};
+
+// Helper function to load image as base64 with compression and transparent background
 const loadImageAsBase64 = async (url, isCircular = false) => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
@@ -13,20 +217,18 @@ const loadImageAsBase64 = async (url, isCircular = false) => {
       const size = Math.min(img.width, img.height);
       canvas.width = size;
       canvas.height = size;
-      const ctx = canvas.getContext("2d");
+      const c = canvas.getContext("2d");
 
       if (isCircular) {
-        // Create circular clipping path
-        ctx.beginPath();
-        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.clip();
+        c.beginPath();
+        c.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+        c.closePath();
+        c.clip();
       }
 
-      // Draw image (centered if dimensions differ)
       const offsetX = (size - img.width) / 2;
       const offsetY = (size - img.height) / 2;
-      ctx.drawImage(img, offsetX, offsetY, img.width, img.height);
+      c.drawImage(img, offsetX, offsetY, img.width, img.height);
 
       resolve(canvas.toDataURL("image/png"));
     };
@@ -38,26 +240,30 @@ const loadImageAsBase64 = async (url, isCircular = false) => {
   });
 };
 
-// Main PDF export function
-export const exportPedigreeToPDF = async (
+// ---------------------------------------------------------------------------
+// Main JPG export function. Mirrors `exportPedigreeToPDF` 1-to-1 – same card
+// positions, fonts, line widths, connection routing, etc. – but renders to an
+// HTMLCanvasElement via the adapter above and downloads the canvas as a JPG.
+// ---------------------------------------------------------------------------
+export const exportPedigreeToJPG = async (
   nodes,
   edges,
   pedigreeData,
-  data,
+  profileData,
   generations = null
 ) => {
   try {
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
+    const pdf = createCanvasPdf({
+      pageWidthMm: 210,
+      pageHeightMm: 297,
+      pxPerMm: 10,
     });
 
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 15;
 
-    // Load images
+    // Load images with compression
     let logoImage = null;
     let letterBImage = null;
     let letterPImage = null;
@@ -73,22 +279,41 @@ export const exportPedigreeToPDF = async (
           return path;
         } else {
           const baseUrl = import.meta.env.VITE_ASSET_BASE_URL;
-          return `${baseUrl}/${path?.replace(/^\/+/, "")}`; // Remove leading slashes
+          return `${baseUrl}/${path?.replace(/^\/+/, "")}`;
         }
       };
 
-      // Load logo from pedigreeData if available, otherwise use default
-      const profilePath = data?.profile || "/assests/logo.png";
+      const profilePath = profileData?.profile || "/assests/logo.png";
       const logoUrl = getImageUrl(profilePath);
-      logoImage = await loadImageAsBase64(logoUrl, true); // true for circular
+      logoImage = await loadImageAsBase64(logoUrl, true, 80);
 
-      letterBImage = await loadImageAsBase64("/assets/Letter-B.png");
-      letterPImage = await loadImageAsBase64("/assets/Letter-P.png");
-      goldCupImage = await loadImageAsBase64("/assets/Gold-cup.png");
-      cockImage = await loadImageAsBase64("/assets/cock.png");
-      goldTrophyImage = await loadImageAsBase64("/assets/Gold-tropy.png");
-      henImage = await loadImageAsBase64("/assets/hen.png");
-      unspecifiedImage = await loadImageAsBase64("/assets/unspeficic.png");
+      letterBImage = await loadImageAsBase64(
+        "/assests/Letter-B.png",
+        false,
+        30
+      );
+      letterPImage = await loadImageAsBase64(
+        "/assests/Letter-P.png",
+        false,
+        30
+      );
+      goldCupImage = await loadImageAsBase64(
+        "/assests/Gold-tropy.png",
+        false,
+        30
+      );
+      cockImage = await loadImageAsBase64("/assests/cock.png", false, 30);
+      goldTrophyImage = await loadImageAsBase64(
+        "/assests/Gold-tropy.png",
+        false,
+        30
+      );
+      henImage = await loadImageAsBase64("/assests/hen.jpg", false, 30);
+      unspecifiedImage = await loadImageAsBase64(
+        "/assests/unspefied.png",
+        false,
+        30
+      );
     } catch (error) {
       console.error("Error loading images:", error);
     }
@@ -103,7 +328,6 @@ export const exportPedigreeToPDF = async (
       });
     }
 
-    // Helper: Convert hex to RGB
     const hexToRgb = (hex) => {
       if (!hex || hex === "transparent") return { r: 255, g: 255, b: 255 };
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -116,11 +340,9 @@ export const exportPedigreeToPDF = async (
         : { r: 255, g: 255, b: 255 };
     };
 
-    // Helper: Load country flag (accepts country name or 2-letter code)
     const loadCountryFlag = async (countryNameOrCode) => {
       try {
         if (!countryNameOrCode) return null;
-        // Try to get ISO 3166-1 alpha-2 from country-list first
         let code = null;
         if (typeof countryNameOrCode === "string") {
           const trimmed = countryNameOrCode.trim();
@@ -131,7 +353,6 @@ export const exportPedigreeToPDF = async (
           }
         }
 
-        // Fallback: use first 2 characters if code not found
         if (!code && typeof countryNameOrCode === "string") {
           code = countryNameOrCode.substring(0, 2);
         }
@@ -146,7 +367,6 @@ export const exportPedigreeToPDF = async (
       }
     };
 
-    // Helper: Draw connection line from subject to parents
     const drawConnectionFromSubject = (
       subjectX,
       subjectY,
@@ -158,11 +378,8 @@ export const exportPedigreeToPDF = async (
       pdf.setDrawColor(55, 183, 195);
       pdf.setLineWidth(lineWidth);
 
-      // Horizontal line from subject center
       const startX = subjectX;
       const startY = isTop ? subjectY : subjectY;
-
-      // Create smooth step connection
       const midX = (startX + targetX) / 2;
 
       pdf.line(startX, startY, midX, startY);
@@ -170,7 +387,6 @@ export const exportPedigreeToPDF = async (
       pdf.line(midX, targetY, targetX, targetY);
     };
 
-    // Helper: Draw simple smooth step connection line
     const drawSimpleConnection = (x1, y1, x2, y2, lineWidth = 0.1) => {
       pdf.setDrawColor(55, 183, 195);
       pdf.setLineWidth(lineWidth);
@@ -182,7 +398,7 @@ export const exportPedigreeToPDF = async (
       pdf.line(midX, y2, x2, y2);
     };
 
-    // Helper: Add text with word wrap. Optional yMax (mm) clips to card or region bottom.
+    // Optional yMax (mm) keeps wrapped text inside the card bottom (same idea as ExportPDF.jsx).
     const addWrappedText = (
       text,
       x,
@@ -192,32 +408,31 @@ export const exportPedigreeToPDF = async (
       maxLines = null,
       yMax = null
     ) => {
-      if (!text) return y;
-      const lines = pdf.splitTextToSize(String(text), maxWidth);
-      const linesToShow = maxLines ? lines.slice(0, maxLines) : lines;
+      const normalizedText = String(text).replace(/ {1,}/g, " ").trim();
+      if (!normalizedText) return y;
+      const lines = pdf.splitTextToSize(normalizedText, maxWidth);
+      const linesToShow =
+        maxLines != null ? lines.slice(0, maxLines) : lines;
       const bottomLimit = yMax != null ? yMax : pageHeight - margin;
-      linesToShow.forEach((line) => {
-        if (y < bottomLimit) {
-          pdf.text(line, x, y);
-          y += lineHeight;
-        }
-      });
-      return y;
+      let curY = y;
+      for (const line of linesToShow) {
+        if (curY >= bottomLimit) break;
+        pdf.text(line, x, curY);
+        curY += lineHeight;
+      }
+      return curY;
     };
 
-    // Collect borders to draw at the end so borders render on top of everything
     const bordersToDraw = [];
 
-    // Helper: Draw pigeon card
     const drawPigeonCard = async (node, x, y, width, height) => {
       const data = node.data;
 
-      // Set background color and border color
       const bgColor = data.isEmpty ? "#FFFFFF" : data.color || "#FFFFFF";
       const rgb = hexToRgb(bgColor);
       pdf.setFillColor(rgb.r, rgb.g, rgb.b);
       pdf.rect(x, y, width, height, "F");
-      // Defer drawing borders until the very end so borders appear above lines/other elements
+
       bordersToDraw.push({ x, y, width, height });
 
       const cardBottom = y + height - 1.5;
@@ -233,7 +448,6 @@ export const exportPedigreeToPDF = async (
 
       let headerX = leftMargin;
 
-      // Country flag image (use country name or code, loadCountryFlag will resolve to ISO code)
       if (data.country) {
         try {
           const flagImage = await loadCountryFlag(data.country);
@@ -246,26 +460,22 @@ export const exportPedigreeToPDF = async (
         }
       }
 
-      // Birth year
       if (data.birthYear) {
         const yearText = String(data.birthYear).slice(-2);
         pdf.text(yearText, headerX, currentY);
         headerX += pdf.getTextWidth(yearText) + 1;
       }
 
-      // Ring number (RED)
       if (data.ringNumber) {
         pdf.setTextColor(195, 55, 57);
         pdf.setFont("helvetica");
         pdf.text(String(data.ringNumber), headerX, currentY);
       }
 
-      // Right side icons - Calculate total width first
       const iconWidth = 3;
       const iconSpacing = 0.5;
       let totalRightWidth = 0;
 
-      // Count what we need to display
       const hasGender =
         data.gender &&
         (data.gender === "Cock" ||
@@ -278,32 +488,36 @@ export const exportPedigreeToPDF = async (
       if (hasVerified) totalRightWidth += iconWidth + iconSpacing;
       if (hasIconic) totalRightWidth += iconWidth + iconSpacing;
 
-      // Start from right edge
       let rightX = x + width - 2 - totalRightWidth;
 
-      // Gender symbols (leftmost of the right side)
       pdf.setTextColor(0, 0, 0);
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(8);
       if (data.gender === "Cock") {
-        pdf.addImage(cockImage, "PNG", rightX, currentY - 2.5, 3, 3);
+        pdf.addImage(cockImage, "PNG", rightX, currentY - 2.5, 2.5, 2.5);
         rightX += iconWidth + iconSpacing;
       } else if (data.gender === "Hen") {
         pdf.addImage(henImage, "PNG", rightX, currentY - 2.2, 2.7, 2.4);
         rightX += iconWidth + iconSpacing;
       } else if (data.gender === "Unspecified") {
-        pdf.addImage(unspecifiedImage, "PNG", rightX, currentY - 2.5, 2.5, 2.5);
+        pdf.addImage(
+          unspecifiedImage,
+          "PNG",
+          rightX,
+          currentY - 2.5,
+          2.5,
+          2.5
+        );
         rightX += iconWidth + iconSpacing;
       }
 
-      // Verified P (middle)
       if (data.verified && letterPImage) {
         pdf.addImage(letterPImage, "PNG", rightX, currentY - 2.5, 3, 3);
         rightX += iconWidth + iconSpacing;
       }
 
-      // Iconic trophy (rightmost)
       if (data.iconic && goldCupImage) {
+        rightX += 0.8;
         pdf.addImage(goldCupImage, "PNG", rightX, currentY - 2.5, 3, 3);
       }
 
@@ -334,23 +548,18 @@ export const exportPedigreeToPDF = async (
         pdf.setTextColor(0, 0, 0);
         const ownerText = String(data.owner);
 
-        // Split into lines that fit the content width so the owner name doesn't overflow
         const ownerLines = pdf.splitTextToSize(ownerText, contentWidth);
         const firstLine = ownerLines.length > 0 ? ownerLines[0] : "";
 
-        // Draw first line
         if (currentY < cardBottom) {
           pdf.text(firstLine, leftMargin, currentY);
         }
 
-        // Breeder verified badge: try to render inline after the first line if there's space,
-        // otherwise render on the next line at the left margin.
         if (data.breederVerified && letterBImage) {
           const firstLineWidth = pdf.getTextWidth(firstLine);
-          const badgeWidth = 3; // px/mm set above when adding image
+          const badgeWidth = 3;
           const gap = 1;
           if (firstLineWidth + gap + badgeWidth < contentWidth) {
-            // place inline
             pdf.addImage(
               letterBImage,
               "PNG",
@@ -359,8 +568,7 @@ export const exportPedigreeToPDF = async (
               badgeWidth,
               badgeWidth
             );
-          } else {
-            // place on the next line
+          } else if (currentY + 3 < cardBottom) {
             pdf.addImage(
               letterBImage,
               "PNG",
@@ -372,20 +580,18 @@ export const exportPedigreeToPDF = async (
           }
         }
 
-        // Draw any remaining wrapped lines beneath the first (stay inside card)
         for (let i = 1; i < ownerLines.length; i++) {
           if (currentY + 3 >= cardBottom) break;
-          currentY += 3; // line height similar to addWrappedText
+          currentY += 3;
           pdf.text(ownerLines[i], leftMargin, currentY);
         }
 
-        // Advance currentY to leave a small gap after owner block
         currentY += 3;
       }
 
       // === COLOR NAME ===
       if (data.colorName && currentY < cardBottom - 8) {
-        pdf.setFontSize(6);
+        pdf.setFontSize(7);
         pdf.setFont("helvetica", "normal");
         pdf.setTextColor(0, 0, 0);
         currentY = addWrappedText(
@@ -400,17 +606,32 @@ export const exportPedigreeToPDF = async (
         currentY += 0;
       }
 
-      // Calculate available space for description and achievements
       const availableSpace = Math.max(0, cardBottom - currentY - 3);
+
+      const descriptionText =
+        typeof data?.description === "string"
+          ? data.description
+          : data?.description == null
+          ? ""
+          : String(data.description);
       const hasDescription =
-        data.description && data.description.trim().length > 0;
+        descriptionText && descriptionText.trim().length > 0;
+
+      let achievementsText = "";
+      if (Array.isArray(data?.achievements)) {
+        achievementsText = data.achievements
+          .map((item) => (item == null ? "" : String(item)))
+          .join("\n");
+      } else if (data?.achievements != null) {
+        achievementsText = String(data.achievements);
+      }
       const hasAchievements =
-        data.achievements && data.achievements.trim().length > 0;
+        achievementsText && achievementsText.trim().length > 0;
 
       // === DESCRIPTION ===
       if (hasDescription && availableSpace > 10) {
         pdf.setFontSize(7);
-        pdf.setFont("helvetica", "normal");
+        pdf.setFont("helvetica", "italic");
         pdf.setTextColor(0, 0, 0);
 
         const descriptionSpace = hasAchievements
@@ -419,18 +640,37 @@ export const exportPedigreeToPDF = async (
         const descMaxY = Math.min(currentY + descriptionSpace, cardBottom);
 
         if (descriptionSpace > 0 && descMaxY > currentY + 1) {
-          currentY = renderRichTextToPdf({
-            pdf,
-            html: data.description,
-            x: leftMargin,
-            y: currentY,
-            maxWidth: contentWidth,
-            maxY: descMaxY,
-            lineHeight: 3,
-            blockSpacing: 1.2,
-            itemSpacing: 0.7,
-            listIndent: 2.2,
-          });
+          if (/<[a-z][\s\S]*>/i.test(descriptionText)) {
+            currentY = renderRichTextToPdf({
+              pdf,
+              html: descriptionText,
+              x: leftMargin,
+              y: currentY,
+              maxWidth: contentWidth,
+              maxY: descMaxY,
+              lineHeight: 2,
+              blockSpacing: 1.2,
+              itemSpacing: 0.7,
+              listIndent: 2.2,
+            });
+          } else {
+            const maxDescLines = Math.floor(descriptionSpace / 3);
+            if (maxDescLines > 0) {
+              const normalizedDescription = descriptionText
+                .replace(/[ \t]+/g, " ")
+                .trim();
+
+              currentY = addWrappedText(
+                normalizedDescription,
+                leftMargin,
+                currentY,
+                contentWidth,
+                3,
+                maxDescLines,
+                descMaxY
+              );
+            }
+          }
         }
       }
 
@@ -443,18 +683,37 @@ export const exportPedigreeToPDF = async (
           pdf.setFont("helvetica", "normal");
           pdf.setTextColor(0, 0, 0);
 
-          currentY = renderRichTextToPdf({
-            pdf,
-            html: data.achievements,
-            x: leftMargin,
-            y: currentY,
-            maxWidth: contentWidth,
-            maxY: cardBottom,
-            lineHeight: 2.6,
-            blockSpacing: 1.0,
-            itemSpacing: 0.6,
-            listIndent: 2.2,
-          });
+          if (/<[a-z][\s\S]*>/i.test(achievementsText)) {
+            currentY = renderRichTextToPdf({
+              pdf,
+              html: achievementsText,
+              x: leftMargin,
+              y: currentY,
+              maxWidth: contentWidth,
+              maxY: cardBottom,
+              lineHeight: 2.2,
+              blockSpacing: 1.0,
+              itemSpacing: 0.6,
+              listIndent: 2.2,
+            });
+          } else {
+            const maxAchvLines = Math.floor(remainingSpace / 2.5);
+            if (maxAchvLines > 0) {
+              const normalizedAchievements = achievementsText
+                .replace(/[ \t]+/g, " ")
+                .trim();
+
+              currentY = addWrappedText(
+                normalizedAchievements,
+                leftMargin,
+                currentY,
+                contentWidth,
+                2.5,
+                maxAchvLines,
+                cardBottom
+              );
+            }
+          }
         }
       }
     };
@@ -466,7 +725,6 @@ export const exportPedigreeToPDF = async (
 
     // === CARD DIMENSIONS ===
     const cardSpacing = generations === 4 ? 7 : generations === 5 ? 5 : 4;
-
     const cardWidth = generations === 4 ? 40 : 35;
 
     const gen0 = { w: cardWidth, h: 90 };
@@ -483,7 +741,6 @@ export const exportPedigreeToPDF = async (
 
     const gen1Gap = 97;
 
-    // Starting positions
     const totalGen1Height = gen1.h * 2 + gen1Gap;
     const startY = (pageHeight - totalGen1Height) / 2;
     const startX = margin + 5;
@@ -491,7 +748,6 @@ export const exportPedigreeToPDF = async (
     const gen0Nodes = filteredNodes.filter((n) => n.data.generation === 0);
     const gen0Y = startY + (totalGen1Height - gen0.h) / 2;
 
-    // We'll compute positions first and draw connections first so lines are under cards.
     const gen0Positions = [];
     if (gen0Nodes.length > 0) {
       const node = gen0Nodes[0];
@@ -519,7 +775,6 @@ export const exportPedigreeToPDF = async (
     const gen1X = startX + gen0.w - 15 + cardSpacing;
     const gen1Positions = [];
 
-    // First pass: compute positions and draw connections (lines)
     for (const [idx, node] of gen1Nodes.entries()) {
       const y = startY + idx * (gen1.h + gen1Gap);
       const nodeCenterY = y + gen1.h / 2;
@@ -532,9 +787,7 @@ export const exportPedigreeToPDF = async (
         centerY: nodeCenterY,
       });
 
-      // Connect from subject to parent (draw lines now so they'll be behind cards)
       if (idx === 0) {
-        // Father - connect from top of subject
         const subjectTopY = gen0Y;
         drawConnectionFromSubject(
           gen0CenterX,
@@ -545,7 +798,6 @@ export const exportPedigreeToPDF = async (
           0.3
         );
       } else {
-        // Mother - connect from bottom of subject
         const subjectBottomY = gen0Y + gen0.h;
         drawConnectionFromSubject(
           gen0CenterX,
@@ -558,13 +810,10 @@ export const exportPedigreeToPDF = async (
       }
     }
 
-    // After drawing connections, draw subject and parent cards so cards render on top of lines
-    // Draw subject (gen0) card(s)
     for (const pos of gen0Positions) {
       await drawPigeonCard(pos.node, pos.x, pos.y, pos.w, pos.h);
     }
 
-    // Draw gen1 cards
     for (const pos of gen1Positions) {
       await drawPigeonCard(pos.node, pos.x, pos.y, pos.w, pos.h);
     }
@@ -575,7 +824,6 @@ export const exportPedigreeToPDF = async (
       const gen2X = gen1X + gen1.w + cardSpacing;
       const gen2Positions = [];
 
-      // First pass: compute positions and draw connections for gen2
       for (const [idx, node] of gen2Nodes.entries()) {
         const parentIdx = Math.floor(idx / 2);
         const isSecondChild = idx % 2 === 1;
@@ -605,7 +853,6 @@ export const exportPedigreeToPDF = async (
         }
       }
 
-      // Draw gen2 cards after connections
       for (const pos of gen2Positions) {
         await drawPigeonCard(pos.node, pos.x, pos.y, pos.w, pos.h);
       }
@@ -616,14 +863,12 @@ export const exportPedigreeToPDF = async (
         const gen3X = gen2X + gen2.w + cardSpacing;
         const gen3Positions = [];
 
-        // First pass: compute positions and draw connections for gen3 (parent-based positioning to avoid overlap)
         for (const [idx, node] of gen3Nodes.entries()) {
           const gen2ParentIdx = Math.floor(idx / 2);
           const isSecondChild = idx % 2 === 1;
 
           if (gen2Positions[gen2ParentIdx]) {
             const baseY = startY;
-            // Position relative to parent grouping (each parent produces two children)
             const cardIndex = gen2ParentIdx * 2 + (isSecondChild ? 1 : 0);
             const y = baseY + cardIndex * (gen3.h + gen3Gap);
 
@@ -647,7 +892,6 @@ export const exportPedigreeToPDF = async (
           }
         }
 
-        // Draw gen3 cards after connections
         for (const pos of gen3Positions) {
           await drawPigeonCard(pos.node, pos.x, pos.y, pos.w, pos.h);
         }
@@ -659,7 +903,6 @@ export const exportPedigreeToPDF = async (
           );
           const gen4X = gen3X + gen3.w + cardSpacing;
 
-          // First pass: compute positions and draw connections for gen4 (parent-based positioning)
           for (const [idx, node] of gen4Nodes.entries()) {
             const gen3ParentIdx = Math.floor(idx / 2);
             const isSecondChild = idx % 2 === 1;
@@ -669,7 +912,6 @@ export const exportPedigreeToPDF = async (
               const cardIndex = gen3ParentIdx * 2 + (isSecondChild ? 1 : 0);
               const y = baseY + cardIndex * (gen4.h + gen4Gap);
 
-              // store position
               const pos = {
                 node,
                 x: gen4X,
@@ -678,7 +920,7 @@ export const exportPedigreeToPDF = async (
                 h: gen4.h,
                 centerY: y + gen4.h / 2,
               };
-              // draw connection
+
               drawSimpleConnection(
                 gen3X + gen3.w,
                 gen3Positions[gen3ParentIdx].centerY,
@@ -687,7 +929,6 @@ export const exportPedigreeToPDF = async (
                 0.3
               );
 
-              // draw card after connections (to keep cards above lines)
               await drawPigeonCard(pos.node, pos.x, pos.y, pos.w, pos.h);
             }
           }
@@ -701,35 +942,19 @@ export const exportPedigreeToPDF = async (
     pdf.setFont("helvetica", "bold");
     pdf.setTextColor(0, 0, 0);
 
-    if (data?.name) {
-      // Wrap breeder name in footer so it doesn't overflow horizontally
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(5.8);
-      const maxFooterWidth = pageWidth - margin * 2;
-      // Allow up to 2 lines for the breeder name in the footer
-      const nameEndY = addWrappedText(
-        String(data.name),
-        margin,
-        footerY,
-        maxFooterWidth,
-        3.5,
-        2
-      );
-      // Position subsequent footer text just below the wrapped name (or the original footerY + 3.5)
-      var footerTextY = Math.max(nameEndY + 1, footerY + 3.5);
-      // Reset font to normal for the rest of footer
-      pdf.setFont("helvetica", "normal");
-    } else {
-      pdf.setFont("helvetica", "normal");
-      var footerTextY = footerY + 3.5;
+    if (profileData?.name) {
+      pdf.text(profileData.name, margin, footerY);
     }
 
-    if (data?.contact) {
-      pdf.text(` ${data.contact}`, margin, footerTextY);
+    pdf.setFont("helvetica", "normal");
+    let footerTextY = footerY + 3.5;
+
+    if (profileData?.contact) {
+      pdf.text(`${profileData.contact}`, margin, footerTextY);
       footerTextY += 3.5;
     }
-    if (data?.email) {
-      pdf.text(`${data.email}`, margin, footerTextY);
+    if (profileData?.email) {
+      pdf.text(`${profileData.email}`, margin, footerTextY);
     }
 
     // === BOTTOM CENTER ===
@@ -740,48 +965,39 @@ export const exportPedigreeToPDF = async (
     const text2 = "ThePigeonHub.Com";
     const marginY = pageHeight - margin + 9;
 
-    // Measure text width to align both parts properly
     const text1Width = pdf.getTextWidth(text1);
     const totalWidth = pdf.getTextWidth(text1 + text2);
     const startZ = (pageWidth - totalWidth) / 2;
 
-    // First part: teal color
     pdf.setTextColor(55, 183, 195);
     pdf.text(text1, startZ, marginY);
 
-    // Second part: black color, right after the first part
     pdf.setTextColor(0, 0, 0);
     pdf.text(text2, startZ + text1Width, marginY);
 
     // === DRAW CARD BORDERS LAST ===
-    // Draw borders for all pigeon cards so borders are on top of connection lines / other elements
     try {
       for (const b of bordersToDraw) {
-        // Top and left - thinner
         pdf.setDrawColor(0, 0, 0);
         pdf.setLineWidth(0.2);
-        pdf.line(b.x, b.y, b.x + b.width, b.y); // top
-        pdf.line(b.x, b.y, b.x, b.y + b.height); // left
+        pdf.line(b.x, b.y, b.x + b.width, b.y);
+        pdf.line(b.x, b.y, b.x, b.y + b.height);
 
-        // Right and bottom - thicker
         pdf.setLineWidth(1.2);
-        pdf.line(b.x + b.width, b.y, b.x + b.width, b.y + b.height); // right
-        pdf.line(b.x, b.y + b.height, b.x + b.width, b.y + b.height); // bottom
+        pdf.line(b.x + b.width, b.y, b.x + b.width, b.y + b.height);
+        pdf.line(b.x, b.y + b.height, b.x + b.width, b.y + b.height);
       }
     } catch (err) {
-      // If border drawing fails for any reason, continue to saving the PDF
       console.error("Error drawing borders:", err);
     }
 
-    // === SAVE PDF ===
-    // Build filename from gen0 pigeon data: countryCode-ringNumber-birthYear-name
-    let filename = "pigeon-pedigree.pdf";
+    // === FILENAME (same convention as PDF export) ===
+    let filename = "pigeon-pedigree.jpg";
 
     const gen0Node = filteredNodes.find((n) => n.data.generation === 0);
     if (gen0Node && gen0Node.data) {
       const pigeonData = gen0Node.data;
 
-      // Get country code (2-letter ISO code)
       let countryCode = "";
       if (pigeonData.country) {
         const trimmed = pigeonData.country.trim();
@@ -801,60 +1017,20 @@ export const exportPedigreeToPDF = async (
         ? pigeonData.name.replace(/[^a-zA-Z0-9]/g, "-")
         : "";
 
-      // Build filename parts
       const parts = [countryCode, ringNumber, birthYear, name].filter(Boolean);
 
       if (parts.length > 0) {
-        filename = `${parts.join("-")}.pdf`;
+        filename = `${parts.join("-")}.jpg`;
       }
     }
 
-    pdf.save(filename);
+    await pdf.save(filename);
 
     return filename;
   } catch (error) {
-    console.error("Error generating PDF:", error);
+    console.error("Error generating JPG:", error);
     throw error;
   }
 };
 
-// Component to use in your app
-const PedigreeExportButton = ({
-  nodes,
-  edges,
-  pedigreeData,
-  generations = null,
-  buttonText = "Export to PDF",
-}) => {
-  const handleExport = useCallback(async () => {
-    try {
-      await exportPedigreeToPDF(nodes, edges, pedigreeData, generations);
-    } catch (error) {
-      alert("Error exporting PDF. Please try again.");
-    }
-  }, [nodes, edges, pedigreeData, generations]);
-
-  return (
-    <button
-      onClick={handleExport}
-      className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
-    >
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M4 16v1a3 3 0 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-        />
-      </svg>
-      {buttonText}
-    </button>
-  );
-};
-
-export default PedigreeExportButton;
+export default exportPedigreeToJPG;

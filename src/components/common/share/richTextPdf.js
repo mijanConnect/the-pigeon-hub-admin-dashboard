@@ -8,6 +8,8 @@ export function renderRichTextToPdf({
     x,
     y,
     maxWidth,
+    /** Max baseline Y (mm). No further lines drawn at or below this value. */
+    maxY = null,
     lineHeight = 2.5,
     listIndent = 2.3,
     blockSpacing,
@@ -19,20 +21,28 @@ export function renderRichTextToPdf({
       html != null ? String(html).replace(/\\n/g, "\n").trim() : "";
     if (!raw) return y;
   
+    let stopRender = false;
+    const isPastClip = () => maxY != null && y >= maxY;
+
     // If no tags, treat as plain text with newlines.
     if (!/<[a-z][\s\S]*>/i.test(raw)) {
       const lines = raw.split(/\r?\n/);
-      lines.forEach((line) => {
+      for (const line of lines) {
+        if (stopRender || isPastClip()) break;
         if (!line) {
           y += lineHeight;
-          return;
+          continue;
         }
         const wrapped = pdf.splitTextToSize(line, maxWidth);
-        wrapped.forEach((w) => {
+        for (const w of wrapped) {
+          if (isPastClip()) {
+            stopRender = true;
+            break;
+          }
           pdf.text(w, x, y);
           y += lineHeight;
-        });
-      });
+        }
+      }
       return y;
     }
   
@@ -108,7 +118,7 @@ export function renderRichTextToPdf({
     // ── Render a flat array of inline segments, word-wrapping across the full
     //    availableWidth.  Honours bold/italic font changes mid-line.
     const renderInlineSegments = (segments, offsetX, availableWidth) => {
-      if (!segments.length) return;
+      if (!segments.length || stopRender || isPastClip()) return;
   
       // Build a list of word tokens: { word, bold, italic }
       // We split on spaces / newlines so we can re-flow them.
@@ -146,6 +156,12 @@ export function renderRichTextToPdf({
   
       const flushLine = () => {
         if (!lineTokens.length) return;
+        if (maxY != null && y >= maxY) {
+          stopRender = true;
+          lineTokens = [];
+          lineWidth = 0;
+          return;
+        }
         let curX = offsetX;
         // Trim trailing space token
         while (lineTokens.length && lineTokens[lineTokens.length - 1].word === " ") {
@@ -168,34 +184,39 @@ export function renderRichTextToPdf({
         lineWidth  = 0;
         // Reset font to normal after each line
         pdf.setFont("helvetica", "normal");
+        if (maxY != null && y >= maxY) stopRender = true;
       };
   
-      tokens.forEach((token) => {
+      for (const token of tokens) {
+        if (stopRender) break;
         if (token.word === "\n") {
           flushLine();
-          return;
+          continue;
         }
-  
+
         const w = measureWord(token);
-  
+
         // If adding this token would overflow AND it's not the first token,
         // flush the current line first.
         if (lineWidth + w > availableWidth + 0.01 && lineTokens.length > 0) {
           // Don't start a new line with a space
-          if (token.word === " ") return;
+          if (token.word === " ") continue;
           flushLine();
+          if (stopRender) break;
         }
-  
+
         lineTokens.push(token);
         lineWidth += w;
-      });
-  
-      flushLine();
+      }
+
+      if (!stopRender) flushLine();
       pdf.setFont("helvetica", "normal");
     };
   
     // ── Main recursive renderer ───────────────────────────────────────────────
     const renderNode = (node, indent = 0, listType = "disc") => {
+      if (stopRender || isPastClip()) return;
+
       // TEXT NODE at block level (shouldn't normally happen, but handle gracefully)
       if (node.nodeType === 3) {
         const text = node.textContent.replace(/\s+/g, " ").trim();
@@ -216,8 +237,12 @@ export function renderRichTextToPdf({
           // If this <p> contains lists, treat it as a block container and render its children
           // so lists keep their formatting instead of being collapsed into plain text.
           if (node.querySelector && node.querySelector("ul,ol")) {
-            node.childNodes.forEach((child) => renderNode(child, indent, listType));
+            for (const child of node.childNodes) {
+              if (stopRender) break;
+              renderNode(child, indent, listType);
+            }
             y += blkSpacing;
+            if (maxY != null && y >= maxY) stopRender = true;
             return;
           }
 
@@ -232,6 +257,7 @@ export function renderRichTextToPdf({
             renderInlineSegments(segments, x + indent, availableWidth);
           }
           y += blkSpacing;
+          if (maxY != null && y >= maxY) stopRender = true;
           return;
         }
   
@@ -240,18 +266,22 @@ export function renderRichTextToPdf({
           if (node.classList.contains("rich-ul-arrow")) type = "arrow";
           else if (node.classList.contains("rich-ul-stripe")) type = "stripe";
   
-          node.childNodes.forEach((child) =>
-            renderNode(child, indent + liIndent, type)
-          );
+          for (const child of node.childNodes) {
+            if (stopRender) break;
+            renderNode(child, indent + liIndent, type);
+          }
           y += blkSpacing;
+          if (maxY != null && y >= maxY) stopRender = true;
           return;
         }
   
         if (tag === "li") {
+          if (stopRender || isPastClip()) return;
           const symbolX = x + indent;
           let isMarkerDrawn = false;
   
           const renderChildWithMarker = (child) => {
+            if (stopRender) return;
             if (child.nodeType === 1 && child.tagName.toLowerCase() === "p") {
               // Collect inline segments from this <p> inside <li>
               const segments = [];
@@ -266,24 +296,32 @@ export function renderRichTextToPdf({
                 // We'll measure how many lines the content wraps to,
                 // draw the marker before the first line, then render inline.
                 if (!isMarkerDrawn) {
+                  if (isPastClip()) return;
                   drawListMarker(listType, symbolX, y);
                   isMarkerDrawn = true;
                 }
                 renderInlineSegments(segments, x + indent + liIndent, availableWidth);
               }
               y += blkSpacing * 0.5;
+              if (maxY != null && y >= maxY) stopRender = true;
             } else {
               renderNode(child, indent + liIndent, listType);
             }
           };
   
-          node.childNodes.forEach((child) => renderChildWithMarker(child));
+          for (const child of node.childNodes) {
+            if (stopRender) break;
+            renderChildWithMarker(child);
+          }
           if (!isMarkerDrawn) {
-            drawListMarker(listType, symbolX, y);
-            y += lh + itmSpacing;
+            if (!isPastClip()) {
+              drawListMarker(listType, symbolX, y);
+              y += lh + itmSpacing;
+            }
           } else {
             y += itmSpacing;
           }
+          if (maxY != null && y >= maxY) stopRender = true;
           return;
         }
   
