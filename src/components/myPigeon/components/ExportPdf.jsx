@@ -346,7 +346,9 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
 
       const normalizeResultsHtml = (value) => {
         if (!value) return "";
-        if (Array.isArray(value)) return renderRichTextToPdf(value.map(cleanResult));
+        if (Array.isArray(value)) {
+          return `<ul>${value.map((item) => `<li>${cleanResult(String(item))}</li>`).join("")}</ul>`;
+        }
         if (typeof value === "string") return value;
         return "";
       };
@@ -376,7 +378,9 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
       }
 
       // Mother Results Section
-      const motherResultsHtml = renderRichTextToPdf(pigeon?.motherRingId?.addresults);
+      const motherResultsHtml = normalizeResultsHtml(
+        pigeon?.motherRingId?.addresults,
+      );
       if (motherResultsHtml) {
         motherY += 3;
         pdf.setFont("helvetica", "bold");
@@ -400,7 +404,9 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
       }
 
       // Father Results Section
-      const fatherResultsHtml = normalizeResultsHtml(pigeon?.fatherRingId?.addresults);
+      const fatherResultsHtml = normalizeResultsHtml(
+        pigeon?.fatherRingId?.addresults,
+      );
       if (fatherResultsHtml) {
         fatherY += 3;
         pdf.setFont("helvetica", "bold");
@@ -674,7 +680,9 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
       pdf.save(fileName);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF. Please try again.");
+      alert(
+        `Failed to generate PDF: ${error?.message || "Unknown error. Please try again."}`,
+      );
     }
   };
 

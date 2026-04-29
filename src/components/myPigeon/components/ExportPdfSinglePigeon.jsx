@@ -635,7 +635,7 @@ const ExportPdfSinglePigeon = () => {
       setPdfGenerating(false);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      message.error("Failed to generate PDF. Please try again.");
+      message.error(`Failed to generate PDF: ${error?.message || "Unknown error. Please try again."}`);
       setPdfGenerating(false);
     }
   };
