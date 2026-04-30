@@ -20,6 +20,7 @@ import Swal from "sweetalert2";
 import {
   useAddRoleMutation,
   useAddUserMutation,
+  useAddAdminMutation,
   useDeleteUserMutation,
   useGetRolesQuery,
   useGetUsersQuery,
@@ -43,6 +44,7 @@ const LoginCredentials = () => {
   const { data: apiRoles = [] } = useGetRolesQuery();
 
   const [addUser, { isLoading: isAdding }] = useAddUserMutation();
+  const [addAdmin, { isLoading: isAddingAdmin }] = useAddAdminMutation();
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
   const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
   const [addRoleApi, { isLoading: isAddingRole }] = useAddRoleMutation();
@@ -62,6 +64,8 @@ const LoginCredentials = () => {
 
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
   const [userForm] = Form.useForm();
+  const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
+  const [adminForm] = Form.useForm();
   const tableContainerRef = useRef(null);
 
   // pageAccess options (include options observed in API samples so edit modal can pre-select)
@@ -122,7 +126,7 @@ const LoginCredentials = () => {
         pages: values.pageAccess || [], // send updated pages from checkbox selection
       };
 
-      console.log("updateUser", payload);
+      // console.log("updateUser", payload);
 
       try {
         await updateUser({ _id: selectedRecord._id, body: payload }).unwrap();
@@ -172,6 +176,29 @@ const LoginCredentials = () => {
         refetchUsers();
       } catch (err) {
         message.error(err?.data?.message || "Failed to add user.");
+      }
+    });
+  };
+
+  // Add Admin
+  const handleAddAdmin = () => {
+    adminForm.validateFields().then(async (values) => {
+      const payload = {
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        customeRole: "PAIDUSER",
+        contact: values.phone,
+      };
+
+      try {
+        await addAdmin(payload).unwrap();
+        message.success(`${values.name} has been added as Admin successfully.`);
+        adminForm.resetFields();
+        setIsAdminModalVisible(false);
+        refetchUsers();
+      } catch (err) {
+        message.error(err?.data?.message || "Failed to add admin.");
       }
     });
   };
@@ -347,6 +374,14 @@ const LoginCredentials = () => {
     <div className="mt-4">
       <div className="flex justify-end items-center mb-4 ">
         <div className="flex gap-5">
+          <Button
+            onClick={() => setIsAdminModalVisible(true)}
+            // className="bg-[#088395] py-5 px-7 font-semibold text-[16px]"
+            className="bg-[#088395] hover:!bg-[#088395]/80 text-white hover:!text-white py-5 px-7 font-semibold text-[16px] border-[#088395] hover:!border-[#088395]"
+            loading={isAddingAdmin}
+          >
+            Add Paid User
+          </Button>
           <Button
             onClick={() => setIsUserModalVisible(true)}
             // className="bg-[#088395] py-5 px-7 font-semibold text-[16px]"
@@ -822,6 +857,119 @@ const LoginCredentials = () => {
                     </Col>
                   </Row>
                 </Checkbox.Group>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
+
+      {/* Add Admin Modal */}
+      <Modal
+        title="Add New Admin"
+        open={isAdminModalVisible}
+        onCancel={() => setIsAdminModalVisible(false)}
+        width={700}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => setIsAdminModalVisible(false)}
+            className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
+          >
+            Cancel
+          </Button>,
+          <Button
+            key="add"
+            className="bg-primary border border-primary text-white"
+            onClick={handleAddAdmin}
+            loading={isAddingAdmin}
+          >
+            Add Admin
+          </Button>,
+        ]}
+      >
+        <Form form={adminForm} layout="vertical" className="mb-6">
+          <Row gutter={[30, 20]}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="name"
+                label="Name"
+                rules={[{ required: true, message: "Please enter Name" }]}
+                className="custom-form-item-ant"
+              >
+                <Input
+                  placeholder="Enter Name"
+                  className="custom-input-ant-modal"
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[
+                  { required: true, message: "Please enter Email" },
+                  {
+                    pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                    message: "Please enter a valid email address",
+                  },
+                ]}
+                validateTrigger={["onChange", "onBlur"]}
+                className="custom-form-item-ant"
+              >
+                <Input
+                  placeholder="Enter Email"
+                  className="custom-input-ant-modal"
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="phone"
+                label="Phone Number"
+                rules={[
+                  { required: true, message: "Please enter Phone Number" },
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+                      const digits = String(value).replace(/\D/g, "").length;
+                      // Allow 7 to 15 digits (E.164 max is 15)
+                      return digits >= 7 && digits <= 15
+                        ? Promise.resolve()
+                        : Promise.reject(
+                            new Error("Please enter a valid Phone Number"),
+                          );
+                    },
+                  },
+                ]}
+                validateTrigger={["onChange", "onBlur"]}
+                className="custom-form-item-ant"
+              >
+                <Input
+                  placeholder="Enter Phone Number"
+                  className="custom-input-ant-modal"
+                  inputMode="tel"
+                  maxLength={20}
+                />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="password"
+                label="Password"
+                rules={[
+                  { required: true, message: "Please enter Password" },
+                  {
+                    min: 8,
+                    message: "Password must be at least 8 characters long",
+                  },
+                ]}
+                className="custom-form-item-ant"
+              >
+                <Input.Password
+                  placeholder="Enter Password"
+                  className="custom-input-ant-modal"
+                />
               </Form.Item>
             </Col>
           </Row>

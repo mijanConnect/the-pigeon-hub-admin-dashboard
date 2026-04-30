@@ -56,6 +56,16 @@ const usermanageSlice = api.injectEndpoints({
       invalidatesTags: [{ type: "Users", id: "LIST" }],
     }),
 
+    // ✅ POST add new admin (PAIDUSER)
+    addAdmin: builder.mutation({
+      query: (body) => ({
+        url: "/usermanage",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "Users", id: "LIST" }],
+    }),
+
     // ✅ PUT update user
     updateUser: builder.mutation({
       query: ({ _id, body }) => ({
@@ -127,6 +137,7 @@ const usermanageSlice = api.injectEndpoints({
 export const {
   useGetUsersQuery,
   useAddUserMutation,
+  useAddAdminMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
   useGetRolesQuery,
