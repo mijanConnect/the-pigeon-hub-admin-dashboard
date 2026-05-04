@@ -198,7 +198,7 @@ const LoginCredentials = () => {
         setIsAdminModalVisible(false);
         refetchUsers();
       } catch (err) {
-        message.error(err?.data?.message || "Failed to add admin.");
+        message.error(err?.data?.message || "Failed to add Paid User.");
       }
     });
   };
@@ -865,7 +865,7 @@ const LoginCredentials = () => {
 
       {/* Add Admin Modal */}
       <Modal
-        title="Add New Admin"
+        title="Add Paid User"
         open={isAdminModalVisible}
         onCancel={() => setIsAdminModalVisible(false)}
         width={700}
@@ -883,7 +883,7 @@ const LoginCredentials = () => {
             onClick={handleAddAdmin}
             loading={isAddingAdmin}
           >
-            Add Admin
+            Add Paid User
           </Button>,
         ]}
       >
