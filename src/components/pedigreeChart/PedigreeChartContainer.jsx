@@ -22,7 +22,7 @@ import { getCode } from "country-list";
 import * as XLSX from "xlsx";
 // import { convertBackendToExistingFormat } from "./PigeonData";
 // import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import SpinnerCustom from "../../Pages/Dashboard/Spinner/SpinnerCustom";
 import { useGetPigeonPedigreeDataQuery } from "../../redux/apiSlices/pigeonPedigreeApi";
 import { getImageUrl } from "../common/imageUrl";
@@ -133,7 +133,7 @@ const PigeonNode = ({ data }) => {
 
   return (
     <div
-      style={{ backgroundColor: data.color }}
+      style={{ backgroundColor: data.color, pointerEvents: "none" }}
       className={`${getCardSize(
         data?.generation,
       )} border-b-8 border-r-10 border-black text-white rounded-none transition-all duration-300 px-2 py-2 ${getGenerationColor(
@@ -228,7 +228,23 @@ const PigeonNode = ({ data }) => {
       <div className="">
         <div className="flex items-center justify-start gap-2">
           {data.name && (
-            <h3 className="font-bold text-black truncate">{data.name}</h3>
+            <h3 
+              className="font-bold text-black truncate hover:text-blue-600 hover:underline transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (data.pigeonId && data.onNameClick) {
+                  data.onNameClick(data.pigeonId);
+                }
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              style={{ 
+                color: data.pigeonId ? "#000000" : "black",
+                cursor: data.pigeonId ? "pointer" : "default",
+                pointerEvents: "auto"
+              }}
+            >
+              {data.name}
+            </h3>
           )}
         </div>
         <div className="flex items-center justify-start gap-2">
@@ -285,7 +301,7 @@ const PigeonNode = ({ data }) => {
               className="text-black whitespace-pre-line break-words max-w-[250px] overflow-hidden"
               style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
             >
-             <RichTextDisplay
+              <RichTextDisplay
                 html={data.achievements}
                 className="text-black italic"
               />
@@ -308,6 +324,7 @@ const nodeTypes = {
 
 export default function PigeonPedigreeChart() {
   const { id } = useParams();
+  const navigate = useNavigate();
   // console.log("id", id);
 
   const location = useLocation();
@@ -328,19 +345,34 @@ export default function PigeonPedigreeChart() {
 
   const role = data?.role;
 
+  const handlePigeonNameClick = useCallback((pigeonId) => {
+    navigate(`/pigeon-management/${pigeonId}`);
+  }, [navigate]);
+
   // console.log("user data", role);
 
   const { nodes: dynamicNodes, edges: dynamicEdges } = useMemo(() => {
     return convertBackendToExistingFormat(pedigreeData, role);
-  }, [pedigreeData]);
+  }, [pedigreeData, role]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(dynamicNodes);
+  // Add onNameClick callback to all nodes
+  const nodesWithCallback = useMemo(() => {
+    return dynamicNodes.map((node) => ({
+      ...node,
+      data: {
+        ...node.data,
+        onNameClick: handlePigeonNameClick,
+      },
+    }));
+  }, [dynamicNodes, handlePigeonNameClick]);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(nodesWithCallback);
   const [edges, setEdges, onEdgesChange] = useEdgesState(dynamicEdges);
 
   useEffect(() => {
-    setNodes(dynamicNodes);
+    setNodes(nodesWithCallback);
     setEdges(dynamicEdges);
-  }, [dynamicNodes, dynamicEdges, setNodes, setEdges]);
+  }, [nodesWithCallback, dynamicEdges, setNodes, setEdges]);
 
   // Keep the flow fitted to the container on init, nodes/edges change and resize
   useEffect(() => {
@@ -482,18 +514,12 @@ export default function PigeonPedigreeChart() {
   const exportToJPGWithGenerations = useCallback(
     async (genCount) => {
       try {
-        await exportPedigreeToJPG(
-          nodes,
-          edges,
-          pedigreeData,
-          data,
-          genCount
-        );
+        await exportPedigreeToJPG(nodes, edges, pedigreeData, data, genCount);
       } catch (error) {
         alert("Error exporting the selected generations. Please try again.");
       }
     },
-    [nodes, edges, pedigreeData, data]
+    [nodes, edges, pedigreeData, data],
   );
 
   const defaultViewport = { x: 0, y: 0, zoom: 0.7 };

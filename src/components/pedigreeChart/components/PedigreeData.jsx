@@ -88,6 +88,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
     position: { x: 0, y: 500 },
     data: {
       name: subject.name,
+      pigeonId: subject._id,
       ringNumber: subject.ringNumber,
       owner: getBreederInfo(subject.breeder),
       country: subject.country,
@@ -118,6 +119,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       position: { x: 180, y: -200 }, // Changed from { x: 320, y: -200 }
       data: {
         name: subject.fatherRingId.name,
+        pigeonId: subject.fatherRingId._id,
         ringNumber: subject.fatherRingId.ringNumber,
         owner: getBreederInfo(subject.fatherRingId.breeder),
         country: subject.fatherRingId.country,
@@ -161,6 +163,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       position: { x: 180, y: 1200 }, // Changed from { x: 320, y: 1210 }
       data: {
         name: subject.motherRingId.name,
+        pigeonId: subject.motherRingId._id,
         ringNumber: subject.motherRingId.ringNumber,
         owner: getBreederInfo(subject.motherRingId.breeder),
         country: subject.motherRingId.country,
@@ -211,6 +214,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       position: { x: 500, y: -200 }, // Shifted right from father_1
       data: {
         name: subject.fatherRingId.fatherRingId.name,
+        pigeonId: subject.fatherRingId.fatherRingId._id,
         ringNumber: subject.fatherRingId.fatherRingId.ringNumber,
         owner: getBreederInfo(subject.fatherRingId.fatherRingId.breeder),
         country: subject.fatherRingId.fatherRingId.country,
@@ -256,6 +260,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       position: { x: 500, y: 320 },
       data: {
         name: subject.fatherRingId.motherRingId.name,
+        pigeonId: subject.fatherRingId.motherRingId._id,
         ringNumber: subject.fatherRingId.motherRingId.ringNumber,
         owner: getBreederInfo(subject.fatherRingId.motherRingId.breeder),
         country: subject.fatherRingId.motherRingId.country,
@@ -301,6 +306,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       position: { x: 500, y: 850 },
       data: {
         name: subject.motherRingId.fatherRingId.name,
+        pigeonId: subject.motherRingId.fatherRingId._id,
         ringNumber: subject.motherRingId.fatherRingId.ringNumber,
         owner: getBreederInfo(subject.motherRingId.fatherRingId.breeder),
         country: subject.motherRingId.fatherRingId.country,
@@ -346,6 +352,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       position: { x: 500, y: 1373 },
       data: {
         name: subject.motherRingId.motherRingId.name,
+        pigeonId: subject.motherRingId.motherRingId._id,
         ringNumber: subject.motherRingId.motherRingId.ringNumber,
         owner: getBreederInfo(subject.motherRingId.motherRingId.breeder),
         country: subject.motherRingId.motherRingId.country,
@@ -402,6 +409,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
           position: position,
           data: {
             name: parentPath.name || defaultName,
+            pigeonId: parentPath._id,
             ringNumber: parentPath.ringNumber,
             owner: getBreederInfo(parentPath.breeder),
             country: parentPath.country,
@@ -539,6 +547,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
           position: position.father,
           data: {
             name: parentPath.fatherRingId.name || `${defaultName} Father`,
+            pigeonId: parentPath.fatherRingId._id,
             ringNumber: parentPath.fatherRingId.ringNumber,
             owner: getBreederInfo(parentPath.fatherRingId.breeder),
             country: parentPath.fatherRingId.country,
@@ -583,6 +592,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
           position: position.mother,
           data: {
             name: parentPath.motherRingId.name || `${defaultName} Mother`,
+            pigeonId: parentPath.motherRingId._id,
             ringNumber: parentPath.motherRingId.ringNumber,
             owner: getBreederInfo(parentPath.motherRingId.breeder),
             country: parentPath.motherRingId.country,
