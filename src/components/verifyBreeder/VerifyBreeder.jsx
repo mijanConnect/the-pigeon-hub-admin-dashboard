@@ -19,10 +19,9 @@ import {
   useGetBreedersQuery,
   useUpdateBreederMutation,
 } from "../../redux/apiSlices/breederSlice";
-// drag-to-scroll is handled by SyncHorizontalScroll; no manual import needed
 import SyncHorizontalScroll from "../common/SyncHorizontalScroll";
 import "../myPigeon/myPigeon.responsive.css";
-import AddVerifyBreeder from "./AddVerifiedBreeder";
+import AddVerifyBreeder from "./components/AddVerifiedBreeder";
 
 const { Option } = Select;
 
@@ -47,17 +46,9 @@ const VerifyBreeder = () => {
     status: "all",
   });
   const countries = getNames();
-
-  // Pagination
-  // const [page, setPage] = useState(10000);
-  // const [limit, setLimit] = useState(10000);
   const tableContainerRef = useRef(null);
 
-  // RTK Query
   const { data: apiData, isLoading } = useGetBreedersQuery({
-    // page,
-    // limit,
-    // search: searchText || undefined,
     searchTerm: searchText || undefined,
     country: filterCountry !== "all" ? filterCountry : undefined,
     gender: filterGender !== "all" ? filterGender : undefined,
@@ -65,8 +56,8 @@ const VerifyBreeder = () => {
       filterStatus === "Verified"
         ? true
         : filterStatus === "NotVerified"
-        ? false
-        : undefined,
+          ? false
+          : undefined,
     experience: filterExperience !== "all" ? filterExperience : undefined,
   });
 
@@ -74,7 +65,6 @@ const VerifyBreeder = () => {
   const [updateBreeder] = useUpdateBreederMutation();
   const [deleteBreeder] = useDeleteBreederMutation();
 
-  // Load breeders when API updates
   useEffect(() => {
     if (apiData?.breeders) {
       setData(apiData.breeders);
@@ -83,13 +73,11 @@ const VerifyBreeder = () => {
     }
   }, [apiData]);
 
-  // attach drag-to-scroll behavior to the table scroll container
   useEffect(() => {
     const el = tableContainerRef.current;
     if (!el) return;
     const cleanup = attachDragToElement(el);
     return cleanup;
-    // reattach when data/page/limit changes
   }, [data.length]);
 
   const openAddModal = () => {
@@ -100,7 +88,7 @@ const VerifyBreeder = () => {
   const openEditModal = (record) => {
     const formattedRecord = {
       ...record,
-      status: !!record.status, // ensure true/false for checkbox
+      status: !!record.status,
     };
     setEditingData(formattedRecord);
     setIsModalVisible(true);
@@ -114,8 +102,7 @@ const VerifyBreeder = () => {
         country: values.country,
         email: values.email,
         phone: values.phoneNumber,
-        status: !!values.status, // ✅ always boolean
-        // score: Number(values.pigeonScore),
+        status: !!values.status,
         experience: values.experienceLevel,
         gender: values.gender,
       };
@@ -127,7 +114,7 @@ const VerifyBreeder = () => {
           token: "your-auth-token",
         }).unwrap();
         message.success("Breeder updated successfully!");
-        setIsModalVisible(false); // ✅ Close modal only on success
+        setIsModalVisible(false);
       } else {
         const res = await addBreeder({
           data: payload,
@@ -135,21 +122,19 @@ const VerifyBreeder = () => {
         }).unwrap();
         if (res.success) {
           message.success("Breeder added successfully!");
-          setIsModalVisible(false); // ✅ Close modal only on success
+          setIsModalVisible(false);
         } else {
           message.error(
             error?.data?.message ||
-              `A verified breeder with loft name "${values.loftName}" already exists.`
+              `A verified breeder with loft name "${values.loftName}" already exists.`,
           );
-          // Don't close modal - keep fields intact
         }
       }
     } catch (error) {
       console.error(error);
       message.error(
-        error?.data?.message || `Failed to save breeder. Please try again.`
+        error?.data?.message || `Failed to save breeder. Please try again.`,
       );
-      // Don't close modal - keep fields intact so user can fix the error
     }
   };
 
@@ -193,7 +178,6 @@ const VerifyBreeder = () => {
             sensitivity: "base",
           }),
     },
-    // { title: "Pigeon Score", dataIndex: "pigeonScore", key: "pigeonScore" },
     {
       title: "Country",
       dataIndex: "country",
@@ -231,12 +215,6 @@ const VerifyBreeder = () => {
         return text ? <p href={`mailto:${text}`}>{text}</p> : "N/A";
       },
     },
-    // { title: "Gender", dataIndex: "gender", key: "gender" },
-    // {
-    //   title: "Experience Level",
-    //   dataIndex: "experienceLevel",
-    //   key: "experienceLevel",
-    // },
     {
       title: "Status",
       dataIndex: "status",
@@ -295,10 +273,8 @@ const VerifyBreeder = () => {
       const { columnKey, order } = sorter;
 
       if (!order) {
-        // Clear sorting - restore original order
         setSortedData([...originalData]);
       } else {
-        // Apply sorting
         const sorted = [...originalData].sort((a, b) => {
           let comparison = 0;
 
@@ -381,45 +357,6 @@ const VerifyBreeder = () => {
               </Select>
             </div>
           </Col>
-
-          {/* <Col xs={24} sm={12} md={6} lg={4}>
-            <div className="flex flex-col">
-              <label className="mb-1 text-gray-300">Gender</label>
-              <Select
-                placeholder="Select Gender"
-                className="custom-select-ant"
-                value={filterGender}
-                onChange={(value) => {
-                  setFilterGender(value);
-                  setPage(1);
-                }}
-              >
-                <Option value="all">All</Option>
-                <Option value="Hen">Hen</Option>
-                <Option value="Cock">Cock</Option>
-              </Select>
-            </div>
-          </Col> */}
-
-          {/* <Col xs={24} sm={12} md={6} lg={4}>
-            <div className="flex flex-col">
-              <label className="mb-1 text-gray-300">Experience Level</label>
-              <Select
-                placeholder="Select Level"
-                className="custom-select-ant"
-                value={filterExperience}
-                onChange={(value) => {
-                  setFilterExperience(value);
-                  setPage(1);
-                }}
-              >
-                <Option value="all">All</Option>
-                <Option value="Beginner">Beginner</Option>
-                <Option value="Intermediate">Intermediate</Option>
-                <Option value="Expert">Expert</Option>
-              </Select>
-            </div>
-          </Col> */}
 
           <Col xs={24} sm={12} md={6} lg={4}>
             <div className="flex flex-col">

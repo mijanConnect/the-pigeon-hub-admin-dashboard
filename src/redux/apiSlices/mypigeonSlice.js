@@ -1,4 +1,3 @@
-// src/redux/apiSlices/mypigeonSlice.js
 import { api } from "../api/baseApi";
 
 const mypigeonSlice = api.injectEndpoints({
@@ -227,11 +226,11 @@ const mypigeonSlice = api.injectEndpoints({
 export const {
   useGetMyPigeonsQuery,
   useGetPigeonSearchQuery,
-  useGetSinglePigeonQuery, // ✅ New hook
-  useGetSiblingsQuery, // ✅ New hook
-  useGetAllSiblingsQuery, // ✅ New hook
+  useGetSinglePigeonQuery,
+  useGetSiblingsQuery,
+  useGetAllSiblingsQuery,
   useAddPigeonMutation,
-  useUpdatePigeonMutation, // ✅
+  useUpdatePigeonMutation,
   useDeletePigeonMutation,
   useGetBreederNamesQuery,
   useGetFatherMotherQuery,

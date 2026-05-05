@@ -25,7 +25,7 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 const Home = () => {
@@ -102,18 +102,6 @@ const Home = () => {
 
   return (
     <div className="space-y-4 md:space-y-6 mt-4">
-      {/* Home Card */}
-      {/* <div>
-        <HomeCard />
-      </div> */}
-
-      {/* Line Chart Section */}
-      {/* <div className="w-full">
-        <div className="w-full bg-primary p-3 md:p-4 lg:p-6 rounded-lg">
-          <LineChart />
-        </div>
-      </div> */}
-
       <div className="flex flex-col xl:flex-row gap-6 border-primary rounded-lg">
         {/* Line Chart Section */}
         <div className="flex-1 w-full xl:w-2/3 border border-primary rounded-lg p-6">
@@ -184,7 +172,8 @@ const Home = () => {
                   Iconic Pigeons
                 </h2>
                 <h3 className="text-secondary text-[24px] text-center font-semibold flex items-center gap-3">
-                  <img src={AwardIcon} alt="Logo" className="w-8 h-8" /> {stats?.iconPigeons || 0}
+                  <img src={AwardIcon} alt="Logo" className="w-8 h-8" />{" "}
+                  {stats?.iconPigeons || 0}
                 </h3>
               </div>
             </div>
@@ -208,7 +197,6 @@ const Home = () => {
       {/* Order Table */}
       <div>
         <OrderTable />
-        {/* <SalesLeaderBoard /> */}
       </div>
     </div>
   );

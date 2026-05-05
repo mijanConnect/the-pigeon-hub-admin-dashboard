@@ -100,8 +100,8 @@ const MyPigeon = () => {
       filters.status === "verified"
         ? true
         : filters.status === "notverified"
-        ? false
-        : undefined,
+          ? false
+          : undefined,
     status: tabKey !== "all" ? tabKey : undefined,
   });
 
@@ -236,7 +236,7 @@ const MyPigeon = () => {
           const ext = isPdfFile(record.pedigreePhoto, url) ? "pdf" : "jpg";
           return await downloadUrl(
             url,
-            `${record.ringNumber || record._id}-pedigree.${ext}`
+            `${record.ringNumber || record._id}-pedigree.${ext}`,
           );
         }
       case "ownership":
@@ -248,7 +248,7 @@ const MyPigeon = () => {
           const ext = isPdfFile(record.ownershipPhoto, url) ? "pdf" : "jpg";
           return await downloadUrl(
             url,
-            `${record.ringNumber || record._id}-ownership.${ext}`
+            `${record.ringNumber || record._id}-ownership.${ext}`,
           );
         }
       case "dna":
@@ -260,7 +260,7 @@ const MyPigeon = () => {
           const ext = isPdfFile(record.DNAPhoto, url) ? "pdf" : "jpg";
           return await downloadUrl(
             url,
-            `${record.ringNumber || record._id}-dna.${ext}`
+            `${record.ringNumber || record._id}-dna.${ext}`,
           );
         }
       case "photo":
@@ -272,7 +272,7 @@ const MyPigeon = () => {
           const ext = isPdfFile(record.pigeonPhoto, url) ? "pdf" : "jpg";
           return await downloadUrl(
             url,
-            `${record.ringNumber || record._id}-photo.${ext}`
+            `${record.ringNumber || record._id}-photo.${ext}`,
           );
         }
       case "details": {
@@ -378,8 +378,8 @@ const MyPigeon = () => {
           typeof country === "object" && country?.name
             ? getCode(country.name) // If country is an object, use country.name
             : typeof country === "string"
-            ? getCode(country) // If country is a string, use it directly
-            : null;
+              ? getCode(country) // If country is a string, use it directly
+              : null;
 
         return countryCode ? (
           <div className="flex items-center gap-2">
@@ -519,7 +519,7 @@ const MyPigeon = () => {
   // We use the reusable SyncHorizontalScroll component below to provide
   // drag-to-scroll and a mirrored bottom scrollbar. This keeps this
   // component focused on table data & layout only.
-  console.log(pigeons);
+  // console.log(pigeons);
   const handleExportPDF = () => {
     if (!pigeons?.length) {
       alert("No data available to export");
@@ -604,14 +604,14 @@ const MyPigeon = () => {
             doc.text(
               `Generated on ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`,
               14,
-              doc.lastAutoTable.finalY + 10
+              doc.lastAutoTable.finalY + 10,
             );
 
             doc.save(`pigeon-data-${date.toISOString().split("T")[0]}.pdf`);
           } catch (error) {
             console.error("Error generating PDF:", error);
             alert(
-              "Error generating PDF. Please make sure jspdf and jspdf-autotable are installed."
+              "Error generating PDF. Please make sure jspdf and jspdf-autotable are installed.",
             );
           }
         });
@@ -656,7 +656,7 @@ const MyPigeon = () => {
                 Gender: pigeon.gender || "-",
                 Color: pigeon.color || "-",
                 Location: pigeon.location || "-",
-              }))
+              })),
             );
 
             // Create workbook
@@ -669,7 +669,7 @@ const MyPigeon = () => {
           } catch (error) {
             console.error("Error generating Excel:", error);
             alert(
-              "Error generating Excel file. Please make sure xlsx is installed."
+              "Error generating Excel file. Please make sure xlsx is installed.",
             );
           }
         })
@@ -935,7 +935,7 @@ const MyPigeon = () => {
                         page: String(newPage),
                         limit: String(pageSize),
                       },
-                      { replace: true }
+                      { replace: true },
                     );
                   },
                 }}
@@ -987,8 +987,6 @@ const MyPigeon = () => {
           </div>
         </div>
       </SyncHorizontalScroll>
-
-      {/* View now navigates to /view-pigeon/:id route — page handles its own data fetching */}
     </div>
   );
 };

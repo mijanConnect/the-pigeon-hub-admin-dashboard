@@ -35,7 +35,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     selectedKey === itemKey ||
     (itemKey === "subMenuSetting" &&
       ["/profile", "/terms-and-conditions", "/privacy-policy"].includes(
-        selectedKey
+        selectedKey,
       ));
 
   const renderIcon = (IconComponent, itemKey) => {
@@ -71,8 +71,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       icon: renderIcon(Dashboard, "/"),
       label: <Link to="/">{collapsed ? "" : "Dashboard Overview"}</Link>,
     },
-
-    // Pigeon Hub Start
     {
       key: "/my-pigeon",
       icon: renderIcon(MyPigeon, "/my-pigeon"),
@@ -140,26 +138,10 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           key: "/profile",
           label: <Link to="/profile">Update Profile</Link>,
         },
-        // {
-        //   key: "/faq",
-        //   label: <Link to="/faq">FAQ </Link>,
-        // },
-        // {
-        //   key: "/contact",
-        //   label: <Link to="/contact">Contact Us</Link>,
-        // },
-        // {
-        //   key: "/about",
-        //   label: <Link to="/about">About Us </Link>,
-        // },
         {
           key: "/terms-and-conditions",
           label: <Link to="/terms-and-conditions">Terms And Conditions</Link>,
         },
-        // {
-        //   key: "/privacy-policy",
-        //   label: <Link to="/privacy-policy">Privacy Policy</Link>,
-        // },
       ],
     },
     {
@@ -173,7 +155,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     const selectedItem = menuItems.find(
       (item) =>
         item.key === path ||
-        (item.children && item.children.some((sub) => sub.key === path))
+        (item.children && item.children.some((sub) => sub.key === path)),
     );
     if (selectedItem) {
       setSelectedKey(path);
@@ -181,7 +163,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       else {
         const parentItem = menuItems.find(
           (item) =>
-            item.children && item.children.some((sub) => sub.key === path)
+            item.children && item.children.some((sub) => sub.key === path),
         );
         if (parentItem) setOpenKeys([parentItem.key]);
       }

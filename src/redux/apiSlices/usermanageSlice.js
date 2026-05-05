@@ -22,7 +22,7 @@ const usermanageSlice = api.injectEndpoints({
         return {
           users: response.data.users.map((user) => ({
             _id: user._id,
-            id: user._id, // alias for AntD rowKey
+            id: user._id,
             name: user.name || user.email,
             email: user.email,
             role: user.customeRole || user.role,
@@ -48,6 +48,16 @@ const usermanageSlice = api.injectEndpoints({
 
     // ✅ POST add new user
     addUser: builder.mutation({
+      query: (body) => ({
+        url: "/usermanage",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "Users", id: "LIST" }],
+    }),
+
+    // ✅ POST add new admin (PAIDUSER)
+    addAdmin: builder.mutation({
       query: (body) => ({
         url: "/usermanage",
         method: "POST",
@@ -127,6 +137,7 @@ const usermanageSlice = api.injectEndpoints({
 export const {
   useGetUsersQuery,
   useAddUserMutation,
+  useAddAdminMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
   useGetRolesQuery,

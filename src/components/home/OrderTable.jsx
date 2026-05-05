@@ -7,9 +7,6 @@ import { attachDragToElement } from "../common/dragScroll";
 import { getImageUrl } from "../common/imageUrl";
 import SyncHorizontalScroll from "../common/SyncHorizontalScroll";
 
-// const getImageUrlTable = (path) =>
-//   path ? `${getImageUrl}${path}` : PigeonImage;
-
 const getColumns = () => [
   {
     title: "Image",
@@ -17,7 +14,7 @@ const getColumns = () => [
     key: "image",
     width: 100,
     render: (src, record) => {
-      const imageExists = src && src.trim() !== ""; // Check if the image source is valid
+      const imageExists = src && src.trim() !== "";
 
       return imageExists ? (
         <img
@@ -36,16 +33,16 @@ const getColumns = () => [
             width: 50,
             height: 50,
             borderRadius: "50%",
-            backgroundColor: "#f0f0f0", // Background color for placeholder
+            backgroundColor: "#f0f0f0",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            fontSize: "20px", // Adjust font size
+            fontSize: "20px",
             fontWeight: "bold",
             color: "#555",
           }}
         >
-          {record?.name?.[0]?.toUpperCase()} {/* Show first letter of name */}
+          {record?.name?.[0]?.toUpperCase()}
         </div>
       );
     },
@@ -56,13 +53,12 @@ const getColumns = () => [
     dataIndex: "country",
     key: "country",
     render: (country) => {
-      // Check if country and country.name are valid strings
       const countryCode =
         typeof country === "object" && country?.name
-          ? getCode(country.name) // If country is an object, use country.name
+          ? getCode(country.name)
           : typeof country === "string"
-          ? getCode(country) // If country is a string, use it directly
-          : null;
+            ? getCode(country)
+            : null;
 
       return countryCode ? (
         <div className="flex items-center gap-2">
@@ -113,15 +109,12 @@ const PigeonTable = () => {
     page,
     limit: 10000,
   });
-  // console.log(data);
 
   const pigeons = data?.pigeons || [];
-  // console.log(pigeons);
   const pagination = data?.pagination || {};
 
   const columns = getColumns();
 
-  // attach drag-to-scroll behavior to the table container
   useEffect(() => {
     const el = tableContainerRef.current;
     if (!el) return;
@@ -141,7 +134,6 @@ const PigeonTable = () => {
       <div className="text-center text-gray-500">
         <p>Oops! Something went wrong. Please try again later.</p>
       </div>
-      // <p>Failed to load pigeons.</p>
     );
 
   return (
@@ -168,7 +160,6 @@ const PigeonTable = () => {
               </div>
             ) : (
               <Table
-                // rowSelection={rowSelection}
                 columns={columns}
                 dataSource={pigeons}
                 rowClassName={() => "hover-row"}
@@ -176,13 +167,6 @@ const PigeonTable = () => {
                 size="small"
                 rowKey="_id"
                 scroll={pigeons.length > 0 ? { x: "max-content" } : undefined}
-                // pagination={{
-                //   current: page,
-                //   pageSize,
-                //   total,
-                //   showSizeChanger: false,
-                //   onChange: (newPage) => setPage(newPage),
-                // }}
                 components={{
                   header: {
                     cell: (props) => (

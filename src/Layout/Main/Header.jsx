@@ -61,13 +61,8 @@ const Header = () => {
     </Menu>
   );
 
-  // ✅ Fetch recent notifications
   const { data: notifications = [] } = useGetRecentNotificationsQuery(10);
-
-  // ✅ Fetch unread count
   const { data: unreadCount = 0 } = useGetUnreadNotificationCountQuery();
-
-  // console.log(unreadCount);
 
   return (
     <div className="flex items-center justify-between gap-5 w-full px-4 py-6 bg-[#F2F2F2] lg:px-10">
@@ -99,7 +94,7 @@ const Header = () => {
             >
               {user?.profile ? (
                 <img
-                  src={getImageUrl(user.profile)} // Display image if profile exists
+                  src={getImageUrl(user.profile)}
                   alt="profile-pic"
                   style={{
                     width: "100%",
@@ -109,9 +104,9 @@ const Header = () => {
                   }}
                 />
               ) : user?.name ? (
-                user.name.charAt(0).toUpperCase() // Display first letter of name
+                user.name.charAt(0).toUpperCase()
               ) : (
-                "U" // Fallback to "U" if no name or profile image
+                "U"
               )}
             </div>
           </div>

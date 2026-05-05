@@ -9,7 +9,6 @@ import loginForm from "../../assets/login-form.png";
 const Auth = () => {
   const location = useLocation();
 
-  // Map routes to images
   const imageMap = {
     "/auth/login": loginForm,
     "/auth/forgot-password": loginForm,
@@ -19,7 +18,6 @@ const Auth = () => {
     "/auth/verify-otp": loginForm,
   };
 
-  // Pick the correct image or a default one
   const currentImage = imageMap[location.pathname] || forgotImage;
 
   return (
@@ -29,15 +27,14 @@ const Auth = () => {
         alt="Authentication visual"
         className="absolute top-0 left-0 w-full h-full object-cover"
         style={{
-          filter: "brightness(80%) blur(5px)", // darken + blur
+          filter: "brightness(80%) blur(5px)",
           boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
         }}
       />
 
-      {/* Centered Auth form */}
       <div
         style={{
-          background: "rgba(255, 255, 255, 0.2)", // 20% opacity white
+          background: "rgba(255, 255, 255, 0.2)",
           padding: 30,
           paddingBottom: 40,
           borderRadius: 15,
