@@ -10,17 +10,38 @@ const usermanageSlice = api.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (response) => {
-        if (
-          !response ||
-          !response.success ||
-          !response.data ||
-          !Array.isArray(response.data.users)
-        ) {
+        console.log("API Response:", response);
+
+        // Handle different response structures
+        let usersArray = [];
+        let paginationData = null;
+
+        // Case 1: response.data.users
+        if (response?.data?.users && Array.isArray(response.data.users)) {
+          usersArray = response.data.users;
+          paginationData = response.data.pagination || null;
+        }
+        // Case 2: response.data is directly the users array
+        else if (Array.isArray(response?.data)) {
+          usersArray = response.data;
+        }
+        // Case 3: response is directly the users array
+        else if (Array.isArray(response)) {
+          usersArray = response;
+        }
+        // Case 4: response has users property at top level
+        else if (response?.users && Array.isArray(response.users)) {
+          usersArray = response.users;
+          paginationData = response.pagination || null;
+        }
+
+        if (!Array.isArray(usersArray) || usersArray.length === 0) {
+          console.warn("No users found in API response");
           return { users: [], pagination: null };
         }
 
         return {
-          users: response.data.users.map((user) => ({
+          users: usersArray.map((user) => ({
             _id: user._id,
             id: user._id,
             name: user.name || user.email,
@@ -34,7 +55,7 @@ const usermanageSlice = api.injectEndpoints({
             currentPlan: user.currentPlan || "N/A",
             raw: user,
           })),
-          pagination: response.data.pagination,
+          pagination: paginationData,
         };
       },
       providesTags: (result) =>
@@ -111,11 +132,31 @@ const usermanageSlice = api.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (response) => {
-        if (!response || !response.success || !Array.isArray(response.data))
+        console.log("Roles API Response:", response);
+
+        let rolesArray = [];
+
+        // Case 1: response.data is array
+        if (Array.isArray(response?.data)) {
+          rolesArray = response.data;
+        }
+        // Case 2: response.data.roles is array
+        else if (Array.isArray(response?.data?.roles)) {
+          rolesArray = response.data.roles;
+        }
+        // Case 3: response is directly array
+        else if (Array.isArray(response)) {
+          rolesArray = response;
+        }
+
+        if (!Array.isArray(rolesArray) || rolesArray.length === 0) {
+          console.warn("No roles found in API response");
           return [];
-        return response.data.map((role) => ({
+        }
+
+        return rolesArray.map((role) => ({
           _id: role._id,
-          roleName: role.roleName,
+          roleName: role.roleName || role.name,
         }));
       },
       providesTags: [{ type: "Roles", id: "LIST" }],

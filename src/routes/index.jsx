@@ -9,6 +9,7 @@ import PigeonManagement from "../components/pigeonManagement/PigeonManagement";
 import PigeonPedigreeChart from "../components/pedigreeChart/PedigreeChartContainer";
 import VerifyBreeder from "../components/verifyBreeder/VerifyBreeder";
 import LoginCredentials from "../components/loginCredentials/LoginCredentials";
+import AdminManagement from "../components/adminManagement/AdminManagement";
 import PackagesPlans from "../components/subscriptionPackage/Subscription";
 import ReportingAnalytics from "../components/reportingAnalytics/ReportingAnalytics";
 import AdminProfile from "../Pages/Dashboard/AdminProfile/AdminProfile";
@@ -75,6 +76,10 @@ const router = createBrowserRouter([
       {
         path: "/user-management",
         element: <LoginCredentials />,
+      },
+      {
+        path: "/admin-management",
+        element: <AdminManagement />,
       },
       {
         path: "/subscription",
