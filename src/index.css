@@ -955,3 +955,87 @@ select {
 .ant-table-wrapper .ant-table-column-sorter {
   color: #ffffff !important;
 }
+
+
+.rich-ul-arrow > li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #000;
+  font-weight: 600;
+}
+.rich-ul-stripe {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.35rem 0;
+}
+
+/* Arrow: more gap between → and text */
+.rich-ul-arrow > li {
+  position: relative;
+  padding-left: 1.6rem;   /* was 1.15rem — increased for arrow */
+  margin-bottom: 0.15rem;
+}
+.rich-ul-arrow > li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #000;
+  font-weight: 600;
+}
+
+/* Disc: tighter (padding-left already on .rich-ul-disc, li needs no extra) */
+.rich-ul-disc {
+  list-style-type: disc;
+  padding-left: 1.25rem;  /* keep as-is or reduce slightly */
+  padding-right: 0.5rem;
+  margin: 0.35rem 0;
+}
+
+/* Stripe: tighter gap between border and text */
+.rich-ul-stripe > li {
+  border-left: 2px solid #000;
+  padding-left: 0.4rem;   /* was 0.50rem — slightly tighter */
+  margin-bottom: 0.35rem;
+}
+
+
+
+/* Disc list — tighter item spacing */
+.rich-ul-disc {
+  list-style: none;
+  padding-left: 0;
+  padding-right: 0.5rem;
+  margin: 0.35rem 0;
+}
+.rich-ul-disc > li {
+  position: relative;
+  padding-left: 0.72rem; /* controls bullet -> text right-side gap */
+  margin-bottom: 0.1rem;  /* ← add this */
+}
+.rich-ul-disc > li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #000;
+  font-weight: 600;
+}
+
+/* Stripe list — tighter item spacing */
+.rich-ul-stripe > li {
+  border-left: 2px solid #000;
+  padding-left: 0.26rem;
+  margin-bottom: 0.1rem;  /* was 0.35rem */
+}
+.rich-text-display ul {
+  margin: 0.35rem 0;
+}
+.rich-text-display p {
+  margin: 0.25rem 0;
+}
+.rich-text-display p:first-child {
+  margin-top: 0;
+}
+.rich-text-display p:last-child {
+  margin-bottom: 0;
+}

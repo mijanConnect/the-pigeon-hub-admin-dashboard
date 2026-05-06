@@ -222,9 +222,13 @@ export const exportPedigreeToPDF = async (
 
       const cardBottom = y + height - 1.5;
 
+      // let currentY = y + 4;
+      // const leftMargin = x + 2;
+      // const contentWidth = width - 4;
       let currentY = y + 4;
-      const leftMargin = x + 2;
-      const contentWidth = width - 4;
+      const horizontalPadding = 1.3;
+      const leftMargin = x + horizontalPadding;
+      const contentWidth = width - horizontalPadding * 2;
 
       // === HEADER ROW ===
       pdf.setFontSize(7);
@@ -279,7 +283,7 @@ export const exportPedigreeToPDF = async (
       if (hasIconic) totalRightWidth += iconWidth + iconSpacing;
 
       // Start from right edge
-      let rightX = x + width - 2 - totalRightWidth;
+      let rightX = x + width - horizontalPadding - totalRightWidth;
 
       // Gender symbols (leftmost of the right side)
       pdf.setTextColor(0, 0, 0);
@@ -426,7 +430,7 @@ export const exportPedigreeToPDF = async (
             y: currentY,
             maxWidth: contentWidth,
             maxY: descMaxY,
-            lineHeight: 3,
+            lineHeight: 2,
             blockSpacing: 1.2,
             itemSpacing: 0.7,
             listIndent: 2.2,
@@ -450,7 +454,7 @@ export const exportPedigreeToPDF = async (
             y: currentY,
             maxWidth: contentWidth,
             maxY: cardBottom,
-            lineHeight: 2.6,
+            lineHeight: 2.2,
             blockSpacing: 1.0,
             itemSpacing: 0.6,
             listIndent: 2.2,
