@@ -1002,24 +1002,7 @@ select {
 
 
 /* Disc list — tighter item spacing */
-.rich-ul-disc {
-  list-style: none;
-  padding-left: 0;
-  padding-right: 0.5rem;
-  margin: 0.35rem 0;
-}
-.rich-ul-disc > li {
-  position: relative;
-  padding-left: 0.72rem; /* controls bullet -> text right-side gap */
-  margin-bottom: 0.1rem;  /* ← add this */
-}
-.rich-ul-disc > li::before {
-  content: "•";
-  position: absolute;
-  left: 0;
-  color: #000;
-  font-weight: 600;
-}
+
 
 /* Stripe list — tighter item spacing */
 .rich-ul-stripe > li {

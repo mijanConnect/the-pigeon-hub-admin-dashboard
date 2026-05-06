@@ -18,8 +18,6 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
-  useAddRoleMutation,
-  useAddUserMutation,
   useAddAdminMutation,
   useDeleteUserMutation,
   useGetRolesQuery,
@@ -43,11 +41,9 @@ const LoginCredentials = () => {
 
   const { data: apiRoles = [] } = useGetRolesQuery();
 
-  const [addUser, { isLoading: isAdding }] = useAddUserMutation();
   const [addAdmin, { isLoading: isAddingAdmin }] = useAddAdminMutation();
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
   const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
-  const [addRoleApi, { isLoading: isAddingRole }] = useAddRoleMutation();
   const [toggleUserStatus] = useToggleUserStatusMutation();
 
   // Local UI / form state
@@ -59,11 +55,6 @@ const LoginCredentials = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [viewForm] = Form.useForm();
 
-  const [isRoleModalVisible, setIsRoleModalVisible] = useState(false);
-  const [roleForm] = Form.useForm();
-
-  const [isUserModalVisible, setIsUserModalVisible] = useState(false);
-  const [userForm] = Form.useForm();
   const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
   const [adminForm] = Form.useForm();
   const tableContainerRef = useRef(null);
@@ -80,32 +71,39 @@ const LoginCredentials = () => {
 
   const navigate = useNavigate();
 
-  // Sync users (ensure pages is included so edit modal receives pages)
+  // Sync users - filter only USER and PAIDUSER
   useEffect(() => {
+    console.log("All API Users:", apiUsers);
     if (Array.isArray(apiUsers.users)) {
-      setData(apiUsers.users);
-      setOriginalData(apiUsers.users);
-      setSortedData(apiUsers.users);
+      const filteredUsers = apiUsers.users.filter(
+        (user) =>
+          user.role === "USER" || user.role === "PAIDUSER"
+      );
+      console.log("Filtered Users (USER/PAIDUSER):", filteredUsers);
+      setData(filteredUsers);
+      setOriginalData(filteredUsers);
+      setSortedData(filteredUsers);
     }
   }, [apiUsers]);
 
-  // Sync roles from API
+  // Sync roles from API - filter only USER and PAIDUSER
   useEffect(() => {
     if (Array.isArray(apiRoles)) {
-      setRoles(apiRoles.map((r) => r.roleName));
+      const userRoles = apiRoles
+        .map((r) => r.roleName)
+        .filter((role) => role === "USER" || role === "PAIDUSER");
+      setRoles(userRoles);
     }
   }, [apiRoles]);
 
   // Show / Edit modal
   const showViewModal = (record) => {
     setSelectedRecord(record);
-    // set fields explicitly (ensures Checkbox.Group receives values)
     viewForm.setFieldsValue({
       name: record.name,
       email: record.email,
       role: record.role,
       phone: record.phone,
-      pageAccess: record.pages || [], // IMPORTANT: pre-select checkboxes from API pages
     });
     setIsViewModalVisible(true);
   };
@@ -123,10 +121,7 @@ const LoginCredentials = () => {
         email: values.email,
         customeRole: values.role,
         contact: values.phone,
-        pages: values.pageAccess || [], // send updated pages from checkbox selection
       };
-
-      // console.log("updateUser", payload);
 
       try {
         await updateUser({ _id: selectedRecord._id, body: payload }).unwrap();
@@ -139,66 +134,26 @@ const LoginCredentials = () => {
     });
   };
 
-  // Add Role
-  const handleAddRole = async () => {
-    roleForm.validateFields().then(async (values) => {
-      const roleName = values.roleName;
-      try {
-        await addRoleApi({ roleName }).unwrap();
-        setRoles((prev) => [...prev, roleName]);
-        message.success(`Role "${roleName}" has been successfully added.`);
-        roleForm.resetFields();
-        setIsRoleModalVisible(false);
-        refetchUsers();
-      } catch (err) {
-        message.error(err?.data?.message || "Failed to add role.");
-      }
-    });
-  };
 
-  // Add User
+  // Add User with role selection (USER or PAIDUSER)
   const handleAddUser = () => {
-    userForm.validateFields().then(async (values) => {
+    adminForm.validateFields().then(async (values) => {
       const payload = {
         name: values.name,
         email: values.email,
         password: values.password,
         customeRole: values.role,
         contact: values.phone,
-        pages: values.pageAccess || [],
-      };
-
-      try {
-        await addUser(payload).unwrap();
-        message.success(`${values.name} has been added successfully.`);
-        userForm.resetFields();
-        setIsUserModalVisible(false);
-        refetchUsers();
-      } catch (err) {
-        message.error(err?.data?.message || "Failed to add user.");
-      }
-    });
-  };
-
-  // Add Admin
-  const handleAddAdmin = () => {
-    adminForm.validateFields().then(async (values) => {
-      const payload = {
-        name: values.name,
-        email: values.email,
-        password: values.password,
-        customeRole: "PAIDUSER",
-        contact: values.phone,
       };
 
       try {
         await addAdmin(payload).unwrap();
-        message.success(`${values.name} has been added as Admin successfully.`);
+        message.success(`${values.name} has been added successfully.`);
         adminForm.resetFields();
         setIsAdminModalVisible(false);
         refetchUsers();
       } catch (err) {
-        message.error(err?.data?.message || "Failed to add Paid User.");
+        message.error(err?.data?.message || "Failed to add user.");
       }
     });
   };
@@ -376,26 +331,10 @@ const LoginCredentials = () => {
         <div className="flex gap-5">
           <Button
             onClick={() => setIsAdminModalVisible(true)}
-            // className="bg-[#088395] py-5 px-7 font-semibold text-[16px]"
             className="bg-[#088395] hover:!bg-[#088395]/80 text-white hover:!text-white py-5 px-7 font-semibold text-[16px] border-[#088395] hover:!border-[#088395]"
             loading={isAddingAdmin}
           >
-            Add Paid User
-          </Button>
-          <Button
-            onClick={() => setIsUserModalVisible(true)}
-            // className="bg-[#088395] py-5 px-7 font-semibold text-[16px]"
-            className="bg-[#088395] hover:!bg-[#088395]/80 text-white hover:!text-white py-5 px-7 font-semibold text-[16px] border-[#088395] hover:!border-[#088395]"
-            loading={isAdding}
-          >
-            Add New User
-          </Button>
-          <Button
-            onClick={() => setIsRoleModalVisible(true)}
-            className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px]"
-            loading={isAddingRole}
-          >
-            Add New Role
+            Add User
           </Button>
         </div>
       </div>
@@ -569,7 +508,7 @@ const LoginCredentials = () => {
                     disabled
                   />
                 </Form.Item>
-              </Col>{" "}
+              </Col>
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="role"
@@ -581,11 +520,8 @@ const LoginCredentials = () => {
                     placeholder="Select Role"
                     className="custom-select-ant-modal"
                   >
-                    {roles.map((role) => (
-                      <Option key={role} value={role}>
-                        {role}
-                      </Option>
-                    ))}
+                    <Option value="USER">USER</Option>
+                    <Option value="PAIDUSER">PAIDUSER</Option>
                   </Select>
                 </Form.Item>
               </Col>
@@ -595,11 +531,11 @@ const LoginCredentials = () => {
                   label="Phone Number"
                   className="custom-form-item-ant"
                   rules={[
+                    { required: true, message: "Please enter Phone Number" },
                     {
                       validator: (_, value) => {
                         if (!value) return Promise.resolve();
                         const digits = String(value).replace(/\D/g, "").length;
-                        // Allow 7 to 15 digits (E.164 max is 15)
                         return digits >= 7 && digits <= 15
                           ? Promise.resolve()
                           : Promise.reject(
@@ -618,254 +554,14 @@ const LoginCredentials = () => {
                   />
                 </Form.Item>
               </Col>
-              <Col xs={24} sm={24}>
-                <Form.Item name="pageAccess" label="Page Access Control">
-                  <Checkbox.Group className="custom-checkbox-ant-modal">
-                    <Row>
-                      <Col span={24}>
-                        <Checkbox value="overview">Dashboard Overview</Checkbox>
-                      </Col>
-                      <Col span={24}>
-                        <Checkbox value="pigeon">My Pigeons</Checkbox>
-                      </Col>
-                      <Col span={24}>
-                        <Checkbox value="breeder">Verify Breeders</Checkbox>
-                      </Col>
-                      <Col span={24}>
-                        <Checkbox value="package">
-                          Subscription Packages
-                        </Checkbox>
-                      </Col>
-                      <Col span={24}>
-                        <Checkbox value="userManagement">
-                          User Management
-                        </Checkbox>
-                      </Col>
-                      <Col span={24}>
-                        <Checkbox value="analytics">
-                          Analytics & Reports
-                        </Checkbox>
-                      </Col>
-                    </Row>
-                  </Checkbox.Group>
-                </Form.Item>
-              </Col>
             </Row>
           </Form>
         )}
       </Modal>
 
-      {/* Add Role Modal */}
+      {/* Add User Modal with Role Selection */}
       <Modal
-        title="Add New Role"
-        open={isRoleModalVisible}
-        onCancel={() => setIsRoleModalVisible(false)}
-        footer={[
-          <Button
-            key="cancel"
-            onClick={() => setIsRoleModalVisible(false)}
-            className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
-          >
-            Cancel
-          </Button>,
-          <Button
-            key="add"
-            className="bg-primary border border-primary text-white"
-            onClick={handleAddRole}
-          >
-            Add Role
-          </Button>,
-        ]}
-        width={500}
-      >
-        <Form form={roleForm} layout="vertical" className="mb-6">
-          <Form.Item
-            name="roleName"
-            label="Role Name"
-            rules={[{ required: true, message: "Please enter Role Name" }]}
-            className="custom-form-item-ant"
-          >
-            <Input
-              placeholder="Enter Role Name"
-              className="custom-input-ant-modal"
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* Add User Modal */}
-      <Modal
-        title="Add New User"
-        open={isUserModalVisible}
-        onCancel={() => setIsUserModalVisible(false)}
-        width={700}
-        footer={[
-          <Button
-            key="cancel"
-            onClick={() => setIsUserModalVisible(false)}
-            className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
-          >
-            Cancel
-          </Button>,
-          <Button
-            key="add"
-            className="bg-primary border border-primary text-white"
-            onClick={handleAddUser}
-            loading={isAdding}
-          >
-            Add User
-          </Button>,
-        ]}
-      >
-        <Form form={userForm} layout="vertical" className="mb-6">
-          <Row gutter={[30, 20]}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="name"
-                label="Name"
-                rules={[{ required: true, message: "Please enter Name" }]}
-                className="custom-form-item-ant"
-              >
-                <Input
-                  placeholder="Enter Name"
-                  className="custom-input-ant-modal"
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: "Please enter Email" },
-                  {
-                    pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                    message: "Please enter a valid email address",
-                  },
-                ]}
-                validateTrigger={["onChange", "onBlur"]}
-                className="custom-form-item-ant"
-              >
-                <Input
-                  placeholder="Enter Email"
-                  className="custom-input-ant-modal"
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="role"
-                label="Role"
-                rules={[{ required: true, message: "Please select a Role" }]}
-                className="custom-form-item-ant-select"
-              >
-                <Select
-                  placeholder="Select Role"
-                  className="custom-select-ant-modal"
-                >
-                  {roles.map((role) => (
-                    <Option key={role} value={role}>
-                      {role}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="phone"
-                label="Phone Number"
-                rules={[
-                  { required: true, message: "Please enter Phone Number" },
-                  {
-                    validator: (_, value) => {
-                      if (!value) return Promise.resolve();
-                      const digits = String(value).replace(/\D/g, "").length;
-                      // Allow 7 to 15 digits (E.164 max is 15)
-                      return digits >= 7 && digits <= 15
-                        ? Promise.resolve()
-                        : Promise.reject(
-                            new Error("Please enter a valid Phone Number"),
-                          );
-                    },
-                  },
-                ]}
-                validateTrigger={["onChange", "onBlur"]}
-                className="custom-form-item-ant"
-              >
-                <Input
-                  placeholder="Enter Phone Number"
-                  className="custom-input-ant-modal"
-                  inputMode="tel"
-                  maxLength={20}
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="password"
-                label="Password"
-                rules={[
-                  { required: true, message: "Please enter Password" },
-                  {
-                    min: 8,
-                    message: "Password must be at least 8 characters long",
-                  },
-                ]}
-                className="custom-form-item-ant"
-              >
-                <Input.Password
-                  placeholder="Enter Password"
-                  className="custom-input-ant-modal"
-                />
-              </Form.Item>
-            </Col>
-
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="pageAccess"
-                label="Page Access Control"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select at least one page",
-                  },
-                ]}
-                className="custom-form-item-ant-select"
-              >
-                <Checkbox.Group className="custom-checkbox-ant-modal">
-                  <Row>
-                    <Col span={24}>
-                      <Checkbox value="overview">Dashboard Overview</Checkbox>
-                    </Col>
-                    <Col span={24}>
-                      <Checkbox value="pigeon">My Pigeons</Checkbox>
-                    </Col>
-                    <Col span={24}>
-                      <Checkbox value="breeder">Verify Breeders</Checkbox>
-                    </Col>
-                    <Col span={24}>
-                      <Checkbox value="package">Subscription Packages</Checkbox>
-                    </Col>
-                    <Col span={24}>
-                      <Checkbox value="userManagement">
-                        User Management
-                      </Checkbox>
-                    </Col>
-                    <Col span={24}>
-                      <Checkbox value="analytics">Analytics & Reports</Checkbox>
-                    </Col>
-                  </Row>
-                </Checkbox.Group>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
-
-      {/* Add Admin Modal */}
-      <Modal
-        title="Add Paid User"
+        title="Add User"
         open={isAdminModalVisible}
         onCancel={() => setIsAdminModalVisible(false)}
         width={700}
@@ -880,10 +576,10 @@ const LoginCredentials = () => {
           <Button
             key="add"
             className="bg-primary border border-primary text-white"
-            onClick={handleAddAdmin}
+            onClick={handleAddUser}
             loading={isAddingAdmin}
           >
-            Add Paid User
+            Add User
           </Button>,
         ]}
       >
@@ -924,6 +620,20 @@ const LoginCredentials = () => {
             </Col>
             <Col xs={24} sm={12}>
               <Form.Item
+                name="role"
+                label="Role"
+                initialValue="USER"
+                rules={[{ required: true, message: "Please select a Role" }]}
+                className="custom-form-item-ant-select"
+              >
+                <Select placeholder="Select Role" className="custom-select-ant-modal">
+                  <Option value="USER">USER</Option>
+                  <Option value="PAIDUSER">PAIDUSER</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
                 name="phone"
                 label="Phone Number"
                 rules={[
@@ -932,7 +642,6 @@ const LoginCredentials = () => {
                     validator: (_, value) => {
                       if (!value) return Promise.resolve();
                       const digits = String(value).replace(/\D/g, "").length;
-                      // Allow 7 to 15 digits (E.164 max is 15)
                       return digits >= 7 && digits <= 15
                         ? Promise.resolve()
                         : Promise.reject(
@@ -952,7 +661,6 @@ const LoginCredentials = () => {
                 />
               </Form.Item>
             </Col>
-
             <Col xs={24} sm={12}>
               <Form.Item
                 name="password"

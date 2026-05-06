@@ -134,76 +134,53 @@ export default function TiptapMiniEditor({
           font-style: italic !important;
         }
 
-        /* Default bullet list */
-        .tiptap-editor-wrapper[data-list-style="default"] .ProseMirror ul,
-        .tiptap-editor-wrapper[data-list-style="circle"] .ProseMirror ul,
-        .tiptap-editor-wrapper[data-list-style="arrow"] .ProseMirror ul,
-        .tiptap-editor-wrapper[data-list-style="stripe"] .ProseMirror ul {
-          list-style-type: disc !important;
-          margin-left: 20px !important;
+        /* Prevent browser default marker to avoid duplicate bullets */
+        .tiptap-editor-wrapper .ProseMirror ul {
+          list-style: none !important;
+          margin-left: 0 !important;
           padding-left: 0 !important;
         }
 
-        /* Circle Bullets */
-        .tiptap-editor-wrapper[data-list-style="circle"] .ProseMirror ul {
-          list-style-type: circle !important;
-          margin-left: 20px !important;
-          padding-left: 0 !important;
-        }
-
-        .tiptap-editor-wrapper[data-list-style="circle"] .ProseMirror ul li {
-          list-style-type: circle !important;
+        .tiptap-editor-wrapper .ProseMirror ul > li {
+          position: relative !important;
+          padding-left: 14px !important;
           margin: 4px 0 !important;
         }
 
-        /* Arrow Bullets */
-        .tiptap-editor-wrapper[data-list-style="arrow"] .ProseMirror ul {
-          list-style-type: none !important;
-          margin-left: 0 !important;
-          padding-left: 0 !important;
-        }
-
-        .tiptap-editor-wrapper[data-list-style="arrow"] .ProseMirror ul li {
-          list-style-type: none !important;
-          margin-left: 0 !important;
-          padding-left: 24px !important;
-          margin-bottom: 4px !important;
-          position: relative;
-        }
-
-        .tiptap-editor-wrapper[data-list-style="arrow"] .ProseMirror ul li::before {
-          content: "→ " !important;
-          margin-right: 8px !important;
-          color: #0890e8 !important;
-          font-weight: bold !important;
+        .tiptap-editor-wrapper .ProseMirror ul > li::before {
+          content: "•" !important;
           position: absolute !important;
           left: 0 !important;
+          top: 0 !important;
+          color: #000 !important;
         }
 
-        /* Stripe List */
-        .tiptap-editor-wrapper[data-list-style="stripe"] .ProseMirror ul {
-          list-style-type: none !important;
+        /* Keep rich class lists single-marker only */
+        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-disc,
+        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-arrow,
+        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-stripe {
+          list-style: none !important;
           margin-left: 0 !important;
           padding-left: 0 !important;
         }
 
-        .tiptap-editor-wrapper[data-list-style="stripe"] .ProseMirror ul li {
-          list-style-type: none !important;
-          padding: 1px 1px !important;
-          margin: 4px 0 !important;
-          border-radius: 4px !important;
+        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-disc > li,
+        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-arrow > li,
+        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-stripe > li {
+          list-style: none !important;
         }
 
-        .tiptap-editor-wrapper[data-list-style="stripe"] .ProseMirror ul li:nth-child(odd) {
-          background-color: #0890e8 !important;
-          height: 30px !important;
-          width: 4px !important;
+        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-arrow > li::before {
+          content: "→" !important;
         }
 
-        .tiptap-editor-wrapper[data-list-style="stripe"] .ProseMirror ul li:nth-child(even) {
-          background-color: #e8f4ff !important;
-          height: 30px !important;
-          width: 4px !important;
+        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-stripe > li {
+          border-left: 2px solid #000 !important;
+          padding-left: 8px !important;
+        }
+
+        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-stripe > li::before {
+          content: "" !important;
         }
       `}</style>
 
