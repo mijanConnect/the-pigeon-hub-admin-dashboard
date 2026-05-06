@@ -437,9 +437,13 @@ export const exportPedigreeToJPG = async (
 
       const cardBottom = y + height - 1.5;
 
+      // let currentY = y + 4;
+      // const leftMargin = x + 2;
+      // const contentWidth = width - 4;
       let currentY = y + 4;
-      const leftMargin = x + 2;
-      const contentWidth = width - 4;
+      const horizontalPadding = 1.3;
+      const leftMargin = x + horizontalPadding;
+      const contentWidth = width - horizontalPadding * 2;
 
       // === HEADER ROW ===
       pdf.setFontSize(7);
@@ -488,7 +492,7 @@ export const exportPedigreeToJPG = async (
       if (hasVerified) totalRightWidth += iconWidth + iconSpacing;
       if (hasIconic) totalRightWidth += iconWidth + iconSpacing;
 
-      let rightX = x + width - 2 - totalRightWidth;
+      let rightX = x + width - horizontalPadding - totalRightWidth;
 
       pdf.setTextColor(0, 0, 0);
       pdf.setFont("helvetica", "normal");

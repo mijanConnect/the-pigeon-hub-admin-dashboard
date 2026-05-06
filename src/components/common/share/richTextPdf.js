@@ -8,12 +8,19 @@ export function renderRichTextToPdf({
     x,
     y,
     maxWidth,
-    /** Max baseline Y (mm). No further lines drawn at or below this value. */
+    /** Absolute max baseline Y (mm). Preferred by pedigree PDF/JPG export. */
     maxY = null,
+    /**
+     * Max height (mm) from the starting `y` when `maxY` is not set.
+     * Clip bottom = startY + maxHeight.
+     */
+    maxHeight = null,
     lineHeight = 2.5,
     listIndent = 2.3,
     blockSpacing,
     itemSpacing,
+    /** Inside one &lt;li&gt;, all lines use lineHeight × this (roomier bullets). */
+    listItemLineHeightMult = 1.5,
   }) {
     if (!pdf || !html || maxWidth <= 0) return y;
   
@@ -21,8 +28,16 @@ export function renderRichTextToPdf({
       html != null ? String(html).replace(/\\n/g, "\n").trim() : "";
     if (!raw) return y;
   
+    const clipStartY = y;
+    const effectiveMaxY =
+      maxY != null && Number.isFinite(Number(maxY))
+        ? Number(maxY)
+        : maxHeight != null && Number.isFinite(Number(maxHeight))
+          ? clipStartY + Number(maxHeight)
+          : null;
+
     let stopRender = false;
-    const isPastClip = () => maxY != null && y >= maxY;
+    const isPastClip = () => effectiveMaxY != null && y >= effectiveMaxY;
 
     // If no tags, treat as plain text with newlines.
     if (!/<[a-z][\s\S]*>/i.test(raw)) {
@@ -59,14 +74,15 @@ export function renderRichTextToPdf({
       itemSpacing !== undefined
         ? Number(itemSpacing)
         : Math.max(0.3, lh * 0.25);
+    const liLineMult = Math.max(1, Number(listItemLineHeightMult) || 1.5);
   
-    const drawListMarker = (type, mx, my) => {
+    const drawListMarker = (type, mx, my, markerLh = lh) => {
       if (type === "arrow") {
-        const centerY = my - lh * 0.32;
+        const centerY = my - markerLh * 0.32;
         const arrowStartX = mx;
-        const arrowEndX = mx + Math.max(2.0, lh * 0.56);
-        const headDX = Math.max(0.6, lh * 0.22);
-        const headDY = Math.max(0.45, lh * 0.18);
+        const arrowEndX = mx + Math.max(2.0, markerLh * 0.56);
+        const headDX = Math.max(0.6, markerLh * 0.22);
+        const headDY = Math.max(0.45, markerLh * 0.18);
         pdf.setDrawColor(0, 0, 0);
         pdf.setLineWidth(0.35);
         pdf.line(arrowStartX, centerY, arrowEndX, centerY);
@@ -78,7 +94,7 @@ export function renderRichTextToPdf({
       if (type === "stripe") {
         pdf.setDrawColor(0, 0, 0);
         pdf.setLineWidth(0.35);
-        pdf.line(mx, my - lh * 0.64, mx, my - lh * 0.08);
+        pdf.line(mx, my - markerLh * 0.64, mx, my - markerLh * 0.08);
         return;
       }
   
@@ -117,7 +133,12 @@ export function renderRichTextToPdf({
   
     // ── Render a flat array of inline segments, word-wrapping across the full
     //    availableWidth.  Honours bold/italic font changes mid-line.
-    const renderInlineSegments = (segments, offsetX, availableWidth) => {
+    const renderInlineSegments = (
+      segments,
+      offsetX,
+      availableWidth,
+      localLineHeight = lh,
+    ) => {
       if (!segments.length || stopRender || isPastClip()) return;
   
       // Build a list of word tokens: { word, bold, italic }
@@ -156,7 +177,7 @@ export function renderRichTextToPdf({
   
       const flushLine = () => {
         if (!lineTokens.length) return;
-        if (maxY != null && y >= maxY) {
+        if (effectiveMaxY != null && y >= effectiveMaxY) {
           stopRender = true;
           lineTokens = [];
           lineWidth = 0;
@@ -179,12 +200,12 @@ export function renderRichTextToPdf({
           pdf.text(t.word, curX, y);
           curX += measureWord(t);
         });
-        y += lh;
+        y += localLineHeight;
         lineTokens = [];
         lineWidth  = 0;
         // Reset font to normal after each line
         pdf.setFont("helvetica", "normal");
-        if (maxY != null && y >= maxY) stopRender = true;
+        if (effectiveMaxY != null && y >= effectiveMaxY) stopRender = true;
       };
   
       for (const token of tokens) {
@@ -242,7 +263,7 @@ export function renderRichTextToPdf({
               renderNode(child, indent, listType);
             }
             y += blkSpacing;
-            if (maxY != null && y >= maxY) stopRender = true;
+            if (effectiveMaxY != null && y >= effectiveMaxY) stopRender = true;
             return;
           }
 
@@ -257,7 +278,7 @@ export function renderRichTextToPdf({
             renderInlineSegments(segments, x + indent, availableWidth);
           }
           y += blkSpacing;
-          if (maxY != null && y >= maxY) stopRender = true;
+          if (effectiveMaxY != null && y >= effectiveMaxY) stopRender = true;
           return;
         }
   
@@ -268,20 +289,82 @@ export function renderRichTextToPdf({
   
           for (const child of node.childNodes) {
             if (stopRender) break;
-            renderNode(child, indent + liIndent, type);
+            // Do not pre-indent <li> here; <li> already applies marker/text gap.
+            // Pre-indenting both <ul> and <li> causes extra horizontal space.
+            renderNode(child, indent, type);
           }
           y += blkSpacing;
-          if (maxY != null && y >= maxY) stopRender = true;
+          if (effectiveMaxY != null && y >= effectiveMaxY) stopRender = true;
           return;
         }
   
+        // if (tag === "li") {
+        //   if (stopRender || isPastClip()) return;
+        //   const symbolX = x + indent;
+        //   let isMarkerDrawn = false;
+        //   const listItemLineHeight = lh * liLineMult;
+  
+        //   const renderChildWithMarker = (child) => {
+        //     if (stopRender) return;
+        //     if (child.nodeType === 1 && child.tagName.toLowerCase() === "p") {
+        //       // Collect inline segments from this <p> inside <li>
+        //       const segments = [];
+        //       child.childNodes.forEach((c) => {
+        //         segments.push(...collectInlineSegments(c));
+        //       });
+        //       const text = segments.map((s) => s.text).join("").trim();
+        //       if (text) {
+        //         const availableWidth = Math.max(10, maxWidth - indent - liIndent);
+  
+        //         // We need to draw the marker on the FIRST line only.
+        //         // We'll measure how many lines the content wraps to,
+        //         // draw the marker before the first line, then render inline.
+        //         if (!isMarkerDrawn) {
+        //           if (isPastClip()) return;
+        //           drawListMarker(listType, symbolX, y, listItemLineHeight);
+        //           isMarkerDrawn = true;
+        //         }
+        //         renderInlineSegments(
+        //           segments,
+        //           x + indent + liIndent,
+        //           availableWidth,
+        //           listItemLineHeight,
+        //         );
+        //       }
+        //       y += blkSpacing * 0.5;
+        //       if (effectiveMaxY != null && y >= effectiveMaxY) stopRender = true;
+        //     } else {
+        //       renderNode(child, indent + liIndent, listType);
+        //     }
+        //   };
+  
+        //   for (const child of node.childNodes) {
+        //     if (stopRender) break;
+        //     renderChildWithMarker(child);
+        //   }
+        //   if (!isMarkerDrawn) {
+        //     if (!isPastClip()) {
+        //       drawListMarker(listType, symbolX, y, listItemLineHeight);
+        //       y += listItemLineHeight + itmSpacing;
+        //     }
+        //   } else {
+        //     y += itmSpacing;
+        //   }
+        //   if (effectiveMaxY != null && y >= effectiveMaxY) stopRender = true;
+        //   return;
+        // }
+
         if (tag === "li") {
-          if (stopRender || isPastClip()) return;
           const symbolX = x + indent;
           let isMarkerDrawn = false;
+          // Keep arrow list spacing unchanged; make disc/stripe a bit tighter.
+          const isArrowList = listType === "arrow";
+          const markerTextGap = isArrowList
+            ? liIndent
+            : Math.max(1.4, liIndent * 0.68);
+          const listItemLineHeight = isArrowList ? lh * 1.5 : lh * 1.22;
   
           const renderChildWithMarker = (child) => {
-            if (stopRender) return;
             if (child.nodeType === 1 && child.tagName.toLowerCase() === "p") {
               // Collect inline segments from this <p> inside <li>
               const segments = [];
@@ -290,38 +373,49 @@ export function renderRichTextToPdf({
               });
               const text = segments.map((s) => s.text).join("").trim();
               if (text) {
-                const availableWidth = Math.max(10, maxWidth - indent - liIndent);
+                const availableWidth = Math.max(
+                  10,
+                  maxWidth - indent - markerTextGap
+                );
   
                 // We need to draw the marker on the FIRST line only.
                 // We'll measure how many lines the content wraps to,
                 // draw the marker before the first line, then render inline.
                 if (!isMarkerDrawn) {
-                  if (isPastClip()) return;
-                  drawListMarker(listType, symbolX, y);
+                  drawListMarker(listType, symbolX, y, listItemLineHeight);
                   isMarkerDrawn = true;
                 }
-                renderInlineSegments(segments, x + indent + liIndent, availableWidth);
+                renderInlineSegments(
+                  segments,
+                  x + indent + markerTextGap,
+                  availableWidth,
+                  listItemLineHeight
+                );
               }
               y += blkSpacing * 0.5;
-              if (maxY != null && y >= maxY) stopRender = true;
             } else {
-              renderNode(child, indent + liIndent, listType);
+              renderNode(child, indent + markerTextGap, listType);
             }
           };
   
-          for (const child of node.childNodes) {
-            if (stopRender) break;
+          node.childNodes.forEach((child) => {
+            if (stopRender) return;
             renderChildWithMarker(child);
-          }
+          });
           if (!isMarkerDrawn) {
-            if (!isPastClip()) {
-              drawListMarker(listType, symbolX, y);
-              y += lh + itmSpacing;
+            if (maxY != null && y + listItemLineHeight > maxY + 0.001) {
+              stopRender = true;
+              return;
             }
+            drawListMarker(listType, symbolX, y, listItemLineHeight);
+            y += listItemLineHeight + itmSpacing;
           } else {
+            if (maxY != null && y + itmSpacing > maxY + 0.001) {
+              stopRender = true;
+              return;
+            }
             y += itmSpacing;
           }
-          if (maxY != null && y >= maxY) stopRender = true;
           return;
         }
   
