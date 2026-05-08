@@ -18,7 +18,8 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
-  useAddAdminMutation,
+  useAddRoleMutation,
+  useAddUserMutation,
   useDeleteUserMutation,
   useGetRolesQuery,
   useGetUsersQuery,
@@ -30,7 +31,7 @@ import SyncHorizontalScroll from "../common/SyncHorizontalScroll";
 
 const { Option } = Select;
 
-const LoginCredentials = () => {
+const AdminManagement = () => {
   // API hooks
   const {
     data: apiUsers = { users: [], pagination: null },
@@ -41,9 +42,10 @@ const LoginCredentials = () => {
 
   const { data: apiRoles = [] } = useGetRolesQuery();
 
-  const [addAdmin, { isLoading: isAddingAdmin }] = useAddAdminMutation();
+  const [addUser, { isLoading: isAdding }] = useAddUserMutation();
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
   const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
+  const [addRoleApi, { isLoading: isAddingRole }] = useAddRoleMutation();
   const [toggleUserStatus] = useToggleUserStatusMutation();
 
   // Local UI / form state
@@ -51,12 +53,16 @@ const LoginCredentials = () => {
   const [originalData, setOriginalData] = useState([]);
   const [sortedData, setSortedData] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [adminRoles, setAdminRoles] = useState([]);
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [viewForm] = Form.useForm();
 
-  const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
-  const [adminForm] = Form.useForm();
+  const [isRoleModalVisible, setIsRoleModalVisible] = useState(false);
+  const [roleForm] = Form.useForm();
+
+  const [isUserModalVisible, setIsUserModalVisible] = useState(false);
+  const [userForm] = Form.useForm();
   const tableContainerRef = useRef(null);
 
   // pageAccess options (include options observed in API samples so edit modal can pre-select)
@@ -71,39 +77,45 @@ const LoginCredentials = () => {
 
   const navigate = useNavigate();
 
-  // Sync users - filter only USER and PAIDUSER
+  // Filter users for admin roles only (exclude USER and PAIDUSER)
   useEffect(() => {
     console.log("All API Users:", apiUsers);
     if (Array.isArray(apiUsers.users)) {
       const filteredUsers = apiUsers.users.filter(
         (user) =>
-          user.role === "USER" || user.role === "PAIDUSER"
+          user.role &&
+          user.role !== "USER" &&
+          user.role !== "PAIDUSER"
       );
-      console.log("Filtered Users (USER/PAIDUSER):", filteredUsers);
+      console.log("Filtered Users (Admin Roles):", filteredUsers);
       setData(filteredUsers);
       setOriginalData(filteredUsers);
       setSortedData(filteredUsers);
     }
   }, [apiUsers]);
 
-  // Sync roles from API - filter only USER and PAIDUSER
+  // Sync roles from API and filter for admin roles
   useEffect(() => {
     if (Array.isArray(apiRoles)) {
-      const userRoles = apiRoles
-        .map((r) => r.roleName)
-        .filter((role) => role === "USER" || role === "PAIDUSER");
-      setRoles(userRoles);
+      const allRoles = apiRoles.map((r) => r.roleName);
+      setRoles(allRoles);
+      const admin = allRoles.filter(
+        (role) => role !== "USER" && role !== "PAIDUSER"
+      );
+      setAdminRoles(admin);
     }
   }, [apiRoles]);
 
   // Show / Edit modal
   const showViewModal = (record) => {
     setSelectedRecord(record);
+    // set fields explicitly (ensures Checkbox.Group receives values)
     viewForm.setFieldsValue({
       name: record.name,
       email: record.email,
       role: record.role,
       phone: record.phone,
+      pageAccess: record.pages || [], // IMPORTANT: pre-select checkboxes from API pages
     });
     setIsViewModalVisible(true);
   };
@@ -121,6 +133,7 @@ const LoginCredentials = () => {
         email: values.email,
         customeRole: values.role,
         contact: values.phone,
+        pages: values.pageAccess || [], // send updated pages from checkbox selection
       };
 
       try {
@@ -134,23 +147,40 @@ const LoginCredentials = () => {
     });
   };
 
+  // Add Role
+  const handleAddRole = async () => {
+    roleForm.validateFields().then(async (values) => {
+      const roleName = values.roleName;
+      try {
+        await addRoleApi({ roleName }).unwrap();
+        setAdminRoles((prev) => [...prev, roleName]);
+        message.success(`Role "${roleName}" has been successfully added.`);
+        roleForm.resetFields();
+        setIsRoleModalVisible(false);
+        refetchUsers();
+      } catch (err) {
+        message.error(err?.data?.message || "Failed to add role.");
+      }
+    });
+  };
 
-  // Add User with role selection (USER or PAIDUSER)
+  // Add Admin User
   const handleAddUser = () => {
-    adminForm.validateFields().then(async (values) => {
+    userForm.validateFields().then(async (values) => {
       const payload = {
         name: values.name,
         email: values.email,
         password: values.password,
         customeRole: values.role,
         contact: values.phone,
+        pages: values.pageAccess || [],
       };
 
       try {
-        await addAdmin(payload).unwrap();
+        await addUser(payload).unwrap();
         message.success(`${values.name} has been added successfully.`);
-        adminForm.resetFields();
-        setIsAdminModalVisible(false);
+        userForm.resetFields();
+        setIsUserModalVisible(false);
         refetchUsers();
       } catch (err) {
         message.error(err?.data?.message || "Failed to add user.");
@@ -312,12 +342,6 @@ const LoginCredentials = () => {
     },
   ];
 
-  const rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {
-      console.log("Selected row keys:", selectedRowKeys, selectedRows);
-    },
-  };
-
   useEffect(() => {
     const el = tableContainerRef.current;
     if (!el) return;
@@ -330,11 +354,18 @@ const LoginCredentials = () => {
       <div className="flex justify-end items-center mb-4 ">
         <div className="flex gap-5">
           <Button
-            onClick={() => setIsAdminModalVisible(true)}
+            onClick={() => setIsUserModalVisible(true)}
             className="bg-[#088395] hover:!bg-[#088395]/80 text-white hover:!text-white py-5 px-7 font-semibold text-[16px] border-[#088395] hover:!border-[#088395]"
-            loading={isAddingAdmin}
+            loading={isAdding}
           >
-            Add User
+            Add New Admin
+          </Button>
+          <Button
+            onClick={() => setIsRoleModalVisible(true)}
+            className="bg-primary hover:!bg-primary/90 text-white hover:!text-white py-5 px-7 font-semibold text-[16px]"
+            loading={isAddingRole}
+          >
+            Add New Role
           </Button>
         </div>
       </div>
@@ -354,7 +385,6 @@ const LoginCredentials = () => {
               </div>
             ) : (
               <Table
-                // rowSelection={rowSelection}
                 columns={columns}
                 dataSource={sortedData}
                 rowClassName={() => "hover-row"}
@@ -401,7 +431,7 @@ const LoginCredentials = () => {
                 locale={{
                   emptyText: (
                     <div className="py-10 text-gray-400 text-center">
-                      No users found
+                      No admin users found
                     </div>
                   ),
                 }}
@@ -520,8 +550,11 @@ const LoginCredentials = () => {
                     placeholder="Select Role"
                     className="custom-select-ant-modal"
                   >
-                    <Option value="USER">USER</Option>
-                    <Option value="PAIDUSER">PAIDUSER</Option>
+                    {adminRoles.map((role) => (
+                      <Option key={role} value={role}>
+                        {role}
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
               </Col>
@@ -531,7 +564,6 @@ const LoginCredentials = () => {
                   label="Phone Number"
                   className="custom-form-item-ant"
                   rules={[
-                    { required: true, message: "Please enter Phone Number" },
                     {
                       validator: (_, value) => {
                         if (!value) return Promise.resolve();
@@ -554,21 +586,91 @@ const LoginCredentials = () => {
                   />
                 </Form.Item>
               </Col>
+              <Col xs={24} sm={24}>
+                <Form.Item name="pageAccess" label="Page Access Control">
+                  <Checkbox.Group className="custom-checkbox-ant-modal">
+                    <Row>
+                      <Col span={24}>
+                        <Checkbox value="overview">Dashboard Overview</Checkbox>
+                      </Col>
+                      <Col span={24}>
+                        <Checkbox value="pigeon">My Pigeons</Checkbox>
+                      </Col>
+                      <Col span={24}>
+                        <Checkbox value="breeder">Verify Breeders</Checkbox>
+                      </Col>
+                      <Col span={24}>
+                        <Checkbox value="package">
+                          Subscription Packages
+                        </Checkbox>
+                      </Col>
+                      <Col span={24}>
+                        <Checkbox value="userManagement">
+                          User Management
+                        </Checkbox>
+                      </Col>
+                      <Col span={24}>
+                        <Checkbox value="analytics">
+                          Analytics & Reports
+                        </Checkbox>
+                      </Col>
+                    </Row>
+                  </Checkbox.Group>
+                </Form.Item>
+              </Col>
             </Row>
           </Form>
         )}
       </Modal>
 
-      {/* Add User Modal with Role Selection */}
+      {/* Add Role Modal */}
       <Modal
-        title="Add User"
-        open={isAdminModalVisible}
-        onCancel={() => setIsAdminModalVisible(false)}
+        title="Add New Role"
+        open={isRoleModalVisible}
+        onCancel={() => setIsRoleModalVisible(false)}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => setIsRoleModalVisible(false)}
+            className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
+          >
+            Cancel
+          </Button>,
+          <Button
+            key="add"
+            className="bg-primary border border-primary text-white"
+            onClick={handleAddRole}
+          >
+            Add Role
+          </Button>,
+        ]}
+        width={500}
+      >
+        <Form form={roleForm} layout="vertical" className="mb-6">
+          <Form.Item
+            name="roleName"
+            label="Role Name"
+            rules={[{ required: true, message: "Please enter Role Name" }]}
+            className="custom-form-item-ant"
+          >
+            <Input
+              placeholder="Enter Role Name"
+              className="custom-input-ant-modal"
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Add Admin User Modal */}
+      <Modal
+        title="Add New Admin"
+        open={isUserModalVisible}
+        onCancel={() => setIsUserModalVisible(false)}
         width={700}
         footer={[
           <Button
             key="cancel"
-            onClick={() => setIsAdminModalVisible(false)}
+            onClick={() => setIsUserModalVisible(false)}
             className="bg-[#C33739] border border-[#C33739] hover:!border-[#C33739] text-white hover:!text-[#C33739]"
           >
             Cancel
@@ -577,13 +679,13 @@ const LoginCredentials = () => {
             key="add"
             className="bg-primary border border-primary text-white"
             onClick={handleAddUser}
-            loading={isAddingAdmin}
+            loading={isAdding}
           >
-            Add User
+            Add Admin
           </Button>,
         ]}
       >
-        <Form form={adminForm} layout="vertical" className="mb-6">
+        <Form form={userForm} layout="vertical" className="mb-6">
           <Row gutter={[30, 20]}>
             <Col xs={24} sm={12}>
               <Form.Item
@@ -622,13 +724,18 @@ const LoginCredentials = () => {
               <Form.Item
                 name="role"
                 label="Role"
-                initialValue="USER"
                 rules={[{ required: true, message: "Please select a Role" }]}
                 className="custom-form-item-ant-select"
               >
-                <Select placeholder="Select Role" className="custom-select-ant-modal">
-                  <Option value="USER">USER</Option>
-                  <Option value="PAIDUSER">PAIDUSER</Option>
+                <Select
+                  placeholder="Select Role"
+                  className="custom-select-ant-modal"
+                >
+                  {adminRoles.map((role) => (
+                    <Option key={role} value={role}>
+                      {role}
+                    </Option>
+                  ))}
                 </Select>
               </Form.Item>
             </Col>
@@ -680,6 +787,45 @@ const LoginCredentials = () => {
                 />
               </Form.Item>
             </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="pageAccess"
+                label="Page Access Control"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select at least one page",
+                  },
+                ]}
+                className="custom-form-item-ant-select"
+              >
+                <Checkbox.Group className="custom-checkbox-ant-modal">
+                  <Row>
+                    <Col span={24}>
+                      <Checkbox value="overview">Dashboard Overview</Checkbox>
+                    </Col>
+                    <Col span={24}>
+                      <Checkbox value="pigeon">My Pigeons</Checkbox>
+                    </Col>
+                    <Col span={24}>
+                      <Checkbox value="breeder">Verify Breeders</Checkbox>
+                    </Col>
+                    <Col span={24}>
+                      <Checkbox value="package">Subscription Packages</Checkbox>
+                    </Col>
+                    <Col span={24}>
+                      <Checkbox value="userManagement">
+                        User Management
+                      </Checkbox>
+                    </Col>
+                    <Col span={24}>
+                      <Checkbox value="analytics">Analytics & Reports</Checkbox>
+                    </Col>
+                  </Row>
+                </Checkbox.Group>
+              </Form.Item>
+            </Col>
           </Row>
         </Form>
       </Modal>
@@ -687,4 +833,4 @@ const LoginCredentials = () => {
   );
 };
 
-export default LoginCredentials;
+export default AdminManagement;

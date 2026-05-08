@@ -112,6 +112,15 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       ),
     },
     {
+      key: "/admin-management",
+      icon: renderIcon(loginCredentials, "/admin-management"),
+      label: (
+        <Link to="/admin-management">
+          {collapsed ? "" : "Admin Management"}
+        </Link>
+      ),
+    },
+    {
       key: "/subscription",
       icon: renderIcon(SubscriptionManagement, "/subscription"),
       label: (
