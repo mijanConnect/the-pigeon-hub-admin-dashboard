@@ -355,10 +355,15 @@ export function renderRichTextToPdf({
         // }
 
         if (tag === "li") {
+          const itemStyle = node.getAttribute("data-bullet-style");
+          const resolvedListType =
+            itemStyle === "arrow" || itemStyle === "stripe" || itemStyle === "disc"
+              ? itemStyle
+              : listType;
           const symbolX = x + indent;
           let isMarkerDrawn = false;
           // Keep arrow list spacing unchanged; make disc/stripe a bit tighter.
-          const isArrowList = listType === "arrow";
+          const isArrowList = resolvedListType === "arrow";
           const markerTextGap = isArrowList
             ? liIndent
             : Math.max(1.4, liIndent * 0.68);
@@ -382,7 +387,7 @@ export function renderRichTextToPdf({
                 // We'll measure how many lines the content wraps to,
                 // draw the marker before the first line, then render inline.
                 if (!isMarkerDrawn) {
-                  drawListMarker(listType, symbolX, y, listItemLineHeight);
+                  drawListMarker(resolvedListType, symbolX, y, listItemLineHeight);
                   isMarkerDrawn = true;
                 }
                 renderInlineSegments(
@@ -394,7 +399,7 @@ export function renderRichTextToPdf({
               }
               y += blkSpacing * 0.5;
             } else {
-              renderNode(child, indent + markerTextGap, listType);
+              renderNode(child, indent + markerTextGap, resolvedListType);
             }
           };
   
@@ -407,7 +412,7 @@ export function renderRichTextToPdf({
               stopRender = true;
               return;
             }
-            drawListMarker(listType, symbolX, y, listItemLineHeight);
+            drawListMarker(resolvedListType, symbolX, y, listItemLineHeight);
             y += listItemLineHeight + itmSpacing;
           } else {
             if (maxY != null && y + itmSpacing > maxY + 0.001) {
