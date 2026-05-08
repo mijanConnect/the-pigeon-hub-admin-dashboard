@@ -2,12 +2,12 @@ import { Dropdown, Tooltip } from "antd";
 import DOMPurify from "dompurify";
 import { Bold, ChevronDown, Italic, List } from "lucide-react";
 import BulletList from "@tiptap/extension-bullet-list";
-import ListItem from "@tiptap/extension-list-item";
 import Placeholder from "@tiptap/extension-placeholder";
 
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { StyledListItem } from "../StyledBulletList";
 
 const LIST_CLASSES = {
   disc: "rich-ul-disc",
@@ -88,7 +88,7 @@ export default function TooltipRichTextField({
         horizontalRule: false,
       }),
       StyledBulletList,
-      ListItem,
+      StyledListItem,
       Placeholder.configure({
         emptyEditorClass: "is-editor-empty",
         placeholder: ({ editor }) => {
@@ -148,12 +148,15 @@ export default function TooltipRichTextField({
 
   const applyListStyle = (styleKey) => {
     if (!editor) return;
-    const cls = LIST_CLASSES[styleKey] || LIST_CLASSES.disc;
+    const safeStyle = LIST_CLASSES[styleKey] ? styleKey : "disc";
     let chain = editor.chain().focus();
     if (!editor.isActive("bulletList")) {
       chain = chain.toggleBulletList();
     }
-    chain.updateAttributes("bulletList", { class: cls }).run();
+    chain
+      .updateAttributes("bulletList", { class: null })
+      .updateAttributes("listItem", { bulletStyle: safeStyle })
+      .run();
   };
 
   const bulletItems = [
@@ -212,7 +215,48 @@ export default function TooltipRichTextField({
           height: 0;
         }
 
-        /* Bullet styles by class on <ul> */
+        /* Base list layout: custom marker controlled at <li> level */
+        .tiptap-editor ul {
+          list-style: none;
+          margin-left: 0;
+          padding-left: 0;
+        }
+
+        .tiptap-editor ul > li {
+          position: relative;
+          padding-left: 22px;
+        }
+
+        .tiptap-editor ul > li::before {
+          content: "•";
+          position: absolute;
+          left: 0;
+          top: 0;
+          color: #000;
+          font-weight: 600;
+        }
+
+        /* Mixed-style markers per list item */
+        .tiptap-editor ul > li[data-bullet-style="disc"]::before {
+          content: "•";
+        }
+
+        .tiptap-editor ul > li[data-bullet-style="arrow"]::before {
+          content: "→";
+        }
+
+        .tiptap-editor ul > li[data-bullet-style="stripe"] {
+          border-left: 2px solid #000;
+          padding-left: 8px;
+          margin: 4px 0;
+          border-radius: 0;
+        }
+
+        .tiptap-editor ul > li[data-bullet-style="stripe"]::before {
+          content: "";
+        }
+
+        /* Legacy support for previously saved class-based lists */
         .tiptap-editor ul.rich-ul-disc {
           list-style-type: disc;
           margin-left: 20px;
@@ -223,11 +267,6 @@ export default function TooltipRichTextField({
           list-style: none;
           margin-left: 0;
           padding-left: 0;
-        }
-
-        .tiptap-editor ul.rich-ul-arrow > li {
-          position: relative;
-          padding-left: 22px;
         }
 
         .tiptap-editor ul.rich-ul-arrow > li::before {
@@ -245,14 +284,9 @@ export default function TooltipRichTextField({
           padding-left: 0;
         }
 
-        .tiptap-editor ul.rich-ul-stripe > li {
-          border-left: 2px solid #000;
-          padding-left: 8px;
-          margin: 4px 0;
-          border-radius: 0;
+        .tiptap-editor ul.rich-ul-stripe > li::before {
+          content: "";
         }
-
-        /* Stripe list: no background requested */
       `}</style>
 
       <div className="flex flex-wrap items-center gap-1 border-b border-gray-200 px-2 py-1.5">

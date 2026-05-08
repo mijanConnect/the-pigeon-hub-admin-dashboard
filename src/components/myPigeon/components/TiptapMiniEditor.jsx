@@ -1,9 +1,9 @@
 import { Select } from "antd";
 import BulletList from "@tiptap/extension-bullet-list";
-import ListItem from "@tiptap/extension-list-item";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useRef, useState } from "react";
+import { StyledListItem } from "../StyledBulletList";
 
 const { Option } = Select;
 
@@ -13,7 +13,7 @@ const tiptapExtensions = [
     listItem: false,
   }),
   BulletList,
-  ListItem,
+  StyledListItem,
 ];
 
 export default function TiptapMiniEditor({
@@ -52,11 +52,15 @@ export default function TiptapMiniEditor({
 
   useEffect(() => {
     if (!editor) return;
-
-    // Ensure bullet list is enabled when user picks a style.
+    const safeStyle = ["default", "disc", "arrow", "stripe"].includes(listStyle)
+      ? listStyle
+      : "disc";
+    const normalizedStyle = safeStyle === "default" ? "disc" : safeStyle;
+    let chain = editor.chain().focus();
     if (!editor.isActive("bulletList")) {
-      editor.chain().focus().toggleBulletList().run();
+      chain = chain.toggleBulletList();
     }
+    chain.updateAttributes("listItem", { bulletStyle: normalizedStyle }).run();
   }, [editor, listStyle]);
 
   useEffect(() => {
@@ -155,31 +159,20 @@ export default function TiptapMiniEditor({
           color: #000 !important;
         }
 
-        /* Keep rich class lists single-marker only */
-        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-disc,
-        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-arrow,
-        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-stripe {
-          list-style: none !important;
-          margin-left: 0 !important;
-          padding-left: 0 !important;
+        .tiptap-editor-wrapper .ProseMirror ul > li[data-bullet-style="disc"]::before {
+          content: "•" !important;
         }
 
-        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-disc > li,
-        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-arrow > li,
-        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-stripe > li {
-          list-style: none !important;
-        }
-
-        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-arrow > li::before {
+        .tiptap-editor-wrapper .ProseMirror ul > li[data-bullet-style="arrow"]::before {
           content: "→" !important;
         }
 
-        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-stripe > li {
+        .tiptap-editor-wrapper .ProseMirror ul > li[data-bullet-style="stripe"] {
           border-left: 2px solid #000 !important;
           padding-left: 8px !important;
         }
 
-        .tiptap-editor-wrapper .ProseMirror ul.rich-ul-stripe > li::before {
+        .tiptap-editor-wrapper .ProseMirror ul > li[data-bullet-style="stripe"]::before {
           content: "" !important;
         }
       `}</style>
