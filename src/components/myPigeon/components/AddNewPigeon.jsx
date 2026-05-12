@@ -48,6 +48,15 @@ const colorPatternMap = {
 // Format color keys for display (replace underscores with spaces)
 const formatColor = (c) => (typeof c === "string" ? c.replace(/_/g, " ") : c);
 
+/** Rich-text HTML must not be split on newlines (breaks tags). Plain text lines still split for legacy API. */
+const addresultsToApiArray = (raw) => {
+  if (raw == null) return [];
+  const s = String(raw).trim();
+  if (!s) return [];
+  if (/<[a-z][\s\S]*>/i.test(s)) return [s];
+  return s.split("\n").map((x) => x.trim()).filter(Boolean);
+};
+
 const AddNewPigeon = ({ onSave }) => {
   const [form] = Form.useForm();
   const [selected, setSelected] = useState({ color: null, pattern: null });
@@ -590,12 +599,7 @@ const AddNewPigeon = ({ onSave }) => {
         iconic: values.iconic === "yes",
         fatherRingId: values.fatherRingId || "",
         motherRingId: values.motherRingId || "",
-        addresults: values.addresults
-          ? values.addresults
-              .split("\n")
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : [],
+        addresults: addresultsToApiArray(values.addresults),
       };
 
       const token = localStorage.getItem("token");
@@ -714,12 +718,7 @@ const AddNewPigeon = ({ onSave }) => {
         iconic: values.iconic === "yes",
         fatherRingId: values.fatherRingId || "",
         motherRingId: values.motherRingId || "",
-        addresults: values.addresults
-          ? values.addresults
-              .split("\n")
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : [],
+        addresults: addresultsToApiArray(values.addresults),
       };
 
       const token = localStorage.getItem("token");
