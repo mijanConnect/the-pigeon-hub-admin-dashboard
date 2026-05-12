@@ -1010,8 +1010,63 @@ select {
   padding-left: 0.26rem;
   margin-bottom: 0.1rem;  /* was 0.35rem */
 }
+/* Tailwind preflight removes list markers; mirror TooltipRichTextField for saved HTML */
 .rich-text-display ul {
   margin: 0.35rem 0;
+}
+.rich-text-display
+  ul:not(.rich-ul-disc):not(.rich-ul-arrow):not(.rich-ul-stripe) {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 0;
+}
+.rich-text-display
+  ul:not(.rich-ul-disc):not(.rich-ul-arrow):not(.rich-ul-stripe)
+  > li {
+  position: relative;
+  padding-left: 22px;
+  margin-bottom: 0.15rem;
+}
+.rich-text-display
+  ul:not(.rich-ul-disc):not(.rich-ul-arrow):not(.rich-ul-stripe)
+  > li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #000;
+  font-weight: 600;
+}
+.rich-text-display
+  ul:not(.rich-ul-disc):not(.rich-ul-arrow):not(.rich-ul-stripe)
+  > li[data-bullet-style="disc"]::before,
+.rich-text-display
+  ul:not(.rich-ul-disc):not(.rich-ul-arrow):not(.rich-ul-stripe)
+  > li:not([data-bullet-style])::before {
+  content: "•";
+}
+.rich-text-display
+  ul:not(.rich-ul-disc):not(.rich-ul-arrow):not(.rich-ul-stripe)
+  > li[data-bullet-style="arrow"]::before {
+  content: "→";
+}
+.rich-text-display
+  ul:not(.rich-ul-disc):not(.rich-ul-arrow):not(.rich-ul-stripe)
+  > li[data-bullet-style="stripe"] {
+  border-left: 2px solid #000;
+  padding-left: 8px;
+  margin: 4px 0;
+  border-radius: 0;
+}
+.rich-text-display
+  ul:not(.rich-ul-disc):not(.rich-ul-arrow):not(.rich-ul-stripe)
+  > li[data-bullet-style="stripe"]::before {
+  content: "";
+}
+.rich-text-display ol {
+  margin: 0.35rem 0;
+  padding-left: 1.25rem;
+  list-style: decimal;
 }
 .rich-text-display p {
   margin: 0.25rem 0;
