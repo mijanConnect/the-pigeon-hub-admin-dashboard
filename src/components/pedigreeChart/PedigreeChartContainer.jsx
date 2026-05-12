@@ -580,12 +580,12 @@ export default function PigeonPedigreeChart() {
               items: [
                 {
                   key: "4gen",
-                  label: "Export to PDF (4Gen)",
+                  label: "Export to JPG (4Gen)",
                   onClick: async () => exportToJPGWithGenerations(4),
                 },
                 {
                   key: "5gen",
-                  label: "Export to PDF (5Gen)",
+                  label: "Export to JPG (5Gen)",
                   onClick: async () => exportToJPGWithGenerations(5),
                 },
               ],
