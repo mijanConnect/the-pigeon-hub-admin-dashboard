@@ -148,7 +148,7 @@ export default function TiptapMiniEditor({
         .tiptap-editor-wrapper .ProseMirror ul > li {
           position: relative !important;
           padding-left: 14px !important;
-          margin: 4px 0 !important;
+          margin: 0 0 !important;
         }
 
         .tiptap-editor-wrapper .ProseMirror ul > li::before {

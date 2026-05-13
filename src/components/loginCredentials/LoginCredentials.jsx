@@ -71,15 +71,61 @@ const LoginCredentials = () => {
 
   const navigate = useNavigate();
 
-  // Sync users - filter only USER and PAIDUSER
+  // Helper function to determine user type based on role and customRole
+  const getUserType = (user) => {
+    if (!user) return "Unknown";
+
+    const role = user.role || "";
+    const customeRole = user.customeRole || "";
+
+    // Log for debugging
+    console.log(
+      `Checking user: ${user.name} | role: "${role}" | customeRole: "${customeRole}"`,
+    );
+
+    // Free user - role: USER and customRole: FREEUSER
+    if (role === "PAIDUSER" && customeRole === "FREEUSER") {
+      console.log("  ✓ Matched: Free user");
+      return "Free user";
+    }
+
+    // Paid User - role: PAIDUSER and customRole: FREEUSER
+    if (role === "PAIDUSER" && customeRole === "CASHPAID") {
+      console.log("  ✓ Matched: Paid User");
+      return "Paid User";
+    }
+
+    // Paid User Website - role: PAIDUSER and customRole is empty/null
+    if (role === "PAIDUSER" && !customeRole) {
+      console.log("  ✓ Matched: Paid User Website");
+      return "Paid User Website";
+    }
+
+    // Registered - role: USER and customRole is empty/null
+    if (role === "USER" && !customeRole) {
+      console.log("  ✓ Matched: Registered");
+      return "Registered";
+    }
+
+    console.log("  ✗ No match - Fallback to role");
+    return role || "Unknown";
+  };
+
+  // Sync users - filter to show all users EXCEPT ADMIN
   useEffect(() => {
-    console.log("All API Users:", apiUsers);
     if (Array.isArray(apiUsers.users)) {
       const filteredUsers = apiUsers.users.filter(
-        (user) =>
-          user.role === "USER" || user.role === "PAIDUSER"
+        (user) => user.role !== "ADMIN",
       );
-      console.log("Filtered Users (USER/PAIDUSER):", filteredUsers);
+
+      // Log first user to see exact structure
+      if (filteredUsers.length > 0) {
+        console.log("=== FIRST USER OBJECT ===");
+        console.log("Full object:", filteredUsers[0]);
+        console.log("role:", filteredUsers[0].role);
+        console.log("customeRole:", filteredUsers[0].customeRole);
+      }
+
       setData(filteredUsers);
       setOriginalData(filteredUsers);
       setSortedData(filteredUsers);
@@ -96,15 +142,32 @@ const LoginCredentials = () => {
     }
   }, [apiRoles]);
 
+  const getFormRole = (record) => {
+    const role = record.role?.toUpperCase();
+    const customRole = record.customeRole?.toUpperCase();
+
+    if (role === "PAIDUSER" && customRole === "FREEUSER") {
+      return "USER";
+    }
+
+    if (role === "PAIDUSER" && customRole === "CASHPAID") {
+      return "PAIDUSER";
+    }
+
+    return role;
+  };
+
   // Show / Edit modal
   const showViewModal = (record) => {
     setSelectedRecord(record);
+
     viewForm.setFieldsValue({
       name: record.name,
       email: record.email,
-      role: record.role,
+      role: getFormRole(record),
       phone: record.phone,
     });
+
     setIsViewModalVisible(true);
   };
 
@@ -119,7 +182,12 @@ const LoginCredentials = () => {
       const payload = {
         name: values.name,
         email: values.email,
-        customeRole: values.role,
+        customeRole:
+          values.role === "USER"
+            ? "FREEUSER"
+            : values.role === "PAIDUSER"
+              ? "CASHPAID"
+              : "",
         contact: values.phone,
       };
 
@@ -134,7 +202,6 @@ const LoginCredentials = () => {
     });
   };
 
-
   // Add User with role selection (USER or PAIDUSER)
   const handleAddUser = () => {
     adminForm.validateFields().then(async (values) => {
@@ -142,7 +209,18 @@ const LoginCredentials = () => {
         name: values.name,
         email: values.email,
         password: values.password,
-        customeRole: values.role,
+        role:
+          values.role === "USER"
+            ? "PAIDUSER"
+            : values.role === "PAIDUSER"
+              ? "PAIDUSER"
+              : "",
+        customeRole:
+          values.role === "USER"
+            ? "FREEUSER"
+            : values.role === "PAIDUSER"
+              ? "CASHPAID"
+              : "",
         contact: values.phone,
       };
 
@@ -202,7 +280,17 @@ const LoginCredentials = () => {
       key: "currentPlan",
       align: "center",
     },
-    { title: "Role", dataIndex: "role", key: "role", align: "center" },
+    {
+      title: "Role",
+      dataIndex: "role",
+      key: "role",
+      align: "center",
+      render: (_, record) => (
+        <span style={{ color: "#088395", fontWeight: "500" }}>
+          {getUserType(record)}
+        </span>
+      ),
+    },
     {
       title: "Phone Number",
       dataIndex: "phone",
@@ -626,7 +714,10 @@ const LoginCredentials = () => {
                 rules={[{ required: true, message: "Please select a Role" }]}
                 className="custom-form-item-ant-select"
               >
-                <Select placeholder="Select Role" className="custom-select-ant-modal">
+                <Select
+                  placeholder="Select Role"
+                  className="custom-select-ant-modal"
+                >
                   <Option value="USER">USER</Option>
                   <Option value="PAIDUSER">PAIDUSER</Option>
                 </Select>
