@@ -75,7 +75,11 @@ export function renderRichTextToPdf({
         ? Number(itemSpacing)
         : Math.max(0.3, lh * 0.25);
     const liLineMult = Math.max(1, Number(listItemLineHeightMult) || 1.5);
-  
+    /** After `</ul>`, last `<li>` already added `itmSpacing` — use a smaller gap so the next `<p>` sits closer. */
+    const afterListBlockGap = Math.max(lh * 0.16, blkSpacing * 0.42);
+    /** `<li><p>…</p></li>`: avoid stacking a large pseudo-paragraph gap on top of per-item spacing. */
+    const afterListItemParagraphGap = Math.max(0, lh * 0.1);
+
     const drawListMarker = (type, mx, my, markerLh = lh) => {
       if (type === "arrow") {
         const centerY = my - markerLh * 0.32;
@@ -262,7 +266,8 @@ export function renderRichTextToPdf({
               if (stopRender) break;
               renderNode(child, indent, listType);
             }
-            y += blkSpacing;
+            // `<ul>` already applied trailing vertical gap; skip another full paragraph gap.
+            y += Math.max(0, lh * 0.12);
             if (effectiveMaxY != null && y >= effectiveMaxY) stopRender = true;
             return;
           }
@@ -293,7 +298,7 @@ export function renderRichTextToPdf({
             // Pre-indenting both <ul> and <li> causes extra horizontal space.
             renderNode(child, indent, type);
           }
-          y += blkSpacing;
+          y += afterListBlockGap;
           if (effectiveMaxY != null && y >= effectiveMaxY) stopRender = true;
           return;
         }
@@ -362,11 +367,11 @@ export function renderRichTextToPdf({
               : listType;
           const symbolX = x + indent;
           let isMarkerDrawn = false;
-          // Keep arrow list spacing unchanged; make disc/stripe a bit tighter.
           const isArrowList = resolvedListType === "arrow";
           const markerTextGap = isArrowList
             ? liIndent
             : Math.max(1.4, liIndent * 0.68);
+          /** Taller than `lh` so wrapped lines inside one &lt;li&gt; breathe; see post-render trim below. */
           const listItemLineHeight = isArrowList ? lh * 1.5 : lh * 1.22;
   
           const renderChildWithMarker = (child) => {
@@ -396,8 +401,12 @@ export function renderRichTextToPdf({
                   availableWidth,
                   listItemLineHeight
                 );
+                // `flushLine` uses listItemLineHeight after every row including the last; that reserves
+                // space as if another line followed inside the same <li>. Pull Y back so trailing slack
+                // matches a normal paragraph line (fixes large gap after arrow/disc list before next <p>).
+                y -= Math.max(0, listItemLineHeight - lh);
               }
-              y += blkSpacing * 0.5;
+              y += afterListItemParagraphGap;
             } else {
               renderNode(child, indent + markerTextGap, resolvedListType);
             }
