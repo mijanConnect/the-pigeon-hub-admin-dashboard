@@ -111,8 +111,8 @@ export default function TooltipRichTextField({
           class: cn(
             "tiptap-editor max-w-none px-3 py-3 text-sm text-gray-900 focus:outline-none",
             minHeightClass,
-            "[&_p]:my-1 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0",
-            "[&_ul]:my-1",
+            "[&_p]:my-0.05 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0",
+            "[&_ul]:my-0.05",
             editorClassName,
           ),
         },
@@ -225,6 +225,11 @@ export default function TooltipRichTextField({
         .tiptap-editor ul > li {
           position: relative;
           padding-left: 22px;
+        }
+
+        /* TipTap list items wrap content in <p> — remove doubled vertical rhythm */
+        .tiptap-editor ul > li > p {
+          margin: 0;
         }
 
         .tiptap-editor ul > li::before {

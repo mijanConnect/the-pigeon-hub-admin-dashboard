@@ -20,7 +20,7 @@ export default function RichTextDisplay({
   if (!/<[a-z][\s\S]*>/i.test(normalized)) {
     return (
       <span
-        className={classNames("whitespace-pre-line", block && "block", className)}
+        className={classNames("whitespace-break-spaces leading-snug", block && "block", className)}
       >
         {normalized}
       </span>
@@ -30,7 +30,7 @@ export default function RichTextDisplay({
   const Tag = block ? "div" : "span";
 
   return (
-    <Tag className={classNames("rich-text-display text-inherit", className)}>
+    <Tag className={classNames("rich-text-display text-inherit leading-snug", className)}>
       <span dangerouslySetInnerHTML={{ __html: normalized }} />
     </Tag>
   );
