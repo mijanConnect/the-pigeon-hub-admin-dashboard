@@ -77,17 +77,14 @@ const AdminManagement = () => {
 
   const navigate = useNavigate();
 
-  // Filter users for admin roles only (exclude USER and PAIDUSER)
+  // Filter users for ADMIN role only
   useEffect(() => {
     console.log("All API Users:", apiUsers);
     if (Array.isArray(apiUsers.users)) {
       const filteredUsers = apiUsers.users.filter(
-        (user) =>
-          user.role &&
-          user.role !== "USER" &&
-          user.role !== "PAIDUSER"
+        (user) => user.role === "ADMIN"
       );
-      console.log("Filtered Users (Admin Roles):", filteredUsers);
+      console.log("Filtered Users (ADMIN only):", filteredUsers);
       setData(filteredUsers);
       setOriginalData(filteredUsers);
       setSortedData(filteredUsers);
