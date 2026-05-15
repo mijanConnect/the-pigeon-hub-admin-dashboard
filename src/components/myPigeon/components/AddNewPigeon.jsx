@@ -30,6 +30,10 @@ import {
   useGetSinglePigeonQuery,
   useUpdatePigeonMutation,
 } from "../../../redux/apiSlices/mypigeonSlice";
+import {
+  addresultsArrayToHtml,
+  htmlToAddresultsArray,
+} from "../../common/share/richTextUtils";
 import { getImageUrl } from "../../common/imageUrl";
 import TooltipRichTextField from "./TooltipRichTextField";
 
@@ -48,14 +52,32 @@ const colorPatternMap = {
 // Format color keys for display (replace underscores with spaces)
 const formatColor = (c) => (typeof c === "string" ? c.replace(/_/g, " ") : c);
 
-/** Rich-text HTML must not be split on newlines (breaks tags). Plain text lines still split for legacy API. */
+/** Rich text → one API string per paragraph/list row. Plain text → split lines (legacy). */
 const addresultsToApiArray = (raw) => {
   if (raw == null) return [];
   const s = String(raw).trim();
   if (!s) return [];
-  if (/<[a-z][\s\S]*>/i.test(s)) return [s];
-  return s.split("\n").map((x) => x.trim()).filter(Boolean);
+  if (/<[a-z][\s\S]*>/i.test(s)) return htmlToAddresultsArray(s);
+  return s
+    .split(/\r?\n/)
+    .map((x) => x.trim())
+    .filter(Boolean);
 };
+
+/** Legacy API values → HTML so TipTap shows one paragraph per result line. */
+function pigeonAddresultsToEditorHtml(data) {
+  if (Array.isArray(data)) return addresultsArrayToHtml(data);
+  if (typeof data !== "string") return "";
+  const s = data.trim();
+  if (!s) return "";
+  if (/<[a-z][\s\S]*>/i.test(s)) return s;
+  const lines = /\r?\n/.test(s)
+    ? s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean)
+    : s.includes(",")
+      ? s.split(",").map((x) => x.trim()).filter(Boolean)
+      : [s];
+  return addresultsArrayToHtml(lines);
+}
 
 const AddNewPigeon = ({ onSave }) => {
   const [form] = Form.useForm();
@@ -286,15 +308,15 @@ const AddNewPigeon = ({ onSave }) => {
             : pigeonData.breeder,
       });
 
-      // Prefill addresults textarea when editing: join array into newline-delimited text
+      // Prefill addresults: array / plain → <p>…</p> so the rich editor keeps line breaks
       try {
-        if (Array.isArray(pigeonData.addresults)) {
-          const joined = pigeonData.addresults.join("\n");
-          form.setFieldsValue({ addresults: joined });
-          setValue(joined);
-        } else if (typeof pigeonData.addresults === "string") {
-          form.setFieldsValue({ addresults: pigeonData.addresults });
-          setValue(pigeonData.addresults);
+        if (
+          Array.isArray(pigeonData.addresults) ||
+          typeof pigeonData.addresults === "string"
+        ) {
+          const html = pigeonAddresultsToEditorHtml(pigeonData.addresults);
+          form.setFieldsValue({ addresults: html });
+          setValue(html);
         }
       } catch (e) {
         // ignore
@@ -1080,7 +1102,8 @@ Son of Burj Khalifa
 Winner of the Dubai OLR
 5 times 1st price winner
 Bought for USD 50,000`}
-                    minHeightClass="min-h-[150px]"
+                    minHeightClass="min-h-[120px]"
+                    editorScrollClassName="h-[180px]"
                     onChange={(html) => {
                       setValue2(html);
                       form.setFieldsValue({ shortInfo: html });
@@ -1338,7 +1361,8 @@ Son of Burj Khalifa
 Winner of the Dubai OLR
 5 times 1st price winner
 Bought for USD 50,000`}
-                    minHeightClass="min-h-[150px]"
+                    minHeightClass="min-h-[120px]"
+                    editorScrollClassName="h-[180px]"
                     onChange={(html) => {
                       setValue(html);
                       form.setFieldsValue({ addresults: html });

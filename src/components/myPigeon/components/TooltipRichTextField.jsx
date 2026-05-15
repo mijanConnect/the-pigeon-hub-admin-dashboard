@@ -69,6 +69,8 @@ export default function TooltipRichTextField({
   className,
   editorClassName,
   minHeightClass = "min-h-[120px]",
+  /** When set, editor body is this tall and scrolls vertically if content overflows (toolbar stays fixed). */
+  editorScrollClassName,
 }) {
   const isInternalChange = useRef(false);
   const onChangeRef = useRef(onChange);
@@ -329,12 +331,27 @@ export default function TooltipRichTextField({
         </Dropdown>
       </div>
 
-      <EditorContent
-        editor={editor}
-        className="rounded-b-lg focus-within:ring-2 focus-within:ring-teal-500 focus-within:ring-inset"
-        // Placeholder needs this attribute for the ::before rule
-        data-placeholder={placeholder || "Write here…"}
-      />
+      {editorScrollClassName ? (
+        <div
+          className={cn(
+            "overflow-y-auto overflow-x-hidden rounded-b-lg focus-within:ring-2 focus-within:ring-teal-500 focus-within:ring-inset",
+            editorScrollClassName,
+          )}
+        >
+          <EditorContent
+            editor={editor}
+            // Placeholder needs this attribute for the ::before rule
+            data-placeholder={placeholder || "Write here…"}
+          />
+        </div>
+      ) : (
+        <EditorContent
+          editor={editor}
+          className="rounded-b-lg focus-within:ring-2 focus-within:ring-teal-500 focus-within:ring-inset"
+          // Placeholder needs this attribute for the ::before rule
+          data-placeholder={placeholder || "Write here…"}
+        />
+      )}
     </div>
   );
 }
