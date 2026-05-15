@@ -256,7 +256,7 @@ const PigeonNode = ({ data }) => {
             </div>
           )} */}
           {data.owner && (
-            <div className="flex items-center gap-2  italic text-black">
+            <div className="flex items-center gap-2 text-black">
               <span className="truncate">{data.owner}</span>
               {data.breederVerified && (
                 <img
@@ -279,10 +279,10 @@ const PigeonNode = ({ data }) => {
 
         {data.description && (
           <div className="">
-            <p className=" text-black italic">
+            <p className="text-black">
               <RichTextDisplay
                 html={data.description}
-                className="text-black italic"
+                className="text-black pedigree-rich-text"
               />
             </p>
           </div>
@@ -303,7 +303,7 @@ const PigeonNode = ({ data }) => {
             >
               <RichTextDisplay
                 html={data.achievements}
-                className="text-black italic"
+                className="text-black pedigree-rich-text"
               />
             </p>
           </div>

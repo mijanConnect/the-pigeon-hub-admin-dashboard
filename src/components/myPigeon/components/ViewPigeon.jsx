@@ -18,6 +18,7 @@ import {
 import { getImageUrl } from "../../common/imageUrl";
 import PigeonPdfExport from "./ExportPdf";
 import RichTextDisplay from "../../common/share/RichTextDisplay";
+import { addresultsToDisplayHtml } from "../../common/share/richTextUtils";
 
 const safeValue = (value) => {
   if (value === null || value === undefined || value === "" || value === "-")
@@ -727,7 +728,7 @@ const ViewPigeon = () => {
                         <p className=" text-[14px]">
                           {/* {safeValue(pigeonData.fatherRingId?.results)} */}
                           <span className="font-normal text-[14px]">
-                           <RichTextDisplay html={pigeonData?.fatherRingId?.addresults} />
+                         <RichTextDisplay html={addresultsToDisplayHtml(pigeonData?.fatherRingId?.addresults)} />
                           </span>
                         </p>
                       </div>
@@ -792,7 +793,7 @@ const ViewPigeon = () => {
                         <p className=" text-[14px]">
                           {/* {safeValue(pigeonData.fatherRingId?.results)} */}
                           <span className="font-normal text-[14px]">
-                           <RichTextDisplay html={pigeonData.motherRingId?.addresults} />
+                           <RichTextDisplay html={addresultsToDisplayHtml(pigeonData.motherRingId?.addresults)} />
                           </span>
                         </p>
                       </div>
@@ -923,20 +924,16 @@ const ViewPigeon = () => {
               <div className="flex gap-1 mt-6 border p-4 rounded-lg">
                 <p className=" text-[14px]">
                   Race Results:{" "}
-                      {Array.isArray(pigeonData.addresults) &&
-                      pigeonData.addresults.length > 0 ? (
-                        pigeonData.addresults.some((result) => isHTML(result)) ? (
-                         <RichTextDisplay html={pigeonData.addresults.join("<br/>")} />
+                  {(() => {
+                    const resultsHtml = addresultsToDisplayHtml(
+                      pigeonData.addresults,
+                    );
+                    return resultsHtml ? (
+                      <RichTextDisplay html={resultsHtml} />
                     ) : (
-                      <span className="font-normal text-[14px]">
-                        {pigeonData.addresults.map((result, index) => (
-                          <div key={index}>{result}</div>
-                        ))}
-                      </span>
-                    )
-                  ) : (
-                    "N/A"
-                  )}
+                      "N/A"
+                    );
+                  })()}
                 </p>
               </div>
 

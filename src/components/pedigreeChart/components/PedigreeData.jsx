@@ -1,5 +1,7 @@
 // import { useMyProfileQuery } from "@/redux/featured/auth/authApi";
 
+import { addresultsArrayToHtml } from "../../common/share/richTextUtils";
+
 export const convertBackendToExistingFormat = (backendResponse, role) => {
   if (!backendResponse?.data) {
     return {
@@ -20,7 +22,7 @@ export const convertBackendToExistingFormat = (backendResponse, role) => {
       return null;
     }
 
-    return results.map((item) => String(item).trim()).join("\n");
+    return addresultsArrayToHtml(results);
   };
 
   // Helper function to get gender from data
