@@ -73,9 +73,7 @@ function pigeonAddresultsToEditorHtml(data) {
   if (/<[a-z][\s\S]*>/i.test(s)) return s;
   const lines = /\r?\n/.test(s)
     ? s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean)
-    : s.includes(",")
-      ? s.split(",").map((x) => x.trim()).filter(Boolean)
-      : [s];
+    : [s];
   return addresultsArrayToHtml(lines);
 }
 

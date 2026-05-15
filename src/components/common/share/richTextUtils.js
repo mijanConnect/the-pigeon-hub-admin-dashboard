@@ -42,6 +42,13 @@ export function escapeHtml(text) {
       })
       .join("");
   }
+
+  /** RichText / PDF: one `<p>` per API array row; strings pass through (commas never imply new blocks). */
+  export function addresultsToDisplayHtml(value) {
+    if (value == null || value === "") return "";
+    if (Array.isArray(value)) return addresultsArrayToHtml(value);
+    return String(value).trim();
+  }
   
   export function htmlToAddresultsArray(html) {
     if (!html || !String(html).trim()) return [];

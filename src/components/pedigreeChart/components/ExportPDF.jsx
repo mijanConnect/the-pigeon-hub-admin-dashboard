@@ -1,6 +1,7 @@
 import { getCode } from "country-list";
 import jsPDF from "jspdf";
 import { useCallback } from "react";
+import { addresultsToDisplayHtml } from "../../common/share/richTextUtils";
 import { renderRichTextToPdf } from "../../common/share/richTextPdf";
 
 // Helper function to load image as base64
@@ -188,7 +189,7 @@ export const exportPedigreeToPDF = async (
       x,
       y,
       maxWidth,
-      lineHeight = 4,
+      lineHeight = 3.5,
       maxLines = null,
       yMax = null
     ) => {
@@ -324,7 +325,7 @@ export const exportPedigreeToPDF = async (
           leftMargin,
           currentY,
           contentWidth,
-          3.7,
+          3.2,
           nameLines,
           cardBottom
         );
@@ -369,7 +370,7 @@ export const exportPedigreeToPDF = async (
               letterBImage,
               "PNG",
               leftMargin,
-              currentY + 3.7 - 2.5,
+              currentY + 3.2 - 2.5,
               badgeWidth,
               badgeWidth
             );
@@ -378,13 +379,13 @@ export const exportPedigreeToPDF = async (
 
         // Draw any remaining wrapped lines beneath the first (stay inside card)
         for (let i = 1; i < ownerLines.length; i++) {
-          if (currentY + 3.7 >= cardBottom) break;
-          currentY += 3.7; // line height similar to addWrappedText
+          if (currentY + 3.2 >= cardBottom) break;
+          currentY += 3.2; // line height similar to addWrappedText
           pdf.text(ownerLines[i], leftMargin, currentY);
         }
 
         // Advance currentY to leave a small gap after owner block
-        currentY += 3.7;
+        currentY += 3.2;
       }
 
       // === COLOR NAME ===
@@ -397,7 +398,7 @@ export const exportPedigreeToPDF = async (
           leftMargin,
           currentY,
           contentWidth,
-          3.7,
+          3.2,
           1,
           cardBottom
         );
@@ -406,10 +407,10 @@ export const exportPedigreeToPDF = async (
 
       // Calculate available space for description and achievements
       const availableSpace = Math.max(0, cardBottom - currentY - 3);
-      const hasDescription =
-        data.description && data.description.trim().length > 0;
-      const hasAchievements =
-        data.achievements && data.achievements.trim().length > 0;
+      const descriptionHtml = addresultsToDisplayHtml(data.description);
+      const achievementsHtml = addresultsToDisplayHtml(data.achievements);
+      const hasDescription = descriptionHtml.length > 0;
+      const hasAchievements = achievementsHtml.length > 0;
 
       // === DESCRIPTION ===
       if (hasDescription && availableSpace > 10) {
@@ -425,14 +426,14 @@ export const exportPedigreeToPDF = async (
         if (descriptionSpace > 0 && descMaxY > currentY + 1) {
           currentY = renderRichTextToPdf({
             pdf,
-            html: data.description,
+            html: descriptionHtml,
             x: leftMargin,
             y: currentY,
             maxWidth: contentWidth,
             maxY: descMaxY,
-            lineHeight: 2.85,
-            blockSpacing: 1.5,
-            itemSpacing: 0.95,
+            lineHeight: 2.3,
+            blockSpacing: 1.15,
+            itemSpacing: 0.72,
             listIndent: 2.2,
           });
         }
@@ -449,14 +450,14 @@ export const exportPedigreeToPDF = async (
 
           currentY = renderRichTextToPdf({
             pdf,
-            html: data.achievements,
+            html: achievementsHtml,
             x: leftMargin,
             y: currentY,
             maxWidth: contentWidth,
             maxY: cardBottom,
-            lineHeight: 3.05,
-            blockSpacing: 1.35,
-            itemSpacing: 0.85,
+            lineHeight: 2.5,
+            blockSpacing: 1.05,
+            itemSpacing: 0.62,
             listIndent: 2.2,
           });
         }

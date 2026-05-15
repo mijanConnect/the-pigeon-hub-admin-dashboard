@@ -1,5 +1,6 @@
 // import { baseUrlApi } from "@/redux/baseUrl/baseUrlApi";
 import { getCode } from "country-list";
+import { addresultsToDisplayHtml } from "../../common/share/richTextUtils";
 import { renderRichTextToPdf } from "../../common/share/richTextPdf";
 // import { renderRichTextToPdf } from "@/lib/richTextPdf";
 
@@ -404,7 +405,7 @@ export const exportPedigreeToJPG = async (
       x,
       y,
       maxWidth,
-      lineHeight = 4,
+      lineHeight = 3.5,
       maxLines = null,
       yMax = null
     ) => {
@@ -538,7 +539,7 @@ export const exportPedigreeToJPG = async (
           leftMargin,
           currentY,
           contentWidth,
-          3.7,
+          3.2,
           nameLines,
           cardBottom
         );
@@ -572,12 +573,12 @@ export const exportPedigreeToJPG = async (
               badgeWidth,
               badgeWidth
             );
-          } else if (currentY + 3.7 < cardBottom) {
+          } else if (currentY + 3.2 < cardBottom) {
             pdf.addImage(
               letterBImage,
               "PNG",
               leftMargin,
-              currentY + 3.7 - 2.5,
+              currentY + 3.2 - 2.5,
               badgeWidth,
               badgeWidth
             );
@@ -585,12 +586,12 @@ export const exportPedigreeToJPG = async (
         }
 
         for (let i = 1; i < ownerLines.length; i++) {
-          if (currentY + 3.7 >= cardBottom) break;
-          currentY += 3.7;
+          if (currentY + 3.2 >= cardBottom) break;
+          currentY += 3.2;
           pdf.text(ownerLines[i], leftMargin, currentY);
         }
 
-        currentY += 3.7;
+        currentY += 3.2;
       }
 
       // === COLOR NAME ===
@@ -603,7 +604,7 @@ export const exportPedigreeToJPG = async (
           leftMargin,
           currentY,
           contentWidth,
-          3.7,
+          3.2,
           1,
           cardBottom
         );
@@ -612,25 +613,10 @@ export const exportPedigreeToJPG = async (
 
       const availableSpace = Math.max(0, cardBottom - currentY - 3);
 
-      const descriptionText =
-        typeof data?.description === "string"
-          ? data.description
-          : data?.description == null
-          ? ""
-          : String(data.description);
-      const hasDescription =
-        descriptionText && descriptionText.trim().length > 0;
-
-      let achievementsText = "";
-      if (Array.isArray(data?.achievements)) {
-        achievementsText = data.achievements
-          .map((item) => (item == null ? "" : String(item)))
-          .join("\n");
-      } else if (data?.achievements != null) {
-        achievementsText = String(data.achievements);
-      }
-      const hasAchievements =
-        achievementsText && achievementsText.trim().length > 0;
+      const descriptionText = addresultsToDisplayHtml(data?.description);
+      const achievementsText = addresultsToDisplayHtml(data?.achievements);
+      const hasDescription = descriptionText.length > 0;
+      const hasAchievements = achievementsText.length > 0;
 
       // === DESCRIPTION ===
       if (hasDescription && availableSpace > 10) {
@@ -652,13 +638,13 @@ export const exportPedigreeToJPG = async (
               y: currentY,
               maxWidth: contentWidth,
               maxY: descMaxY,
-              lineHeight: 2.85,
-              blockSpacing: 1.5,
-              itemSpacing: 0.95,
+              lineHeight: 2.3,
+              blockSpacing: 1.15,
+              itemSpacing: 0.72,
               listIndent: 2.2,
             });
           } else {
-            const maxDescLines = Math.floor(descriptionSpace / 3.65);
+            const maxDescLines = Math.floor(descriptionSpace / 3.25);
             if (maxDescLines > 0) {
               const normalizedDescription = descriptionText
                 .replace(/[ \t]+/g, " ")
@@ -669,7 +655,7 @@ export const exportPedigreeToJPG = async (
                 leftMargin,
                 currentY,
                 contentWidth,
-                3.7,
+                3.2,
                 maxDescLines,
                 descMaxY
               );
@@ -695,13 +681,13 @@ export const exportPedigreeToJPG = async (
               y: currentY,
               maxWidth: contentWidth,
               maxY: cardBottom,
-              lineHeight: 3.05,
-              blockSpacing: 1.35,
-              itemSpacing: 0.85,
+              lineHeight: 2.5,
+              blockSpacing: 1.05,
+              itemSpacing: 0.62,
               listIndent: 2.2,
             });
           } else {
-            const maxAchvLines = Math.floor(remainingSpace / 3.1);
+            const maxAchvLines = Math.floor(remainingSpace / 2.7);
             if (maxAchvLines > 0) {
               const normalizedAchievements = achievementsText
                 .replace(/[ \t]+/g, " ")
@@ -712,7 +698,7 @@ export const exportPedigreeToJPG = async (
                 leftMargin,
                 currentY,
                 contentWidth,
-                3.05,
+                2.6,
                 maxAchvLines,
                 cardBottom
               );
