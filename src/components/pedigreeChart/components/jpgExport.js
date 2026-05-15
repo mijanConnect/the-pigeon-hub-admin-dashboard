@@ -548,7 +548,7 @@ export const exportPedigreeToJPG = async (
       // === OWNER ===
       if (data.owner && currentY < cardBottom) {
         pdf.setFontSize(7);
-        pdf.setFont("helvetica", "italic");
+        pdf.setFont("helvetica", "normal");
         pdf.setTextColor(0, 0, 0);
         const ownerText = String(data.owner);
 
@@ -635,7 +635,7 @@ export const exportPedigreeToJPG = async (
       // === DESCRIPTION ===
       if (hasDescription && availableSpace > 10) {
         pdf.setFontSize(7);
-        pdf.setFont("helvetica", "italic");
+        pdf.setFont("helvetica", "normal");
         pdf.setTextColor(0, 0, 0);
 
         const descriptionSpace = hasAchievements
