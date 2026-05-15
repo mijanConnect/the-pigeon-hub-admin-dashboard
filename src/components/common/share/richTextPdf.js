@@ -82,16 +82,45 @@ export function renderRichTextToPdf({
 
     const drawListMarker = (type, mx, my, markerLh = lh) => {
       if (type === "arrow") {
+        // Filled geometry (shaft + head) instead of three separate strokes.
+        // Stroked lines on the canvas JPG adapter often rasterize with a
+        // bright “gap” through the shaft after JPEG compression; fills stay solid.
         const centerY = my - markerLh * 0.32;
-        const arrowStartX = mx;
-        const arrowEndX = mx + Math.max(2.0, markerLh * 0.56);
-        const headDX = Math.max(0.6, markerLh * 0.22);
-        const headDY = Math.max(0.45, markerLh * 0.18);
-        pdf.setDrawColor(0, 0, 0);
-        pdf.setLineWidth(0.35);
-        pdf.line(arrowStartX, centerY, arrowEndX, centerY);
-        pdf.line(arrowEndX - headDX, centerY - headDY, arrowEndX, centerY);
-        pdf.line(arrowEndX - headDX, centerY + headDY, arrowEndX, centerY);
+        const arrowEndX = mx + Math.max(1.85, markerLh * 0.5);
+        const headDX = Math.max(0.52, markerLh * 0.18);
+        const headDY = Math.max(0.36, markerLh * 0.14);
+        const stemH = Math.max(0.16, markerLh * 0.085);
+        const stemTop = centerY - stemH / 2;
+        const shaftEnd = arrowEndX - headDX * 0.88;
+        const shaftW = Math.max(0.06, shaftEnd - mx);
+
+        // Slightly below pure black so the marker matches a normal-weight “→”
+        pdf.setFillColor(32, 32, 32);
+        pdf.rect(mx, stemTop, shaftW, stemH, "F");
+
+        const baseX = arrowEndX - headDX;
+        const baseY = centerY - headDY;
+        if (typeof pdf.lines === "function") {
+          pdf.lines(
+            [
+              [headDX, headDY],
+              [-headDX, headDY],
+              [0, -2 * headDY],
+            ],
+            baseX,
+            baseY,
+            [1, 1],
+            "F"
+          );
+        } else {
+          pdf.setDrawColor(32, 32, 32);
+          pdf.setLineWidth(0.3);
+          if (typeof pdf.setLineCap === "function") pdf.setLineCap(1);
+          if (typeof pdf.setLineJoin === "function") pdf.setLineJoin(1);
+          pdf.line(mx, centerY, arrowEndX - headDX * 0.15, centerY);
+          pdf.line(arrowEndX - headDX, centerY - headDY, arrowEndX, centerY);
+          pdf.line(arrowEndX - headDX, centerY + headDY, arrowEndX, centerY);
+        }
         return;
       }
   

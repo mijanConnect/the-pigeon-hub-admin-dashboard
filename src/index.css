@@ -1038,6 +1038,29 @@ select {
 .rich-text-display ul > li[data-bullet-style="arrow"] {
   padding-left: 1.22rem; /* arrow = slightly more than disc */
 }
+
+/* Pedigree React Flow cards: arrow marker size — width / height scales (tweak vars only) */
+.pedigree-rich-text.rich-text-display {
+  --pedigree-arrow-width-scale: 0.72;
+  --pedigree-arrow-height-scale: 1.18;
+}
+
+.pedigree-rich-text.rich-text-display ul > li[data-bullet-style="arrow"]::before,
+.pedigree-rich-text.rich-text-display ul.rich-ul-arrow > li::before {
+  display: inline-block;
+  font-weight: 900;
+  font-size: 1em;
+  line-height: 1;
+  -webkit-text-stroke: 0.2px currentColor;
+  paint-order: stroke fill;
+  transform: scaleX(var(--pedigree-arrow-width-scale, 0.72))
+    scaleY(var(--pedigree-arrow-height-scale, 1.18));
+  transform-origin: left center;
+}
+.pedigree-rich-text.rich-text-display ul > li[data-bullet-style="arrow"],
+.pedigree-rich-text.rich-text-display ul.rich-ul-arrow > li {
+  padding-left: 0.95rem;
+}
 .rich-text-display ul > li[data-bullet-style="stripe"] {
   border-left: 2px solid #000;
   padding-left: 0.26rem;

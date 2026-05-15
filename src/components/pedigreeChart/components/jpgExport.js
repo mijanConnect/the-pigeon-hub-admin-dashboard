@@ -154,10 +154,58 @@ const createCanvasPdf = ({
       }
     },
 
+    /**
+     * Subset of jsPDF `lines` used by rich-text markers: relative segments in mm,
+     * same coordinate system as `line` / `rect`.
+     */
+    lines: (segments, xMm, yMm, scale, style, closed) => {
+      let segs = segments;
+      let x0 = xMm;
+      let y0 = yMm;
+      if (typeof segments === "number") {
+        const tmp = yMm;
+        y0 = xMm;
+        x0 = segments;
+        segs = tmp;
+      }
+      const scaleArr = Array.isArray(scale) ? scale : [1, 1];
+      const sx = scaleArr[0] ?? 1;
+      const sy = scaleArr[1] ?? 1;
+      const isClosed = Boolean(closed);
+      const st = style == null ? "S" : style;
+      const doFill = st === "F" || st === "FD" || st === "DF";
+      const doStroke = st === "S" || st === "FD" || st === "DF";
+
+      let x = toPx(x0);
+      let y = toPx(y0);
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      for (const leg of segs || []) {
+        if (leg && leg.length >= 2) {
+          x += toPx(leg[0] * sx);
+          y += toPx(leg[1] * sy);
+          ctx.lineTo(x, y);
+        }
+      }
+      if (isClosed) ctx.closePath();
+      if (doFill) {
+        ctx.fillStyle = state.fillColor;
+        ctx.fill();
+      }
+      if (doStroke && st !== "F") {
+        ctx.strokeStyle = state.drawColor;
+        ctx.lineWidth = Math.max(1, toPx(state.lineWidthMm));
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.stroke();
+      }
+    },
+
     line: (x1Mm, y1Mm, x2Mm, y2Mm) => {
       ctx.strokeStyle = state.drawColor;
       ctx.lineWidth = Math.max(1, toPx(state.lineWidthMm));
-      ctx.lineCap = "butt";
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
       ctx.beginPath();
       ctx.moveTo(toPx(x1Mm), toPx(y1Mm));
       ctx.lineTo(toPx(x2Mm), toPx(y2Mm));

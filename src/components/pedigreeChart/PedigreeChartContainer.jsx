@@ -282,7 +282,7 @@ const PigeonNode = ({ data }) => {
             <p className="text-black">
               <RichTextDisplay
                 html={data.description}
-                className="text-black"
+                className="text-black pedigree-rich-text"
               />
             </p>
           </div>
@@ -303,7 +303,7 @@ const PigeonNode = ({ data }) => {
             >
               <RichTextDisplay
                 html={data.achievements}
-                className="text-black"
+                className="text-black pedigree-rich-text"
               />
             </p>
           </div>
