@@ -44,7 +44,14 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
     }
   };
 
-  const renderHtmlContent = (html, startX, startY, maxWidth, pdf, options = {}) => {
+  const renderHtmlContent = (
+    html,
+    startX,
+    startY,
+    maxWidth,
+    pdf,
+    options = {},
+  ) => {
     return renderRichTextToPdf({
       pdf,
       html,
@@ -624,16 +631,14 @@ const PigeonPdfExport = ({ pigeon, siblings = [] }) => {
       pdf.save(fileName);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert(
-        "Failed to generate PDF. Please try again.",
-      );
+      alert("Failed to generate PDF. Please try again.");
     }
   };
 
   return (
     <Button
       onClick={handleExportPDF}
-      className="bg-accent hover:bg-accent/80 text-white px-6 h-12 rounded-md flex items-center gap-2"
+      className="bg-primary border border-primary text-white"
     >
       <Download className="w-4 h-4" />
       Export PDF
