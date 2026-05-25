@@ -709,7 +709,7 @@ export const exportPedigreeToPDF = async (
     if (data?.name) {
       // Wrap breeder name in footer so it doesn't overflow horizontally
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(5.8);
+      pdf.setFontSize(5.5);
       const maxFooterWidth = pageWidth - margin * 2;
       // Allow up to 2 lines for the breeder name in the footer
       const nameEndY = addWrappedText(
@@ -717,23 +717,26 @@ export const exportPedigreeToPDF = async (
         margin,
         footerY,
         maxFooterWidth,
-        3.5,
+        2.5,
         2
       );
       // Position subsequent footer text just below the wrapped name (or the original footerY + 3.5)
-      var footerTextY = Math.max(nameEndY + 1, footerY + 3.5);
+      var footerTextY = Math.max(nameEndY + 1, footerY + 2.5);
       // Reset font to normal for the rest of footer
       pdf.setFont("helvetica", "normal");
+ 
     } else {
       pdf.setFont("helvetica", "normal");
-      var footerTextY = footerY + 3.5;
+      var footerTextY = footerY + 2.5;
     }
 
     if (data?.contact) {
+      pdf.setFontSize(5);
       pdf.text(` ${data.contact}`, margin, footerTextY);
-      footerTextY += 3.5;
+      footerTextY += 2.5;
     }
     if (data?.email) {
+      pdf.setFontSize(5);
       pdf.text(`${data.email}`, margin, footerTextY);
     }
 

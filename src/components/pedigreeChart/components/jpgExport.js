@@ -976,22 +976,25 @@ export const exportPedigreeToJPG = async (
 
     // === FOOTER: Breeder Info ===
     const footerY = pageHeight - margin - 10;
-    pdf.setFontSize(5.8);
+    pdf.setFontSize(5.5);
     pdf.setFont("helvetica", "bold");
     pdf.setTextColor(0, 0, 0);
 
     if (profileData?.name) {
+      pdf.setFontSize(5.5);
       pdf.text(profileData.name, margin, footerY);
     }
 
     pdf.setFont("helvetica", "normal");
-    let footerTextY = footerY + 3.5;
+    let footerTextY = footerY + 2.5;
 
     if (profileData?.contact) {
+      pdf.setFontSize(5);
       pdf.text(`${profileData.contact}`, margin, footerTextY);
-      footerTextY += 3.5;
+      footerTextY += 2.5;
     }
     if (profileData?.email) {
+      pdf.setFontSize(5);
       pdf.text(`${profileData.email}`, margin, footerTextY);
     }
 
