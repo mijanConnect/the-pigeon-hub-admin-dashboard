@@ -198,18 +198,18 @@ const AddNewPigeon = ({ onSave }) => {
   const toUploadItem = (url) =>
     url
       ? [
-          {
-            uid: `${Math.random()}`,
-            name: String(url).split("/").pop() || "image",
-            status: "done",
-            url: String(url).startsWith("http") ? url : getImageUrl(url),
-            // If the URL points to a PDF file, provide a thumbnail data URL so
-            // the Upload picture-card shows a PDF icon instead of a broken image.
-            thumbUrl: String(url).toLowerCase().includes(".pdf")
-              ? pdfThumbDataUrl(String(url).split("/").pop() || "PDF")
-              : undefined,
-          },
-        ]
+        {
+          uid: `${Math.random()}`,
+          name: String(url).split("/").pop() || "image",
+          status: "done",
+          url: String(url).startsWith("http") ? url : getImageUrl(url),
+          // If the URL points to a PDF file, provide a thumbnail data URL so
+          // the Upload picture-card shows a PDF icon instead of a broken image.
+          thumbUrl: String(url).toLowerCase().includes(".pdf")
+            ? pdfThumbDataUrl(String(url).split("/").pop() || "PDF")
+            : undefined,
+        },
+      ]
       : [];
 
   // Helper to generate a small SVG thumbnail data URL for a PDF file.
@@ -455,7 +455,7 @@ const AddNewPigeon = ({ onSave }) => {
           form.setFieldsValue({ breeder: display });
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }, [breederNames]);
 
   useEffect(() => {
@@ -470,7 +470,7 @@ const AddNewPigeon = ({ onSave }) => {
           setFatherSelected(match);
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }, [motherOptions]);
 
   useEffect(() => {
@@ -485,7 +485,7 @@ const AddNewPigeon = ({ onSave }) => {
           setMotherSelected(match);
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }, [fatherOptions]);
 
   const [updatePigeon, { isLoading: isUpdating }] = useUpdatePigeonMutation();
@@ -675,7 +675,7 @@ const AddNewPigeon = ({ onSave }) => {
         if (namePath) {
           try {
             form.scrollToField(namePath);
-          } catch (e) {}
+          } catch (e) { }
         }
         return;
       }
@@ -784,7 +784,7 @@ const AddNewPigeon = ({ onSave }) => {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
       try {
-      } catch (e) {}
+      } catch (e) { }
     } catch (err) {
       if (
         err &&
@@ -797,7 +797,7 @@ const AddNewPigeon = ({ onSave }) => {
         if (namePath) {
           try {
             form.scrollToField(namePath);
-          } catch (e) {}
+          } catch (e) { }
         }
         return;
       }
@@ -993,7 +993,7 @@ const AddNewPigeon = ({ onSave }) => {
         if (existing && existing.url && existing.url.startsWith("blob:")) {
           try {
             URL.revokeObjectURL(existing.url);
-          } catch (e) {}
+          } catch (e) { }
         }
         return { ...fl, [key]: [] };
       });
@@ -1159,7 +1159,7 @@ Bought for USD 50,000`}
                         const current = form.getFieldValue("breeder");
                         if (current && typeof current === "string")
                           setBreederDisplay(current);
-                      } catch (e) {}
+                      } catch (e) { }
                     }}
                     onClear={() => {
                       form.setFieldsValue({ breeder: undefined });
@@ -1333,7 +1333,7 @@ Bought for USD 50,000`}
                         .toLowerCase()
                         .includes(input.toLowerCase())
                     }
-                    onChange={(value) => {}}
+                    onChange={(value) => { }}
                   >
                     {/* Creating options from 1927 to the current year */}
                     {Array.from(
@@ -1483,158 +1483,161 @@ Bought for USD 50,000`}
 
             <div className="flex justify-between gap-10">
               {/* Father */}
+              {/* Father Ring Number */}
               <div className="w-full">
                 <Form.Item
                   label="Father Ring Number"
                   name="fatherRingId"
                   className="custom-form-item-ant-select"
                 >
-                  <AutoComplete
-                    options={fatherOptionsFiltered.map((p) => ({
-                      value: p.ringNumber,
-                      label: `${p.ringNumber} (${p.name || "Unknown"})`,
-                      data: p,
-                    }))}
-                    placeholder="Search by Father Ring No. or Name"
-                    className="custom-select-ant-modal"
-                    onSearch={setFatherSearch}
-                    value={fatherDisplay}
-                    filterOption={(inputValue, option) => {
-                      const q = String(inputValue).toLowerCase();
-                      const ring = String(option.value || "").toLowerCase();
-                      const label = String(option.label || "").toLowerCase();
-                      return ring.includes(q) || label.includes(q);
-                    }}
-                    onSelect={(value, option) => {
-                      form.setFieldsValue({ fatherRingId: value });
-                      setFatherDisplay(value);
-                      setFatherSelected(
-                        option?.data ||
-                          fatherOptions.find(
-                            (p) => String(p.ringNumber) === String(value),
-                          ) ||
-                          null,
-                      );
-                    }}
-                    onChange={(val) => {
-                      form.setFieldsValue({ fatherRingId: val });
-                      setFatherDisplay(val);
-                      setFatherSelected(null);
-                    }}
-                    onBlur={() => {
-                      try {
-                        const current = form.getFieldValue("fatherRingId");
-                        if (current && typeof current === "string")
-                          setFatherDisplay(current);
-                      } catch (e) {
-                        // ignore
-                      }
-                    }}
-                    // allowClear
-                    onClear={() => {
-                      form.setFieldsValue({ fatherRingId: undefined });
-                      setFatherDisplay("");
-                      setFatherSelected(null);
-                    }}
-                  />
+                  <div className="relative">
+                    <Input
+                      placeholder="Search by Father Ring No. or Name"
+                      className="custom-input-ant-modal"
+                      value={fatherDisplay}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFatherDisplay(val);
+                        setFatherSearch(val);        // ✅ API call trigger
+                        setFatherSelected(null);
+                        form.setFieldsValue({ fatherRingId: val });
+                      }}
+                      autoComplete="off"
+                    />
+
+                    {/* Custom Dropdown */}
+                    {fatherSearch && fatherOptionsFiltered.length > 0 && !fatherSelected && (
+                      <ul
+                        style={{
+                          position: "absolute",
+                          zIndex: 1000,
+                          width: "100%",
+                          background: "#fff",
+                          border: "1px solid #d9d9d9",
+                          borderRadius: "6px",
+                          maxHeight: "160px",
+                          overflowY: "auto",
+                          marginTop: "4px",
+                          padding: 0,
+                          listStyle: "none",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                        }}
+                      >
+                        {fatherOptionsFiltered.map((pigeon) => (
+                          <li
+                            key={pigeon._id}
+                            style={{ padding: "10px 12px", cursor: "pointer" }}
+                            onMouseDown={(e) => {
+                              e.preventDefault(); // blur আটকানো
+                              setFatherDisplay(pigeon.ringNumber);
+                              setFatherSearch("");  // ✅ dropdown বন্ধ
+                              setFatherSelected(pigeon);
+                              form.setFieldsValue({ fatherRingId: pigeon.ringNumber });
+                            }}
+                            onMouseEnter={(e) => (e.target.style.background = "#f0fafa")}
+                            onMouseLeave={(e) => (e.target.style.background = "#fff")}
+                          >
+                            {pigeon.ringNumber} — {pigeon.name || "Unknown"}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </Form.Item>
+
                 <p className="text-gray-400 font-normal text-[12px] pt-1">
-                  Enter a part of the ring or part of the name to search for the
-                  Corresponding Pigeon
+                  Enter a part of the ring or part of the name to search for the Corresponding Pigeon
                 </p>
+
                 {fatherSelected && (
                   <div className="mt-2 p-2 bg-gray-50 border rounded text-sm">
-                    {/* <strong>Selected Father:</strong> */}
-                    <div>
-                      <div className="flex gap-1">
-                        <p className="font-semibold">Ring Number:</p>
-                        <p>{fatherSelected.ringNumber}</p>
-                      </div>
-                      <div className="flex gap-1">
-                        <p className="font-semibold">Name:</p>
-                        <p>{fatherSelected.name || "Unknown"}</p>
-                      </div>
+                    <div className="flex gap-1">
+                      <p className="font-semibold">Ring Number:</p>
+                      <p>{fatherSelected.ringNumber}</p>
+                    </div>
+                    <div className="flex gap-1">
+                      <p className="font-semibold">Name:</p>
+                      <p>{fatherSelected.name || "Unknown"}</p>
                     </div>
                   </div>
                 )}
               </div>
 
+              {/* Mother Ring Number */}
               <div className="w-full">
                 <Form.Item
                   label="Mother Ring Number"
                   name="motherRingId"
                   className="custom-form-item-ant-select"
                 >
-                  <AutoComplete
-                    options={motherOptionsFiltered.map((p) => ({
-                      value: p.ringNumber,
-                      label: `${p.ringNumber} (${p.name || "Unknown"})`,
-                      data: p,
-                    }))}
-                    placeholder="Search by Mother Ring No. or Name"
-                    className="custom-select-ant-modal"
-                    onSearch={setMotherSearch}
-                    value={motherDisplay}
-                    filterOption={(inputValue, option) => {
-                      const q = String(inputValue).toLowerCase();
-                      const ring = String(option.value || "").toLowerCase();
-                      const label = String(option.label || "").toLowerCase();
-                      // match ring number or name
-                      return ring.includes(q) || label.includes(q);
-                    }}
-                    onSelect={(value, option) => {
-                      // when selecting suggestion, store selected ring number and selected pigeon data
-                      form.setFieldsValue({ motherRingId: value });
-                      setMotherDisplay(value);
-                      // option may include the original data under option.data
-                      setMotherSelected(
-                        option?.data ||
-                          motherOptions.find(
-                            (p) => String(p.ringNumber) === String(value),
-                          ) ||
-                          null,
-                      );
-                    }}
-                    onChange={(val) => {
-                      // keep typed value in field and form
-                      form.setFieldsValue({ motherRingId: val });
-                      setMotherDisplay(val);
-                      // clear selected when user types a custom value
-                      setMotherSelected(null);
-                    }}
-                    onBlur={() => {
-                      try {
-                        const current = form.getFieldValue("motherRingId");
-                        if (current && typeof current === "string")
-                          setMotherDisplay(current);
-                      } catch (e) {
-                        // ignore
-                      }
-                    }}
-                    // allowClear
-                    onClear={() => {
-                      form.setFieldsValue({ motherRingId: undefined });
-                      setMotherDisplay("");
-                      setMotherSelected(null);
-                    }}
-                  />
+                  <div className="relative">
+                    <Input
+                      placeholder="Search by Mother Ring No. or Name"
+                      className="custom-input-ant-modal"
+                      value={motherDisplay}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setMotherDisplay(val);
+                        setMotherSearch(val);        // ✅ API call trigger
+                        setMotherSelected(null);
+                        form.setFieldsValue({ motherRingId: val });
+                      }}
+                      autoComplete="off"
+                    />
+
+                    {/* Custom Dropdown */}
+                    {motherSearch && motherOptionsFiltered.length > 0 && !motherSelected && (
+                      <ul
+                        style={{
+                          position: "absolute",
+                          zIndex: 1000,
+                          width: "100%",
+                          background: "#fff",
+                          border: "1px solid #d9d9d9",
+                          borderRadius: "6px",
+                          maxHeight: "160px",
+                          overflowY: "auto",
+                          marginTop: "4px",
+                          padding: 0,
+                          listStyle: "none",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                        }}
+                      >
+                        {motherOptionsFiltered.map((pigeon) => (
+                          <li
+                            key={pigeon._id}
+                            style={{ padding: "10px 12px", cursor: "pointer" }}
+                            onMouseDown={(e) => {
+                              e.preventDefault(); // blur আটকানো
+                              setMotherDisplay(pigeon.ringNumber);
+                              setMotherSearch("");  // ✅ dropdown বন্ধ
+                              setMotherSelected(pigeon);
+                              form.setFieldsValue({ motherRingId: pigeon.ringNumber });
+                            }}
+                            onMouseEnter={(e) => (e.target.style.background = "#f0fafa")}
+                            onMouseLeave={(e) => (e.target.style.background = "#fff")}
+                          >
+                            {pigeon.ringNumber} — {pigeon.name || "Unknown"}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </Form.Item>
+
                 <p className="text-gray-400 font-normal text-[12px] pt-1">
-                  Enter a part of the ring or part of the name to search for the
-                  Corresponding Pigeon
+                  Enter a part of the ring or part of the name to search for the Corresponding Pigeon
                 </p>
+
                 {motherSelected && (
                   <div className="mt-2 p-2 bg-gray-50 border rounded text-sm">
-                    {/* <strong>Selected Mother:</strong> */}
-                    <div>
-                      <div className="flex gap-1">
-                        <p className="font-semibold">Ring Number:</p>
-                        <p>{motherSelected.ringNumber}</p>
-                      </div>
-                      <div className="flex gap-1">
-                        <p className="font-semibold">Name:</p>
-                        <p>{motherSelected.name || "Unknown"}</p>
-                      </div>
+                    <div className="flex gap-1">
+                      <p className="font-semibold">Ring Number:</p>
+                      <p>{motherSelected.ringNumber}</p>
+                    </div>
+                    <div className="flex gap-1">
+                      <p className="font-semibold">Name:</p>
+                      <p>{motherSelected.name || "Unknown"}</p>
                     </div>
                   </div>
                 )}

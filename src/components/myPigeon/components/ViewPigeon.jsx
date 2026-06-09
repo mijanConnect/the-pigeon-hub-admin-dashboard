@@ -488,28 +488,38 @@ const ViewPigeon = () => {
 
         /* Stripe List */
         .html-content ul.list-stripe,
-        .html-content ul[class*="list-stripe"] {
+        .html-content ul[class*="list-stripe"],
+        .html-content ul.rich-ul-stripe {
           list-style-type: none !important;
           margin-left: 0 !important;
           padding-left: 0 !important;
         }
 
         .html-content ul.list-stripe li,
-        .html-content ul[class*="list-stripe"] li {
+        .html-content ul[class*="list-stripe"] li,
+        .html-content ul.rich-ul-stripe > li,
+        .html-content ul > li[data-bullet-style="stripe"] {
           list-style-type: none !important;
-          padding: 8px 12px !important;
-          margin: 4px 0 !important;
-          border-radius: 4px !important;
+          position: relative !important;
+          border-left: none !important;
+          padding-left: 8px !important;
+          margin: 0 !important;
+          background: none !important;
+          border-radius: 0 !important;
         }
 
-        .html-content ul.list-stripe li:nth-child(odd),
-        .html-content ul[class*="list-stripe"] li:nth-child(odd) {
-          background-color: #f0f7ff !important;
-        }
-
-        .html-content ul.list-stripe li:nth-child(even),
-        .html-content ul[class*="list-stripe"] li:nth-child(even) {
-          background-color: #e8f4ff !important;
+        .html-content ul.list-stripe li::before,
+        .html-content ul[class*="list-stripe"] li::before,
+        .html-content ul.rich-ul-stripe > li::before,
+        .html-content ul > li[data-bullet-style="stripe"]::before {
+          content: "" !important;
+          position: absolute !important;
+          left: 0 !important;
+          top: 50% !important;
+          transform: translateY(-50%) !important;
+          width: 2px !important;
+          height: 0.75em !important;
+          background: #000 !important;
         }
 
         .html-content ol {
