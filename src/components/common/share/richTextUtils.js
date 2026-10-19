@@ -36,7 +36,9 @@ export function escapeHtml(text) {
       .map((line) => {
         const s = String(line).trim();
         if (!s) return "";
-        if (/^<p[\s>]/i.test(s)) return s;
+        // Block-level HTML (lists, headings, paragraphs, divs): pass through as-is
+        // so bullet markers / data-bullet-style survive a round trip.
+        if (/^<(p|ul|ol|li|div|h[1-6]|blockquote)[\s>]/i.test(s)) return s;
         if (/<[a-z][\s\S]*>/i.test(s)) return `<p>${s}</p>`;
         return `<p>${escapeHtml(s)}</p>`;
       })
@@ -84,12 +86,18 @@ export function escapeHtml(text) {
         } else if (child.nodeType === Node.ELEMENT_NODE) {
           const tag = child.tagName.toLowerCase();
           if (tag === "p") {
-            pushParagraphHtml(child);
+            // If this <p> just wraps a list (TipTap / sanitized HTML), keep the list block intact.
+            const onlyList = child.querySelector(":scope > ul, :scope > ol");
+            const textContent = (child.textContent || "").trim();
+            if (onlyList && !textContent) {
+              out.push(onlyList.outerHTML);
+            } else {
+              pushParagraphHtml(child);
+            }
           } else if (tag === "ul" || tag === "ol") {
-            child.querySelectorAll(":scope > li").forEach((li) => {
-              const inner = li.innerHTML.trim();
-              if (inner) out.push(inner);
-            });
+            // Preserve the whole list (with class + data-bullet-style on each <li>) as one entry.
+            const inner = child.innerHTML.trim();
+            if (inner) out.push(child.outerHTML);
           } else if (tag === "br") {
             /* ignore */
           } else if (tag === "div") {

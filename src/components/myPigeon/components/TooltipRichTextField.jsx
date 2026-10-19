@@ -84,6 +84,8 @@ export default function TooltipRichTextField({
       StarterKit.configure({
         bulletList: false,
         orderedList: false,
+        listItem: false,
+        listKeymap: false,
         heading: false,
         blockquote: false,
         codeBlock: false,
@@ -191,12 +193,10 @@ export default function TooltipRichTextField({
       label: (
         <div className="flex items-center">
           <span
-            className="mr-2"
+            className="mr-2 inline-block border-l-2 border-black"
             style={{
-              display: "inline-block",
-              width: "10px",
-              height: "14px",
-              borderLeft: "2px solid #000",
+              width: "6px",
+              height: "9px",
             }}
           />
           Stripe list
@@ -253,14 +253,19 @@ export default function TooltipRichTextField({
         }
 
         .tiptap-editor ul > li[data-bullet-style="stripe"] {
-          border-left: 2px solid #000;
+          border-left: none;
           padding-left: 8px;
-          margin: 4px 0;
-          border-radius: 0;
+          margin: 0;
         }
 
         .tiptap-editor ul > li[data-bullet-style="stripe"]::before {
           content: "";
+          top: 50%;
+          transform: translateY(-50%);
+          bottom: auto;
+          width: 2px;
+          height: 0.75em;
+          background: #000;
         }
 
         /* Legacy support for previously saved class-based lists */
@@ -293,6 +298,12 @@ export default function TooltipRichTextField({
 
         .tiptap-editor ul.rich-ul-stripe > li::before {
           content: "";
+          top: 50%;
+          transform: translateY(-50%);
+          bottom: auto;
+          width: 2px;
+          height: 0.75em;
+          background: #000;
         }
       `}</style>
 

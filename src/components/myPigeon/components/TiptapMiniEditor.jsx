@@ -11,6 +11,7 @@ const tiptapExtensions = [
   StarterKit.configure({
     bulletList: false,
     listItem: false,
+    listKeymap: false,
   }),
   BulletList,
   StyledListItem,
@@ -168,12 +169,19 @@ export default function TiptapMiniEditor({
         }
 
         .tiptap-editor-wrapper .ProseMirror ul > li[data-bullet-style="stripe"] {
-          border-left: 2px solid #000 !important;
+          border-left: none !important;
           padding-left: 8px !important;
+          margin: 0 !important;
         }
 
         .tiptap-editor-wrapper .ProseMirror ul > li[data-bullet-style="stripe"]::before {
           content: "" !important;
+          top: 50% !important;
+          transform: translateY(-50%) !important;
+          bottom: auto !important;
+          width: 2px !important;
+          height: 0.75em !important;
+          background: #000 !important;
         }
       `}</style>
 
