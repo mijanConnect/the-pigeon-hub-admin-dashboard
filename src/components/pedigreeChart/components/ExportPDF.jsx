@@ -412,38 +412,9 @@ export const exportPedigreeToPDF = async (
       const hasDescription = descriptionHtml.length > 0;
       const hasAchievements = achievementsHtml.length > 0;
 
-      // === DESCRIPTION ===
-      if (hasDescription && availableSpace > 10) {
-        pdf.setFontSize(7);
-        pdf.setFont("helvetica", "normal");
-        pdf.setTextColor(0, 0, 0);
-
-        const descriptionSpace = hasAchievements
-          ? availableSpace * 0.5
-          : Math.max(0, availableSpace - 5);
-        const descMaxY = Math.min(currentY + descriptionSpace, cardBottom);
-
-        if (descriptionSpace > 0 && descMaxY > currentY + 1) {
-          currentY = renderRichTextToPdf({
-            pdf,
-            html: descriptionHtml,
-            x: leftMargin,
-            y: currentY,
-            maxWidth: contentWidth,
-            maxY: descMaxY,
-            lineHeight: 2.3,
-            blockSpacing: 1.15,
-            itemSpacing: 0.72,
-            listIndent: 2.2,
-          });
-        }
-      }
-
-      // === ACHIEVEMENTS ===
-      if (hasAchievements) {
-        const remainingSpace = cardBottom - currentY - 2;
-
-        if (remainingSpace > 2) {
+      // === Gen 3: Result অথবা Description (যেকোনো ১টি বসবে, রেজাল্টকে অগ্রাধিকার দিয়ে পুরো স্পেস পাবে) ===
+      if (data.generation === 3) {
+        if (hasAchievements && availableSpace > 2) {
           pdf.setFontSize(7);
           pdf.setFont("helvetica", "normal");
           pdf.setTextColor(0, 0, 0);
@@ -460,6 +431,75 @@ export const exportPedigreeToPDF = async (
             itemSpacing: 0.62,
             listIndent: 2.2,
           });
+        } else if (hasDescription && availableSpace > 2) {
+          pdf.setFontSize(7);
+          pdf.setFont("helvetica", "normal");
+          pdf.setTextColor(0, 0, 0);
+
+          currentY = renderRichTextToPdf({
+            pdf,
+            html: descriptionHtml,
+            x: leftMargin,
+            y: currentY,
+            maxWidth: contentWidth,
+            maxY: cardBottom,
+            lineHeight: 2.3,
+            blockSpacing: 1.15,
+            itemSpacing: 0.72,
+            listIndent: 2.2,
+          });
+        }
+      } else {
+        // === Gen 0, 1, 2: স্বাভাবিক লজিক (দুটোই স্পেস ভাগ করে নিতে পারে) ===
+        // === DESCRIPTION ===
+        if (hasDescription && availableSpace > 2) {
+          pdf.setFontSize(7);
+          pdf.setFont("helvetica", "normal");
+          pdf.setTextColor(0, 0, 0);
+
+          const descriptionSpace = hasAchievements
+            ? availableSpace * 0.5
+            : Math.max(0, availableSpace - 5);
+          const descMaxY = Math.min(currentY + descriptionSpace, cardBottom);
+
+          if (descriptionSpace > 0 && descMaxY > currentY + 1) {
+            currentY = renderRichTextToPdf({
+              pdf,
+              html: descriptionHtml,
+              x: leftMargin,
+              y: currentY,
+              maxWidth: contentWidth,
+              maxY: descMaxY,
+              lineHeight: 2.3,
+              blockSpacing: 1.15,
+              itemSpacing: 0.72,
+              listIndent: 2.2,
+            });
+          }
+        }
+
+        // === ACHIEVEMENTS ===
+        if (hasAchievements) {
+          const remainingSpace = cardBottom - currentY - 2;
+
+          if (remainingSpace > 2) {
+            pdf.setFontSize(7);
+            pdf.setFont("helvetica", "normal");
+            pdf.setTextColor(0, 0, 0);
+
+            currentY = renderRichTextToPdf({
+              pdf,
+              html: achievementsHtml,
+              x: leftMargin,
+              y: currentY,
+              maxWidth: contentWidth,
+              maxY: cardBottom,
+              lineHeight: 2.5,
+              blockSpacing: 1.05,
+              itemSpacing: 0.62,
+              listIndent: 2.2,
+            });
+          }
         }
       }
     };

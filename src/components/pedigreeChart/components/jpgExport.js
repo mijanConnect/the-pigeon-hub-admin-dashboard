@@ -666,57 +666,9 @@ export const exportPedigreeToJPG = async (
       const hasDescription = descriptionText.length > 0;
       const hasAchievements = achievementsText.length > 0;
 
-      // === DESCRIPTION ===
-      if (hasDescription && availableSpace > 10) {
-        pdf.setFontSize(7);
-        pdf.setFont("helvetica", "normal");
-        pdf.setTextColor(0, 0, 0);
-
-        const descriptionSpace = hasAchievements
-          ? availableSpace * 0.5
-          : Math.max(0, availableSpace - 5);
-        const descMaxY = Math.min(currentY + descriptionSpace, cardBottom);
-
-        if (descriptionSpace > 0 && descMaxY > currentY + 1) {
-          if (/<[a-z][\s\S]*>/i.test(descriptionText)) {
-            currentY = renderRichTextToPdf({
-              pdf,
-              html: descriptionText,
-              x: leftMargin,
-              y: currentY,
-              maxWidth: contentWidth,
-              maxY: descMaxY,
-              lineHeight: 2.3,
-              blockSpacing: 1.15,
-              itemSpacing: 0.72,
-              listIndent: 2.2,
-            });
-          } else {
-            const maxDescLines = Math.floor(descriptionSpace / 3.25);
-            if (maxDescLines > 0) {
-              const normalizedDescription = descriptionText
-                .replace(/[ \t]+/g, " ")
-                .trim();
-
-              currentY = addWrappedText(
-                normalizedDescription,
-                leftMargin,
-                currentY,
-                contentWidth,
-                3.2,
-                maxDescLines,
-                descMaxY
-              );
-            }
-          }
-        }
-      }
-
-      // === ACHIEVEMENTS ===
-      if (hasAchievements) {
-        const remainingSpace = cardBottom - currentY - 2;
-
-        if (remainingSpace > 2) {
+      // === Gen 3: Result অথবা Description (যেকোনো ১টি বসবে, রেজাল্টকে অগ্রাধিকার দিয়ে পুরো স্পেস পাবে) ===
+      if (data.generation === 3) {
+        if (hasAchievements && availableSpace > 2) {
           pdf.setFontSize(7);
           pdf.setFont("helvetica", "normal");
           pdf.setTextColor(0, 0, 0);
@@ -735,7 +687,7 @@ export const exportPedigreeToJPG = async (
               listIndent: 2.2,
             });
           } else {
-            const maxAchvLines = Math.floor(remainingSpace / 2.7);
+            const maxAchvLines = Math.floor(availableSpace / 2.7);
             if (maxAchvLines > 0) {
               const normalizedAchievements = achievementsText
                 .replace(/[ \t]+/g, " ")
@@ -750,6 +702,132 @@ export const exportPedigreeToJPG = async (
                 maxAchvLines,
                 cardBottom
               );
+            }
+          }
+        } else if (hasDescription && availableSpace > 2) {
+          pdf.setFontSize(7);
+          pdf.setFont("helvetica", "normal");
+          pdf.setTextColor(0, 0, 0);
+
+          if (/<[a-z][\s\S]*>/i.test(descriptionText)) {
+            currentY = renderRichTextToPdf({
+              pdf,
+              html: descriptionText,
+              x: leftMargin,
+              y: currentY,
+              maxWidth: contentWidth,
+              maxY: cardBottom,
+              lineHeight: 2.3,
+              blockSpacing: 1.15,
+              itemSpacing: 0.72,
+              listIndent: 2.2,
+            });
+          } else {
+            const maxDescLines = Math.floor(availableSpace / 3.25);
+            if (maxDescLines > 0) {
+              const normalizedDescription = descriptionText
+                .replace(/[ \t]+/g, " ")
+                .trim();
+
+              currentY = addWrappedText(
+                normalizedDescription,
+                leftMargin,
+                currentY,
+                contentWidth,
+                3.2,
+                maxDescLines,
+                cardBottom
+              );
+            }
+          }
+        }
+      } else {
+        // === Gen 0, 1, 2: স্বাভাবিক লজিক (দুটোই স্পেস ভাগ করে নিতে পারে) ===
+        // === DESCRIPTION ===
+        if (hasDescription && availableSpace > 10) {
+          pdf.setFontSize(7);
+          pdf.setFont("helvetica", "normal");
+          pdf.setTextColor(0, 0, 0);
+
+          const descriptionSpace = hasAchievements
+            ? availableSpace * 0.5
+            : Math.max(0, availableSpace - 5);
+          const descMaxY = Math.min(currentY + descriptionSpace, cardBottom);
+
+          if (descriptionSpace > 0 && descMaxY > currentY + 1) {
+            if (/<[a-z][\s\S]*>/i.test(descriptionText)) {
+              currentY = renderRichTextToPdf({
+                pdf,
+                html: descriptionText,
+                x: leftMargin,
+                y: currentY,
+                maxWidth: contentWidth,
+                maxY: descMaxY,
+                lineHeight: 2.3,
+                blockSpacing: 1.15,
+                itemSpacing: 0.72,
+                listIndent: 2.2,
+              });
+            } else {
+              const maxDescLines = Math.floor(descriptionSpace / 3.25);
+              if (maxDescLines > 0) {
+                const normalizedDescription = descriptionText
+                  .replace(/[ \t]+/g, " ")
+                  .trim();
+
+                currentY = addWrappedText(
+                  normalizedDescription,
+                  leftMargin,
+                  currentY,
+                  contentWidth,
+                  3.2,
+                  maxDescLines,
+                  descMaxY
+                );
+              }
+            }
+          }
+        }
+
+        // === ACHIEVEMENTS ===
+        if (hasAchievements) {
+          const remainingSpace = cardBottom - currentY - 2;
+
+          if (remainingSpace > 2) {
+            pdf.setFontSize(7);
+            pdf.setFont("helvetica", "normal");
+            pdf.setTextColor(0, 0, 0);
+
+            if (/<[a-z][\s\S]*>/i.test(achievementsText)) {
+              currentY = renderRichTextToPdf({
+                pdf,
+                html: achievementsText,
+                x: leftMargin,
+                y: currentY,
+                maxWidth: contentWidth,
+                maxY: cardBottom,
+                lineHeight: 2.5,
+                blockSpacing: 1.05,
+                itemSpacing: 0.62,
+                listIndent: 2.2,
+              });
+            } else {
+              const maxAchvLines = Math.floor(remainingSpace / 2.7);
+              if (maxAchvLines > 0) {
+                const normalizedAchievements = achievementsText
+                  .replace(/[ \t]+/g, " ")
+                  .trim();
+
+                currentY = addWrappedText(
+                  normalizedAchievements,
+                  leftMargin,
+                  currentY,
+                  contentWidth,
+                  2.6,
+                  maxAchvLines,
+                  cardBottom
+                );
+              }
             }
           }
         }
